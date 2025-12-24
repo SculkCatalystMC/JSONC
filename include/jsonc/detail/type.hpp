@@ -23,21 +23,57 @@ class JsoncType;
 class Object {
     friend class JsoncType;
 
-private:
+public:
     struct Comments {
-        std::vector<std::string> mBeforeComments;
-        std::vector<std::string> mAfterComments;
+        std::vector<std::string> mBeforeComments{};
+        std::vector<std::string> mAfterComments{};
     };
 
-    detail::StringHashMap<JsoncType> mStorage;
-    detail::StringHashMap<Comments>  mKeyComments;
-    std::map<size_t, std::string>    mInsertIndex;
+    detail::StringHashMap<JsoncType> mStorage{};
+    detail::StringHashMap<Comments>  mKeyComments{};
+    std::map<size_t, std::string>    mInsertIndex{};
+    size_t                           mNextInsertIndex{};
 
 public:
-    using iterator             = detail::StringHashMap<JsoncType>::iterator;
-    using const_iterator       = detail::StringHashMap<JsoncType>::const_iterator;
-    using local_iterator       = detail::StringHashMap<JsoncType>::local_iterator;
-    using const_local_iterator = detail::StringHashMap<JsoncType>::const_local_iterator;
+    class const_iterator {
+        friend class Object;
+        const detail::StringHashMap<JsoncType>&       mStorageRef;
+        std::map<size_t, std::string>::const_iterator mIterator;
+        explicit const_iterator(const detail::StringHashMap<JsoncType>& storage);
+        [[nodiscard]] static const_iterator make_begin(const Object& var) noexcept;
+        [[nodiscard]] static const_iterator make_end(const Object& var) noexcept;
+
+    public:
+        [[nodiscard]] const std::pair<const std::string, JsoncType>& operator*() const;
+        [[nodiscard]] const std::pair<const std::string, JsoncType>* operator->() const;
+
+        const_iterator& operator++() noexcept;
+        const_iterator  operator++(int) noexcept;
+        const_iterator& operator--() noexcept;
+        const_iterator  operator--(int) noexcept;
+
+        [[nodiscard]] bool operator==(const_iterator const& rhs) const noexcept;
+    };
+
+    class iterator {
+        friend class Object;
+        detail::StringHashMap<JsoncType>&             mStorageRef;
+        std::map<size_t, std::string>::const_iterator mIterator;
+        explicit iterator(detail::StringHashMap<JsoncType>& storage);
+        [[nodiscard]] static iterator make_begin(Object& var) noexcept;
+        [[nodiscard]] static iterator make_end(Object& var) noexcept;
+
+    public:
+        [[nodiscard]] std::pair<const std::string, JsoncType>& operator*() const;
+        [[nodiscard]] std::pair<const std::string, JsoncType>* operator->() const;
+
+        iterator& operator++() noexcept;
+        iterator  operator++(int) noexcept;
+        iterator& operator--() noexcept;
+        iterator  operator--(int) noexcept;
+
+        [[nodiscard]] bool operator==(iterator const& rhs) const noexcept;
+    };
 
 public:
     [[nodiscard]] JsoncType& operator[](std::string_view index);
@@ -95,7 +131,7 @@ class Array {
     friend class JsoncType;
 
 private:
-    std::vector<JsoncType> mStorage;
+    std::vector<JsoncType> mStorage{};
 
 public:
     using iterator               = std::vector<JsoncType>::iterator;
@@ -143,9 +179,9 @@ inline constexpr bool jsonc_type_convertible_v = [] {
 
 class JsoncType {
 private:
-    detail::TypeVariant      mStorage;
-    std::vector<std::string> mBeforeComments;
-    std::vector<std::string> mAfterComments;
+    detail::TypeVariant      mStorage{};
+    std::vector<std::string> mBeforeComments{};
+    std::vector<std::string> mAfterComments{};
 
 public:
     JsoncType() = default;

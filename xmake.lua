@@ -16,7 +16,6 @@ target("test")
         "test"
     )
     add_files("test/**.cpp")
-    add_defines("JSONC_USE_EXPECTED")
     if is_plat("windows") then 
         add_defines(
             "NOMINMAX",

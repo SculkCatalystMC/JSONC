@@ -154,9 +154,9 @@ inline JSONC_RESULT(JsoncType) parse_null(std::string_view& str, std::vector<std
     _JSONC_PARSE_ERROR("invalid value");
 }
 
-template <bool RESULT>
+template <bool Value>
 inline JSONC_RESULT(JsoncType) parse_boolean(std::string_view& str, std::vector<std::string>&& comments_before) {
-    if constexpr (RESULT == true) {
+    if constexpr (Value == true) {
         if (str.starts_with("true")) {
             str.remove_prefix(4);
             JsoncType                result{true};
@@ -196,7 +196,6 @@ inline JSONC_RESULT(JsoncType) parse_number(std::string_view& str, std::vector<s
         ++it;
     }
 
-    auto digit_start = it;
     while (it != end && std::isdigit(*it)) { ++it; }
 
     if (it != end && *it == '.') {
@@ -209,10 +208,8 @@ inline JSONC_RESULT(JsoncType) parse_number(std::string_view& str, std::vector<s
     auto number = str.substr(static_cast<size_t>(start - str.begin()), static_cast<size_t>(it - start));
     str.remove_prefix(length);
 
-    JsoncType   result{};
-    static int& errnoRef = errno;
+    JsoncType result{};
 
-    errnoRef        = 0;
     char const* ptr = number.data();
     char*       eptr{};
 

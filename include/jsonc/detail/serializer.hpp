@@ -1,6 +1,8 @@
 #pragma once
 #include "type.hpp"
 
+#include <print>
+
 namespace jsonc::detail {
 
 inline std::string format_comments(std::vector<std::string> const& comments, std::string_view indent_space = "", bool nolinefeed = false) {

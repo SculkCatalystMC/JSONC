@@ -9,6 +9,8 @@ namespace jsonc {
 JsoncType& Object::operator[](std::string_view index) {
     auto res = mStorage.find(index);
     if (res != mStorage.end()) { return res->second; }
+    mInsertIndex[mNextInsertIndex] = index;
+    mNextInsertIndex++;
     return mStorage.try_emplace(std::string(index)).first->second;
 }
 JSONC_RESULT(const JsoncType&) Object::operator[](std::string_view index) const {
@@ -196,15 +198,106 @@ size_t Object::key_after_comments_size(std::string_view index) const noexcept {
     return 0;
 }
 
-Object::iterator Object::begin() noexcept { return mStorage.begin(); }
-Object::iterator Object::end() noexcept { return mStorage.end(); }
+Object::const_iterator::const_iterator(const detail::StringHashMap<JsoncType>& storage) : mStorageRef(storage) {}
 
-Object::const_iterator Object::begin() const noexcept { return mStorage.begin(); }
-Object::const_iterator Object::end() const noexcept { return mStorage.end(); }
+Object::const_iterator Object::const_iterator::make_begin(const Object& var) noexcept {
+    const_iterator result{var.mStorage};
+    result.mIterator = var.mInsertIndex.begin();
+    return result;
+}
 
-Object::const_iterator Object::cbegin() const noexcept { return mStorage.cbegin(); }
-Object::const_iterator Object::cend() const noexcept { return mStorage.cend(); }
+Object::const_iterator Object::const_iterator::make_end(const Object& var) noexcept {
+    const_iterator result{var.mStorage};
+    result.mIterator = var.mInsertIndex.end();
+    return result;
+}
 
+const std::pair<const std::string, JsoncType>& Object::const_iterator::operator*() const {
+    auto result = mStorageRef.find(mIterator->second);
+    if (result != mStorageRef.end()) { return *result; }
+    _JSONC_TYPE_ERROR("iterator error");
+}
+
+const std::pair<const std::string, JsoncType>* Object::const_iterator::operator->() const { return &operator*(); }
+
+Object::const_iterator& Object::const_iterator::operator++() noexcept {
+    ++mIterator;
+    return *this;
+}
+
+Object::const_iterator Object::const_iterator::operator++(int) noexcept {
+    Object::const_iterator tmp = *this;
+    ++*this;
+    return tmp;
+}
+
+Object::const_iterator& Object::const_iterator::operator--() noexcept {
+    --mIterator;
+    return *this;
+}
+
+Object::const_iterator Object::const_iterator::operator--(int) noexcept {
+    Object::const_iterator tmp = *this;
+    --*this;
+    return tmp;
+}
+
+bool Object::const_iterator::operator==(const_iterator const& rhs) const noexcept { return mIterator == rhs.mIterator; }
+
+Object::iterator::iterator(detail::StringHashMap<JsoncType>& storage) : mStorageRef(storage) {}
+
+Object::iterator Object::iterator::make_begin(Object& var) noexcept {
+    iterator result{var.mStorage};
+    result.mIterator = var.mInsertIndex.begin();
+    return result;
+}
+
+Object::iterator Object::iterator::make_end(Object& var) noexcept {
+    iterator result{var.mStorage};
+    result.mIterator = var.mInsertIndex.end();
+    return result;
+}
+
+std::pair<const std::string, JsoncType>& Object::iterator::operator*() const {
+    auto result = mStorageRef.find(mIterator->second);
+    if (result != mStorageRef.end()) { return *result; }
+    _JSONC_TYPE_ERROR("iter orror");
+}
+
+std::pair<const std::string, JsoncType>* Object::iterator::operator->() const { return &operator*(); }
+
+Object::iterator& Object::iterator::operator++() noexcept {
+    ++mIterator;
+    return *this;
+}
+
+Object::iterator Object::iterator::operator++(int) noexcept {
+    Object::iterator tmp = *this;
+    ++*this;
+    return tmp;
+}
+
+Object::iterator& Object::iterator::operator--() noexcept {
+    --mIterator;
+    return *this;
+}
+
+Object::iterator Object::iterator::operator--(int) noexcept {
+    Object::iterator tmp = *this;
+    --*this;
+    return tmp;
+}
+
+bool Object::iterator::operator==(iterator const& rhs) const noexcept { return mIterator == rhs.mIterator; }
+
+Object::iterator Object::begin() noexcept { return iterator::make_begin(*this); }
+Object::iterator Object::end() noexcept { return iterator::make_end(*this); }
+
+Object::const_iterator Object::begin() const noexcept { return const_iterator::make_begin(*this); }
+Object::const_iterator Object::end() const noexcept { return const_iterator::make_end(*this); }
+
+Object::const_iterator Object::cbegin() const noexcept { return const_iterator::make_begin(*this); }
+Object::const_iterator Object::cend() const noexcept { return const_iterator::make_end(*this); }
 
 constexpr JsoncType& Array::operator[](size_t index) noexcept { return mStorage[index]; }
 constexpr JSONC_RESULT(const JsoncType&) Array::operator[](size_t index) const noexcept { return _JSONC_MAKE_RESULT(mStorage[index]); }
