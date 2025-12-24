@@ -152,13 +152,13 @@ inline std::string dump_typed(Array const& val, bool ensure_ascii, int indent) {
         i--;
         if (line_feed) { result += indent_space; }
 
-        auto value  = element.dump(indent, ensure_ascii);
+        auto value  = element.dump(indent, ensure_ascii, false);
         result     += fix_indent(value, indent_space);
 
-        if (i > 0) { result += ','; }
-        if (line_feed) { result += '\n'; }
+        if (i > 0) { result.push_back(','); }
+        if (line_feed) { result.push_back('\n'); }
     }
-    result += "]";
+    result.push_back(']');
 
     return result;
 }
@@ -188,29 +188,37 @@ inline std::string dump_typed(Object const& val, bool ensure_ascii, int indent) 
 
         result += dump_typed(k, indent, ensure_ascii);
 
-        if (val.has_key_before_comments(k)) {
+        if (val.has_key_after_comments(k)) {
 #ifdef JSONC_USE_EXPECTED
             auto after_comments = val.key_after_comments(k)->get();
 #else
             auto after_comments = val.key_after_comments(k);
 #endif
-            if (after_comments.size() > 0) {
-                result += format_comments(after_comments, indent_space, true);
-                if (line_feed && after_comments.size() > 1) { result += indent_space; }
-            }
+            result.push_back(' ');
+            result += format_comments(after_comments, indent_space, true);
+            if (line_feed && after_comments.size() > 1) { result += indent_space; }
         }
-        result += ':';
+        result.push_back(':');
 
         if (indent >= 0) { result += ' '; }
 
-        auto value  = v.dump(indent, ensure_ascii);
-        result     += fix_indent(value, indent_space);
+        std::string value{};
+        if (v.has_before_comments()) {
+            value += format_comments(v.before_comments(), indent_space, true);
+            value.push_back(' ');
+        }
+        value += v.dump(indent, ensure_ascii, false);
+        if (v.has_after_comments()) {
+            value.push_back(' ');
+            value += format_comments(v.after_comments(), indent_space, true);
+        }
+        result += fix_indent(value, indent_space);
 
-        if (i > 0) { result += ','; }
-        if (line_feed) { result += '\n'; }
+        if (i > 0) { result.push_back(','); }
+        if (line_feed) { result.push_back('\n'); }
     }
 
-    result += '}';
+    result.push_back('}');
 
     return result;
 }

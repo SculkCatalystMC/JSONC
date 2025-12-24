@@ -207,9 +207,7 @@ Object::const_iterator Object::cend() const noexcept { return mStorage.cend(); }
 
 
 constexpr JsoncType& Array::operator[](size_t index) noexcept { return mStorage[index]; }
-constexpr JSONC_RESULT(const JsoncType&) Array::operator[](size_t index) const noexcept {
-    return _JSONC_MAKE_RESULT(mStorage[index]);
-}
+constexpr JSONC_RESULT(const JsoncType&) Array::operator[](size_t index) const noexcept { return _JSONC_MAKE_RESULT(mStorage[index]); }
 
 constexpr JSONC_RESULT(JsoncType&) Array::at(size_t index) {
     if (index < mStorage.size()) { return _JSONC_MAKE_RESULT(mStorage[index]); }
@@ -279,10 +277,18 @@ constexpr bool JsoncType::is_array() const noexcept { return hold(ValueType::Arr
 constexpr bool JsoncType::is_primitive() const noexcept { return is_null() || is_string() || is_number(); }
 constexpr bool JsoncType::is_structured() const noexcept { return is_array() || is_object(); }
 
-std::string JsoncType::dump(int indent, bool ensure_ascii) const {
-    return detail::format_comments(mBeforeComments)
-         + std::visit([&](auto const& val) { return detail::dump_typed(val, ensure_ascii, indent); }, mStorage)
-         + detail::format_comments(mAfterComments);
+std::string JsoncType::dump(int indent, bool ensure_ascii, bool global_comments) const {
+    auto result = std::visit([&](auto const& val) { return detail::dump_typed(val, ensure_ascii, indent); }, mStorage);
+    if (global_comments) {
+        auto before = detail::format_comments(mBeforeComments);
+        if (!before.empty()) { result = before + result; }
+        auto after = detail::format_comments(mAfterComments);
+        if (!after.empty()) {
+            result.push_back(' ');
+            result.append(after);
+        }
+    }
+    return result;
 }
 
 template <typename T>

@@ -14,6 +14,8 @@ int main() {
 #else
         auto json   = jsonc::parse(content);
         json["new"] = 3.233;
+        json["new"].add_before_comment("new");
+        json["new"].add_after_comment("new");
 #endif
         std::println("{}", json.dump());
         return 0;
