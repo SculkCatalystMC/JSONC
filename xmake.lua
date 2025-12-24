@@ -16,14 +16,15 @@ target("test")
         "test"
     )
     add_files("test/**.cpp")
+    add_defines("JSONC_USE_EXPECTED")
     if is_plat("windows") then 
         add_defines(
             "NOMINMAX",
             "UNICODE"
         )
-        add_cxflags("/utf-8")
+        add_cxflags("/utf-8", "/W4")
     else 
-        add_cxflags("-stdlib=libc++")
+        add_cxflags("-Wall", "-stdlib=libc++")
         add_syslinks("c++")
     end
 

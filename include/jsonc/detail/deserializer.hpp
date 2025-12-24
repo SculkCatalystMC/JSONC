@@ -415,7 +415,11 @@ inline JSONC_RESULT(JsoncType) parse_list(std::string_view& str, std::vector<std
         }
         case ',': {
             str.remove_prefix(1);
+#ifdef JSONC_USE_EXPECTED
+            extarct_comma_back_comments(str, value->after_comments());
+#else
             extarct_comma_back_comments(str, value.after_comments());
+#endif
             if (!allow_trailing_comma) { requre_value = true; }
         }
         default:

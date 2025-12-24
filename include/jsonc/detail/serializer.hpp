@@ -240,12 +240,10 @@ inline std::string dump_typed(Object const& val, bool ensure_ascii, int indent) 
     return result;
 }
 
-inline std::string dump_typed(bool val, bool ensure_ascii, int indent) { return val ? "true" : "false"; }
-
 template <typename T>
-    requires std::is_arithmetic_v<T> && (!std::same_as<T, bool>)
-inline std::string dump_typed(T val, bool ensure_ascii, int indent) {
-    return std::to_string(val);
+    requires std::is_arithmetic_v<T>
+inline std::string dump_typed(T val, bool, int) {
+    return std::format("{}", val);
 }
 
 } // namespace jsonc::detail

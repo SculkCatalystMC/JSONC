@@ -298,7 +298,7 @@ JSONC_RESULT(T) JsoncType::get() const {
         [](auto const& val) -> JSONC_RESULT(T) {
             using Type = std::decay_t<decltype(val)>;
             if constexpr (std::is_convertible_v<Type, T>) { return static_cast<T>(val); }
-            _JSONC_TYPE_ERROR("bad type cast");
+            std::unreachable();
         },
         mStorage
     );
