@@ -152,10 +152,19 @@ inline std::string dump_typed(Array const& val, bool ensure_ascii, int indent) {
         i--;
         if (line_feed) { result += indent_space; }
 
-        auto value  = element.dump(indent, ensure_ascii, false);
-        result     += fix_indent(value, indent_space);
+        std::string value{};
+        if (element.has_before_comments()) { value += format_comments(element.before_comments(), indent_space); }
+        value  += element.dump(indent, ensure_ascii, false);
+        result += fix_indent(value, indent_space);
 
         if (i > 0) { result.push_back(','); }
+
+        if (element.has_after_comments()) {
+            result.push_back(' ');
+            result += format_comments(element.after_comments(), indent_space);
+            result.pop_back();
+        }
+
         if (line_feed) { result.push_back('\n'); }
     }
     result.push_back(']');
@@ -207,14 +216,17 @@ inline std::string dump_typed(Object const& val, bool ensure_ascii, int indent) 
             value += format_comments(v.before_comments(), indent_space, true);
             value.push_back(' ');
         }
-        value += v.dump(indent, ensure_ascii, false);
-        if (v.has_after_comments()) {
-            value.push_back(' ');
-            value += format_comments(v.after_comments(), indent_space, true);
-        }
+        value  += v.dump(indent, ensure_ascii, false);
         result += fix_indent(value, indent_space);
 
         if (i > 0) { result.push_back(','); }
+
+        if (v.has_after_comments()) {
+            result.push_back(' ');
+            result += format_comments(v.after_comments(), indent_space);
+            result.pop_back();
+        }
+
         if (line_feed) { result.push_back('\n'); }
     }
 

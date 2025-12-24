@@ -5,8 +5,8 @@
 namespace jsonc {
 
 namespace detail {
-inline JSONC_RESULT(JsoncType) parse_jsonc_type(std::string_view& str, std::vector<std::string>&& comments_before, bool allow_trailing_comma);
-inline JSONC_RESULT(JsoncType) parse_jsonc_type(std::string_view& str, bool allow_trailing_comma);
+JSONC_RESULT(JsoncType) parse_jsonc_type(std::string_view& str, std::vector<std::string>&& comments_before, bool allow_trailing_comma);
+JSONC_RESULT(JsoncType) parse_jsonc_type(std::string_view& str, bool allow_trailing_comma);
 } // namespace detail
 
 namespace {
@@ -78,7 +78,14 @@ inline void skip_spaces(std::string_view& s) noexcept {
     s.remove_prefix(std::min(i - 1, s.size()));
 }
 
-std::vector<std::string> parse_comments(std::string_view comment) {
+inline void skip_spaces_nolinefeed(std::string_view& s) noexcept {
+    size_t      i                  = 0;
+    static auto isspace_nolinefeed = [](char c) { return c == ' ' || c == '\t' || c == '\v' || c == '\f'; };
+    while (i <= s.size() && (isspace_nolinefeed(s[i++]))) {}
+    s.remove_prefix(std::min(i - 1, s.size()));
+}
+
+inline std::vector<std::string> parse_comments(std::string_view comment) {
     std::vector<std::string> result{};
     size_t                   pos = 0;
     while ((pos = comment.find('\n')) != std::string::npos) {
@@ -108,6 +115,21 @@ inline bool extract_comments(std::string_view& s, std::vector<std::string>& comm
         comments.append_range(parse_comments(comment));
 #endif
         skip_spaces(s);
+    }
+    return true;
+}
+
+inline bool extarct_comma_back_comments(std::string_view& s, std::vector<std::string>& comments) {
+    skip_spaces_nolinefeed(s);
+    if (s.starts_with('/')) {
+        s.remove_prefix(1);
+        auto comment = extract_comment(s);
+#ifdef JSONC_USE_EXPECTED
+        if (!comment) { return false; }
+        comments.append_range(parse_comments(*comment));
+#else
+        comments.append_range(parse_comments(comment));
+#endif
     }
     return true;
 }
@@ -374,15 +396,15 @@ inline JSONC_RESULT(JsoncType) parse_list(std::string_view& str, std::vector<std
         }
 
         auto value = detail::parse_jsonc_type(str, std::move(element_comment_before), allow_trailing_comma);
-#ifdef JSONC_USE_EXPECTED
-        if (!value) { _JSONC_PARSE_ERROR(value.error().mErrorInfo); }
-        res.push_back(std::move(*value));
-#else
-        res.push_back(std::move(value));
-#endif
 
         switch (str.front()) {
         case ']': {
+#ifdef JSONC_USE_EXPECTED
+            if (!value) { _JSONC_PARSE_ERROR(value.error().mErrorInfo); }
+            res.push_back(std::move(*value));
+#else
+            res.push_back(std::move(value));
+#endif
             str.remove_prefix(1);
             std::vector<std::string> comments_after{};
             if (!extract_comments(str, comments_after)) { _JSONC_PARSE_ERROR("invalid comments format"); }
@@ -393,11 +415,18 @@ inline JSONC_RESULT(JsoncType) parse_list(std::string_view& str, std::vector<std
         }
         case ',': {
             str.remove_prefix(1);
+            extarct_comma_back_comments(str, value.after_comments());
             if (!allow_trailing_comma) { requre_value = true; }
         }
         default:
             break;
         }
+#ifdef JSONC_USE_EXPECTED
+        if (!value) { _JSONC_PARSE_ERROR(value.error().mErrorInfo); }
+        res.push_back(std::move(*value));
+#else
+        res.push_back(std::move(value));
+#endif
     }
     _JSONC_PARSE_ERROR("");
 }
@@ -465,6 +494,11 @@ inline JSONC_RESULT(JsoncType) parse_object(std::string_view& str, std::vector<s
         }
         case ',':
             str.remove_prefix(1);
+#ifdef JSONC_USE_EXPECTED
+            extarct_comma_back_comments(str, res[*key_str].after_comments());
+#else
+            extarct_comma_back_comments(str, res[key_str].after_comments());
+#endif
             if (!allow_trailing_comma) { requre_value = true; }
         default:
             break;
