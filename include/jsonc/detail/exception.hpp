@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <format>
 
 #ifdef JSONC_USE_EXPECTED
 #ifndef JSONC_NO_EXCEPTION
@@ -58,9 +59,7 @@ struct ErrorInfo {
     error_code  mErrorCode;
     std::string mErrorInfo;
 
-    explicit ErrorInfo(error_code error_code, std::string_view error_info)
-    : mErrorCode(error_code),
-      mErrorInfo(error_info) {}
+    explicit ErrorInfo(error_code error_code, std::string_view error_info) : mErrorCode(error_code), mErrorInfo(error_info) {}
 };
 #define _JSONC_THROW_EXCEPTION(TYPE, EXCEPTION) return std::unexpected(ErrorInfo(error_code::TYPE, EXCEPTION))
 #else
@@ -69,9 +68,7 @@ using ErrorInfo = error_code;
 #endif
 
 template <typename T = void>
-using Result = std::expected<
-    std::conditional_t<std::is_reference_v<T>, std::reference_wrapper<std::remove_reference_t<T>>, T>,
-    ErrorInfo>;
+using Result = std::expected<std::conditional_t<std::is_reference_v<T>, std::reference_wrapper<std::remove_reference_t<T>>, T>, ErrorInfo>;
 
 namespace detail {
 template <typename T>
@@ -92,7 +89,7 @@ template <typename T>
 } // namespace jsonc
 
 #else
-#define _JSONC_THROW_EXCEPTION(TYPE, EXCEPTION) _JSONC_UNREACHABLE()
+#define _JSONC_THROW_EXCEPTION(TYPE, EXCEPTION) std::unreachable()
 
 #define _JSONC_MAKE_RESULT(RESULT) RESULT
 #define JSONC_RESULT(TYPE)         TYPE
@@ -102,4 +99,4 @@ template <typename T>
 #define _JSONC_OUT_OF_RANGE(ERROR) _JSONC_THROW_EXCEPTION(out_of_range, ERROR)
 #define _JSONC_TYPE_ERROR(ERROR)   _JSONC_THROW_EXCEPTION(type_error, ERROR)
 #define _JSONC_KEY_ERROR(ERROR)    _JSONC_THROW_EXCEPTION(parse_error, ERROR)
-#define _JSONC_PARSE_ERROR(ERROR)  _JSONC_THROW_EXCEPTION(key_error, "jsonc parse error: " ERROR)
+#define _JSONC_PARSE_ERROR(ERROR)  _JSONC_THROW_EXCEPTION(key_error, std::format("jsonc parse error: {}", ERROR))

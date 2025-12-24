@@ -3,8 +3,7 @@
 
 namespace jsonc::detail {
 
-inline std::string
-format_comments(std::vector<std::string> const& comments, std::string_view indent_space = "", bool nolinefeed = false) {
+inline std::string format_comments(std::vector<std::string> const& comments, std::string_view indent_space = "", bool nolinefeed = false) {
     std::string result{};
     if (comments.size() > 0) {
         if (comments.size() == 1) {
@@ -63,9 +62,7 @@ inline std::string dump_typed(std::string const& str, bool ensure_ascii, int) {
                 char_len = (c >= 0xF0) ? 4 : (c >= 0xE0) ? 3 : 2;
 
                 codepoint = c & (0xFFu >> (char_len + 1));
-                for (size_t i = 1; i < char_len; ++i) {
-                    codepoint = (codepoint << 6) | (static_cast<uint8_t>(*it++) & 0x3F);
-                }
+                for (size_t i = 1; i < char_len; ++i) { codepoint = (codepoint << 6) | (static_cast<uint8_t>(*it++) & 0x3F); }
             }
 
             switch (codepoint) {
@@ -100,8 +97,7 @@ inline std::string dump_typed(std::string const& str, bool ensure_ascii, int) {
                         result += std::format("\\u{:04x}", codepoint);
                     } else {
                         codepoint -= 0x10000;
-                        result +=
-                            std::format("\\u{:04x}\\u{:04x}", 0xD800 + (codepoint >> 10), 0xDC00 + (codepoint & 0x3FF));
+                        result    += std::format("\\u{:04x}\\u{:04x}", 0xD800 + (codepoint >> 10), 0xDC00 + (codepoint & 0x3FF));
                     }
                 }
             }
@@ -182,14 +178,22 @@ inline std::string dump_typed(Object const& val, bool ensure_ascii, int indent) 
         if (line_feed) { result += indent_space; }
 
         if (val.has_key_before_comments(k)) {
+#ifdef JSONC_USE_EXPECTED
+            result += format_comments(val.key_before_comments(k)->get(), indent_space);
+#else
             result += format_comments(val.key_before_comments(k), indent_space);
+#endif
             if (line_feed) { result += indent_space; }
         }
 
         result += dump_typed(k, indent, ensure_ascii);
 
         if (val.has_key_before_comments(k)) {
+#ifdef JSONC_USE_EXPECTED
+            auto after_comments = val.key_after_comments(k)->get();
+#else
             auto after_comments = val.key_after_comments(k);
+#endif
             if (after_comments.size() > 0) {
                 result += format_comments(after_comments, indent_space, true);
                 if (line_feed && after_comments.size() > 1) { result += indent_space; }

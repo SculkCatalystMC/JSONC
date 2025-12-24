@@ -11,16 +11,16 @@ target("test")
         "binarystream",
         "zlib"
     )
-    add_defines(
-        "NOMINMAX",
-        "UNICODE"
-    )
     add_includedirs(
         "include",
         "test"
     )
     add_files("test/**.cpp")
     if is_plat("windows") then 
+        add_defines(
+            "NOMINMAX",
+            "UNICODE"
+        )
         add_cxflags("/utf-8")
     else 
         add_cxflags("-stdlib=libc++")
