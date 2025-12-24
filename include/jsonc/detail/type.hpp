@@ -158,8 +158,11 @@ public:
         requires(!std::same_as<T, bool>)
     constexpr JsoncType(T val) : mStorage(static_cast<uint64_t>(val)){};
     constexpr JsoncType(std::string val) : mStorage(std::move(val)) {};
-    template <std::is_floating_point T>
-    constexpr JsoncType(bool val) : mStorage(static_cast<double>(val)){};
+    template <std::floating_point T>
+    constexpr JsoncType(T val) : mStorage(static_cast<double>(val)){};
+
+    template <size_t N>
+    [[nodiscard]] JsoncType(char const (&val)[N]) : mStorage(std::string{val, N - 1}) {}
 
     constexpr JsoncType(Object const& val) : mStorage(val) {};
     constexpr JsoncType(Array const& val) : mStorage(val) {};

@@ -20,7 +20,12 @@ target("test")
         "test"
     )
     add_files("test/**.cpp")
-    add_cxflags("/utf-8", "/EHa")
+    if is_plat("windows") then 
+        add_cxflags("/utf-8")
+    else 
+        add_cxflags("-stdlib=libc++")
+        add_syslinks("c++")
+    end
 
     after_build(function (target)
         local file = target:targetfile()

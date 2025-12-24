@@ -9,6 +9,6 @@ using object = Object;
 using array  = Array;
 using jsonc  = JsoncType;
 
-inline JSONC_RESULT(JsoncType) parse(std::string_view content) { return detail::parseJsonValue(content); }
+inline JSONC_RESULT(JsoncType) parse(std::string_view content) { return detail::parse_jsonc_type(content); }
 
 } // namespace jsonc

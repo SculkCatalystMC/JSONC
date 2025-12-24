@@ -1,16 +1,11 @@
 #pragma once
-#include "macros.hpp"
 #include <cstdint>
 
 #ifdef JSONC_USE_EXPECTED
 #ifndef JSONC_NO_EXCEPTION
 #define JSONC_NO_EXCEPTION
 #endif
-#if _JSONC_HAS_CXX23 == 1
 #include <expected>
-#else
-#error std::expected requires C++23
-#endif
 #endif
 
 #ifndef JSONC_NO_EXCEPTION
@@ -107,4 +102,4 @@ template <typename T>
 #define _JSONC_OUT_OF_RANGE(ERROR) _JSONC_THROW_EXCEPTION(out_of_range, ERROR)
 #define _JSONC_TYPE_ERROR(ERROR)   _JSONC_THROW_EXCEPTION(type_error, ERROR)
 #define _JSONC_KEY_ERROR(ERROR)    _JSONC_THROW_EXCEPTION(parse_error, ERROR)
-#define _JSONC_PARSE_ERROR(ERROR)  _JSONC_THROW_EXCEPTION(key_error, ERROR)
+#define _JSONC_PARSE_ERROR(ERROR)  _JSONC_THROW_EXCEPTION(key_error, "jsonc parse error: " ERROR)
