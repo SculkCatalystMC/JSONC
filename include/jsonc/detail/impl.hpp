@@ -284,7 +284,7 @@ std::string JsoncType::dump(int indent, bool ensure_ascii, bool global_comments)
         if (!before.empty()) { result = before + result; }
         auto after = detail::format_comments(mAfterComments);
         if (!after.empty()) {
-            result.push_back(' ');
+            if (indent >= 0) { result.push_back(' '); }
             result.append(after);
         }
     }

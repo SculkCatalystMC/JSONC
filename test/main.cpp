@@ -19,7 +19,5 @@ int main() {
 #endif
         std::println("{}", json.dump());
         return 0;
-    } catch (const std::exception& e) { std::println("{}", e.what()); } catch (...) {
-        std::println("SEH Exception");
-    }
+    } catch (const std::exception& e) { std::println("{}", e.what()); }
 }

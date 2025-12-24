@@ -33,11 +33,13 @@ inline std::string format_comments(std::vector<std::string> const& comments, std
 }
 
 std::string& fix_indent(std::string& str, std::string_view indent_space) {
-    for (std::string::size_type pos(0); pos != std::string::npos; pos += indent_space.length()) {
-        if ((pos = str.find('\n', pos)) != std::string::npos) {
-            str.replace(pos + 1, 0, indent_space);
-        } else {
-            break;
+    if (!indent_space.empty()) {
+        for (std::string::size_type pos(0); pos != std::string::npos; pos += indent_space.length()) {
+            if ((pos = str.find('\n', pos)) != std::string::npos) {
+                str.replace(pos + 1, 0, indent_space);
+            } else {
+                break;
+            }
         }
     }
     return str;
@@ -143,8 +145,10 @@ inline std::string dump_typed(Array const& val, bool ensure_ascii, int indent) {
     std::string result{"["};
 
     size_t      i = val.size();
-    std::string indent_space(indent, ' ');
-    bool        line_feed = (indent >= 0);
+    std::string indent_space{};
+    if (indent > 0) { indent_space.resize(indent, ' '); }
+
+    bool line_feed = (indent >= 0);
 
     if (line_feed && val.size() > 0) { result += '\n'; }
 
@@ -153,16 +157,16 @@ inline std::string dump_typed(Array const& val, bool ensure_ascii, int indent) {
         if (line_feed) { result += indent_space; }
 
         std::string value{};
-        if (element.has_before_comments()) { value += format_comments(element.before_comments(), indent_space); }
+        if (element.has_before_comments()) { value += format_comments(element.before_comments(), indent_space, !line_feed); }
         value  += element.dump(indent, ensure_ascii, false);
         result += fix_indent(value, indent_space);
 
         if (i > 0) { result.push_back(','); }
 
         if (element.has_after_comments()) {
-            result.push_back(' ');
-            result += format_comments(element.after_comments(), indent_space);
-            result.pop_back();
+            if (line_feed) { result.push_back(' '); }
+            result += format_comments(element.after_comments(), indent_space, !line_feed);
+            if (line_feed) { result.pop_back(); }
         }
 
         if (line_feed) { result.push_back('\n'); }
@@ -176,7 +180,8 @@ inline std::string dump_typed(Object const& val, bool ensure_ascii, int indent) 
     std::string result{"{"};
 
     size_t      i = val.size();
-    std::string indent_space(indent, ' ');
+    std::string indent_space{};
+    if (indent > 0) { indent_space.resize(indent, ' '); }
 
     bool line_feed = (indent >= 0);
 
@@ -188,9 +193,9 @@ inline std::string dump_typed(Object const& val, bool ensure_ascii, int indent) 
 
         if (val.has_key_before_comments(k)) {
 #ifdef JSONC_USE_EXPECTED
-            result += format_comments(val.key_before_comments(k)->get(), indent_space);
+            result += format_comments(val.key_before_comments(k)->get(), indent_space, !line_feed);
 #else
-            result += format_comments(val.key_before_comments(k), indent_space);
+            result += format_comments(val.key_before_comments(k), indent_space, !line_feed);
 #endif
             if (line_feed) { result += indent_space; }
         }
@@ -203,7 +208,7 @@ inline std::string dump_typed(Object const& val, bool ensure_ascii, int indent) 
 #else
             auto after_comments = val.key_after_comments(k);
 #endif
-            result.push_back(' ');
+            if (line_feed) { result.push_back(' '); }
             result += format_comments(after_comments, indent_space, true);
             if (line_feed && after_comments.size() > 1) { result += indent_space; }
         }
@@ -214,7 +219,7 @@ inline std::string dump_typed(Object const& val, bool ensure_ascii, int indent) 
         std::string value{};
         if (v.has_before_comments()) {
             value += format_comments(v.before_comments(), indent_space, true);
-            value.push_back(' ');
+            if (line_feed) { value.push_back(' '); }
         }
         value  += v.dump(indent, ensure_ascii, false);
         result += fix_indent(value, indent_space);
@@ -222,9 +227,9 @@ inline std::string dump_typed(Object const& val, bool ensure_ascii, int indent) 
         if (i > 0) { result.push_back(','); }
 
         if (v.has_after_comments()) {
-            result.push_back(' ');
-            result += format_comments(v.after_comments(), indent_space);
-            result.pop_back();
+            if (line_feed) { result.push_back(' '); }
+            result += format_comments(v.after_comments(), indent_space, !line_feed);
+            if (line_feed) { result.pop_back(); }
         }
 
         if (line_feed) { result.push_back('\n'); }
