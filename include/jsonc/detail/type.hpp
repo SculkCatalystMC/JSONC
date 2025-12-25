@@ -32,10 +32,10 @@ public:
     detail::StringHashMap<Comments>         mKeyComments{};
 
 public:
-    using iterator       = detail::OrderedStringHashMap<JsoncType>::iterator;
-    using const_iterator = detail::OrderedStringHashMap<JsoncType>::const_iterator;
-    // using reverse_iterator       = std::vector<JsoncType>::reverse_iterator;
-    // using const_reverse_iterator = std::vector<JsoncType>::const_reverse_iterator;
+    using iterator               = detail::OrderedStringHashMap<JsoncType>::iterator;
+    using const_iterator         = detail::OrderedStringHashMap<JsoncType>::const_iterator;
+    using reverse_iterator       = detail::OrderedStringHashMap<JsoncType>::reverse_iterator;
+    using const_reverse_iterator = detail::OrderedStringHashMap<JsoncType>::const_reverse_iterator;
 
 public:
     [[nodiscard]] JsoncType& operator[](std::string_view index);
@@ -57,6 +57,15 @@ public:
 
     [[nodiscard]] const_iterator cbegin() const noexcept;
     [[nodiscard]] const_iterator cend() const noexcept;
+
+    [[nodiscard]] reverse_iterator rbegin() noexcept;
+    [[nodiscard]] reverse_iterator rend() noexcept;
+
+    [[nodiscard]] const_reverse_iterator rbegin() const noexcept;
+    [[nodiscard]] const_reverse_iterator rend() const noexcept;
+
+    [[nodiscard]] const_reverse_iterator crbegin() const noexcept;
+    [[nodiscard]] const_reverse_iterator crend() const noexcept;
 
     [[nodiscard]] bool has_key_before_comments(std::string_view index) const noexcept;
     [[nodiscard]] bool has_key_after_comments(std::string_view index) const noexcept;
@@ -124,6 +133,9 @@ public:
 
     [[nodiscard]] reverse_iterator rbegin() noexcept;
     [[nodiscard]] reverse_iterator rend() noexcept;
+
+    [[nodiscard]] const_reverse_iterator rbegin() const noexcept;
+    [[nodiscard]] const_reverse_iterator rend() const noexcept;
 
     [[nodiscard]] const_reverse_iterator crbegin() const noexcept;
     [[nodiscard]] const_reverse_iterator crend() const noexcept;

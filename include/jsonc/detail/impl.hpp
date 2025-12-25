@@ -205,6 +205,16 @@ Object::const_iterator Object::end() const noexcept { return mStorage.end(); }
 Object::const_iterator Object::cbegin() const noexcept { return mStorage.cbegin(); }
 Object::const_iterator Object::cend() const noexcept { return mStorage.cend(); }
 
+Object::reverse_iterator Object::rbegin() noexcept { return mStorage.rbegin(); }
+Object::reverse_iterator Object::rend() noexcept { return mStorage.rend(); }
+
+Object::const_reverse_iterator Object::rbegin() const noexcept { return mStorage.rbegin(); }
+Object::const_reverse_iterator Object::rend() const noexcept { return mStorage.rend(); }
+
+Object::const_reverse_iterator Object::crbegin() const noexcept { return mStorage.crbegin(); }
+Object::const_reverse_iterator Object::crend() const noexcept { return mStorage.crend(); }
+
+
 constexpr JsoncType& Array::operator[](size_t index) noexcept { return mStorage[index]; }
 constexpr JSONC_RESULT(const JsoncType&) Array::operator[](size_t index) const noexcept { return _JSONC_MAKE_RESULT(mStorage[index]); }
 
@@ -233,6 +243,9 @@ Array::const_iterator Array::cend() const noexcept { return mStorage.cend(); }
 
 Array::reverse_iterator Array::rbegin() noexcept { return mStorage.rbegin(); }
 Array::reverse_iterator Array::rend() noexcept { return mStorage.rend(); }
+
+Array::const_reverse_iterator Array::rbegin() const noexcept { return mStorage.rbegin(); }
+Array::const_reverse_iterator Array::rend() const noexcept { return mStorage.rend(); }
 
 Array::const_reverse_iterator Array::crbegin() const noexcept { return mStorage.crbegin(); }
 Array::const_reverse_iterator Array::crend() const noexcept { return mStorage.crend(); }

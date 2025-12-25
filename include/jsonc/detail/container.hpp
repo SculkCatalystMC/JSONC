@@ -27,7 +27,7 @@ class OrderedStringHashMap : public StringHashMap<T> {
     size_t                        mNextInsertIndex{};
 
 public:
-    template <bool _Const>
+    template <bool _Const, bool _Reverse>
     class _Iterator {
     public:
         using reference = std::conditional_t<_Const, const std::pair<const std::string, T>, std::pair<const std::string, T>>&;
@@ -64,20 +64,23 @@ public:
 
     private:
         friend class OrderedStringHashMap;
-        std::conditional_t<_Const, const detail::StringHashMap<T>, detail::StringHashMap<T>>&                              mStorage;
-        std::conditional_t<_Const, std::map<size_t, std::string>::const_iterator, std::map<size_t, std::string>::iterator> mIterator;
+        using StorageType  = std::conditional_t<_Const, const detail::StringHashMap<T>, detail::StringHashMap<T>>;
+        using IteratorType = std::conditional_t<
+            _Reverse,
+            std::conditional_t<_Const, std::map<size_t, std::string>::const_reverse_iterator, std::map<size_t, std::string>::reverse_iterator>,
+            std::conditional_t<_Const, std::map<size_t, std::string>::const_iterator, std::map<size_t, std::string>::iterator>>;
 
-        explicit _Iterator(
-            std::conditional_t<_Const, const detail::StringHashMap<T>, detail::StringHashMap<T>>&                                     storage,
-            const std::conditional_t<_Const, std::map<size_t, std::string>::const_iterator, std::map<size_t, std::string>::iterator>& iterator
-        )
-        : mStorage(storage),
-          mIterator(iterator) {}
+        StorageType& mStorage;
+        IteratorType mIterator;
+
+        explicit _Iterator(StorageType& storage, const IteratorType& iterator) : mStorage(storage), mIterator(iterator) {}
     };
 
 public:
-    using const_iterator = _Iterator<true>;
-    using iterator       = _Iterator<false>;
+    using iterator               = _Iterator<false, false>;
+    using const_iterator         = _Iterator<true, false>;
+    using reverse_iterator       = _Iterator<false, true>;
+    using const_reverse_iterator = _Iterator<true, true>;
 
 public:
     iterator begin() noexcept { return iterator(*this, mInsertIndex.begin()); }
@@ -88,6 +91,15 @@ public:
 
     const_iterator cbegin() const noexcept { return const_iterator(*this, mInsertIndex.begin()); }
     const_iterator cend() const noexcept { return const_iterator(*this, mInsertIndex.end()); }
+
+    reverse_iterator rbegin() noexcept { return reverse_iterator(*this, mInsertIndex.rbegin()); }
+    reverse_iterator rend() noexcept { return reverse_iterator(*this, mInsertIndex.rend()); }
+
+    const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator(*this, mInsertIndex.rbegin()); }
+    const_reverse_iterator rend() const noexcept { return const_reverse_iterator(*this, mInsertIndex.rend()); }
+
+    const_reverse_iterator crbegin() const noexcept { return const_reverse_iterator(*this, mInsertIndex.crbegin()); }
+    const_reverse_iterator crend() const noexcept { return const_reverse_iterator(*this, mInsertIndex.crend()); }
 
     const_iterator find(std::string_view _Keyval) const {
         auto _Result = mKeyIndex.find(_Keyval);
