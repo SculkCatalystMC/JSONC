@@ -5,7 +5,7 @@
 namespace jsonc {
 
 namespace detail {
-JSONC_RESULT(JsoncType) parse_jsonc_type(std::string_view& str, std::vector<std::string>&& comments_before, bool allow_trailing_comma)JSONC_EXCEPTION_TYPE;
+JSONC_RESULT(JsoncType) parse_jsonc_type(std::string_view& str, std::vector<std::string>&& comments_before, bool allow_trailing_comma) JSONC_EXCEPTION_TYPE;
 JSONC_RESULT(JsoncType) parse_jsonc_type(std::string_view& str, bool allow_trailing_comma) JSONC_EXCEPTION_TYPE;
 } // namespace detail
 
@@ -519,7 +519,7 @@ namespace detail {
 inline JSONC_RESULT(
     JsoncType
 ) parse_jsonc_type(std::string_view& str, std::vector<std::string>&& comments_before, bool allow_trailing_comma) JSONC_EXCEPTION_TYPE {
-    if (str.empty()) { _JSONC_PARSE_ERROR("Could't parse an empty string"); }
+    if (str.empty()) { _JSONC_PARSE_ERROR("empty string"); }
     switch (str.front()) {
     case 't':
         return parse_boolean<true>(str, std::move(comments_before));

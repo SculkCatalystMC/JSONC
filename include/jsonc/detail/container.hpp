@@ -30,30 +30,26 @@ public:
         using pointer   = std::add_pointer_t<reference>;
 
     public:
-        [[nodiscard]] reference operator*() const noexcept {
-            auto result = mStorage.find(mIterator->second);
-            if (result != mStorage.end()) { return *result; }
-            std::unreachable();
-        }
-        [[nodiscard]] pointer operator->() const noexcept { return std::addressof(**this); }
+        [[nodiscard]] reference operator*() const noexcept { return *mStorage.find(mIterator->second); }
+        [[nodiscard]] pointer   operator->() const noexcept { return std::addressof(**this); }
 
         _Iterator& operator++() noexcept {
             ++mIterator;
             return *this;
         }
         _Iterator operator++(int) noexcept {
-            _Iterator tmp = *this;
+            _Iterator _Tmp = *this;
             ++*this;
-            return tmp;
+            return _Tmp;
         }
         _Iterator& operator--() noexcept {
             --mIterator;
             return *this;
         }
         _Iterator operator--(int) noexcept {
-            _Iterator tmp = *this;
+            _Iterator _Tmp = *this;
             --*this;
-            return tmp;
+            return _Tmp;
         }
 
         [[nodiscard]] bool operator==(const _Iterator& rhs) const noexcept { return mIterator == rhs.mIterator; }
@@ -69,7 +65,7 @@ public:
         StorageType& mStorage;
         IteratorType mIterator;
 
-        explicit _Iterator(StorageType& storage, const IteratorType& iterator) noexcept : mStorage(storage), mIterator(iterator) {}
+        explicit _Iterator(StorageType& _Storage, const IteratorType& _Iter) noexcept : mStorage(_Storage), mIterator(_Iter) {}
     };
 
 public:
@@ -79,6 +75,11 @@ public:
     using const_reverse_iterator = _Iterator<true, true>;
 
 public:
+    OrderedStringHashMap() = default;
+    OrderedStringHashMap(std::initializer_list<std::pair<std::string, T>> val) {
+        for (const auto& [k, v] : val) { try_emplace(k, v); }
+    }
+
     size_t size() const noexcept { return mStorage.size(); }
 
     bool contains(std::string_view _Keyval) const noexcept { return mStorage.contains(_Keyval); }
@@ -86,9 +87,9 @@ public:
     bool erase(std::string_view _Keyval) noexcept {
         auto _Index = mKeyIndex.find(_Keyval);
         if (_Index != mKeyIndex.end()) {
-            mKeyIndex.erase(_Keyval);
+            mKeyIndex.erase(_Index);
             mInsertIndex.erase(_Index->second);
-            return mStorage.erase(_Keyval);
+            return mStorage.erase(std::string(_Keyval));
         }
         return false;
     }
