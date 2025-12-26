@@ -42,6 +42,8 @@ public:
 #define JSONC_RESULT(TYPE)         TYPE
 #define _JSONC_MAKE_RESULT(RESULT) RESULT
 
+#define JSONC_EXCEPTION_TYPE
+
 } // namespace jsonc::detail
 #else
 #ifdef JSONC_USE_EXPECTED
@@ -94,6 +96,7 @@ template <typename T>
 #define _JSONC_MAKE_RESULT(RESULT) RESULT
 #define JSONC_RESULT(TYPE)         TYPE
 #endif
+#define JSONC_EXCEPTION_TYPE noexcept
 #endif
 
 #define _JSONC_OUT_OF_RANGE(ERROR) _JSONC_THROW_EXCEPTION(out_of_range, ERROR)

@@ -5,7 +5,8 @@
 
 namespace jsonc::detail {
 
-inline std::string format_comments(std::vector<std::string> const& comments, std::string_view indent_space = "", bool nolinefeed = false) {
+inline std::string
+format_comments(const std::vector<std::string>& comments, std::string_view indent_space = "", bool nolinefeed = false) JSONC_EXCEPTION_TYPE {
     std::string result{};
     if (comments.size() > 0) {
         if (comments.size() == 1) {
@@ -20,7 +21,7 @@ inline std::string format_comments(std::vector<std::string> const& comments, std
             }
         } else {
             result.append("/*\n");
-            for (auto const& comment : comments) {
+            for (const auto& comment : comments) {
                 result.append(indent_space);
                 result.append("* ");
                 result.append(comment);
@@ -34,7 +35,7 @@ inline std::string format_comments(std::vector<std::string> const& comments, std
     return result;
 }
 
-std::string& fix_indent(std::string& str, std::string_view indent_space) {
+std::string& fix_indent(std::string& str, std::string_view indent_space) JSONC_EXCEPTION_TYPE {
     if (!indent_space.empty()) {
         for (std::string::size_type pos(0); pos != std::string::npos; pos += indent_space.length()) {
             if ((pos = str.find('\n', pos)) != std::string::npos) {
@@ -47,9 +48,9 @@ std::string& fix_indent(std::string& str, std::string_view indent_space) {
     return str;
 }
 
-inline std::string dump_typed(std::monostate const&, bool, int) { return "null"; }
+inline std::string dump_typed(const std::monostate&, bool, int) JSONC_EXCEPTION_TYPE { return "null"; }
 
-inline std::string dump_typed(std::string const& str, bool ensure_ascii, int) {
+inline std::string dump_typed(const std::string& str, bool ensure_ascii, int) JSONC_EXCEPTION_TYPE {
     if (str.empty()) { return "\"\""; }
 
     std::string result{};
@@ -143,7 +144,7 @@ inline std::string dump_typed(std::string const& str, bool ensure_ascii, int) {
     return "\"" + result + "\"";
 }
 
-inline std::string dump_typed(Array const& val, bool ensure_ascii, int indent) {
+inline std::string dump_typed(const Array& val, bool ensure_ascii, int indent) JSONC_EXCEPTION_TYPE {
     std::string result{"["};
 
     size_t      i = val.size();
@@ -178,7 +179,7 @@ inline std::string dump_typed(Array const& val, bool ensure_ascii, int indent) {
     return result;
 }
 
-inline std::string dump_typed(Object const& val, bool ensure_ascii, int indent) {
+inline std::string dump_typed(const Object& val, bool ensure_ascii, int indent) JSONC_EXCEPTION_TYPE {
     std::string result{"{"};
 
     size_t      i = val.size();
@@ -244,7 +245,7 @@ inline std::string dump_typed(Object const& val, bool ensure_ascii, int indent) 
 
 template <typename T>
     requires std::is_arithmetic_v<T>
-inline std::string dump_typed(T val, bool, int) {
+inline std::string dump_typed(T val, bool, int) JSONC_EXCEPTION_TYPE {
     return std::format("{}", val);
 }
 

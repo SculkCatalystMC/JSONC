@@ -21,11 +21,7 @@ template <typename T>
 using StringHashMap = std::unordered_map<std::string, T, StringHash, StringEqual>;
 
 template <typename T>
-class OrderedStringHashMap : public StringHashMap<T> {
-    std::map<size_t, std::string> mInsertIndex{};
-    detail::StringHashMap<size_t> mKeyIndex{};
-    size_t                        mNextInsertIndex{};
-
+class OrderedStringHashMap {
 public:
     template <bool _Const, bool _Reverse>
     class _Iterator {
@@ -60,7 +56,7 @@ public:
             return tmp;
         }
 
-        [[nodiscard]] bool operator==(_Iterator const& rhs) const noexcept { return mIterator == rhs.mIterator; }
+        [[nodiscard]] bool operator==(const _Iterator& rhs) const noexcept { return mIterator == rhs.mIterator; }
 
     private:
         friend class OrderedStringHashMap;
@@ -73,7 +69,7 @@ public:
         StorageType& mStorage;
         IteratorType mIterator;
 
-        explicit _Iterator(StorageType& storage, const IteratorType& iterator) : mStorage(storage), mIterator(iterator) {}
+        explicit _Iterator(StorageType& storage, const IteratorType& iterator) noexcept : mStorage(storage), mIterator(iterator) {}
     };
 
 public:
@@ -83,43 +79,67 @@ public:
     using const_reverse_iterator = _Iterator<true, true>;
 
 public:
-    iterator begin() noexcept { return iterator(*this, mInsertIndex.begin()); }
-    iterator end() noexcept { return iterator(*this, mInsertIndex.end()); }
+    size_t size() const noexcept { return mStorage.size(); }
 
-    const_iterator begin() const noexcept { return const_iterator(*this, mInsertIndex.begin()); }
-    const_iterator end() const noexcept { return const_iterator(*this, mInsertIndex.end()); }
+    bool contains(std::string_view _Keyval) const noexcept { return mStorage.contains(_Keyval); }
 
-    const_iterator cbegin() const noexcept { return const_iterator(*this, mInsertIndex.begin()); }
-    const_iterator cend() const noexcept { return const_iterator(*this, mInsertIndex.end()); }
-
-    reverse_iterator rbegin() noexcept { return reverse_iterator(*this, mInsertIndex.rbegin()); }
-    reverse_iterator rend() noexcept { return reverse_iterator(*this, mInsertIndex.rend()); }
-
-    const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator(*this, mInsertIndex.rbegin()); }
-    const_reverse_iterator rend() const noexcept { return const_reverse_iterator(*this, mInsertIndex.rend()); }
-
-    const_reverse_iterator crbegin() const noexcept { return const_reverse_iterator(*this, mInsertIndex.crbegin()); }
-    const_reverse_iterator crend() const noexcept { return const_reverse_iterator(*this, mInsertIndex.crend()); }
-
-    const_iterator find(std::string_view _Keyval) const {
-        auto _Result = mKeyIndex.find(_Keyval);
-        if (_Result != mKeyIndex.end()) { return const_iterator(*this, mInsertIndex.find(_Result->second)); }
-        return const_iterator(*this, mInsertIndex.end());
+    bool erase(std::string_view _Keyval) noexcept {
+        auto _Index = mKeyIndex.find(_Keyval);
+        if (_Index != mKeyIndex.end()) {
+            mKeyIndex.erase(_Keyval);
+            mInsertIndex.erase(_Index->second);
+            return mStorage.erase(_Keyval);
+        }
+        return false;
     }
-    iterator find(std::string_view _Keyval) {
+
+    iterator begin() noexcept { return iterator(mStorage, mInsertIndex.begin()); }
+    iterator end() noexcept { return iterator(mStorage, mInsertIndex.end()); }
+
+    const_iterator begin() const noexcept { return const_iterator(mStorage, mInsertIndex.begin()); }
+    const_iterator end() const noexcept { return const_iterator(mStorage, mInsertIndex.end()); }
+
+    const_iterator cbegin() const noexcept { return const_iterator(mStorage, mInsertIndex.begin()); }
+    const_iterator cend() const noexcept { return const_iterator(mStorage, mInsertIndex.end()); }
+
+    reverse_iterator rbegin() noexcept { return reverse_iterator(mStorage, mInsertIndex.rbegin()); }
+    reverse_iterator rend() noexcept { return reverse_iterator(mStorage, mInsertIndex.rend()); }
+
+    const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator(mStorage, mInsertIndex.rbegin()); }
+    const_reverse_iterator rend() const noexcept { return const_reverse_iterator(mStorage, mInsertIndex.rend()); }
+
+    const_reverse_iterator crbegin() const noexcept { return const_reverse_iterator(mStorage, mInsertIndex.crbegin()); }
+    const_reverse_iterator crend() const noexcept { return const_reverse_iterator(mStorage, mInsertIndex.crend()); }
+
+    const_iterator find(std::string_view _Keyval) const JSONC_EXCEPTION_TYPE {
         auto _Result = mKeyIndex.find(_Keyval);
-        if (_Result != mKeyIndex.end()) { return iterator(*this, mInsertIndex.find(_Result->second)); }
-        return iterator(*this, mInsertIndex.end());
+        if (_Result != mKeyIndex.end()) { return const_iterator(mStorage, mInsertIndex.find(_Result->second)); }
+        return const_iterator(mStorage, mInsertIndex.end());
+    }
+    iterator find(std::string_view _Keyval) JSONC_EXCEPTION_TYPE {
+        auto _Result = mKeyIndex.find(_Keyval);
+        if (_Result != mKeyIndex.end()) { return iterator(mStorage, mInsertIndex.find(_Result->second)); }
+        return iterator(mStorage, mInsertIndex.end());
     }
 
     template <class... _Mappedty>
-    std::pair<iterator, bool> try_emplace(std::string_view _Keyval, _Mappedty&&... _Mapval) {
-        const auto _Result = StringHashMap<T>::try_emplace(std::string(_Keyval), std::forward<_Mappedty>(_Mapval)...);
-        auto       _Iter   = mInsertIndex.try_emplace(mNextInsertIndex, _Keyval);
-        mKeyIndex.try_emplace(std::string(_Keyval), mNextInsertIndex);
-        mNextInsertIndex++;
-        return {iterator(*this, _Iter.first), _Result.second};
+    std::pair<iterator, bool> try_emplace(std::string_view _Keyval, _Mappedty&&... _Mapval) JSONC_EXCEPTION_TYPE {
+        const auto _Result = mStorage.try_emplace(std::string(_Keyval), std::forward<_Mappedty>(_Mapval)...);
+        if (_Result.second) {
+            auto _Iter = mInsertIndex.try_emplace(mNextInsertIndex, _Keyval);
+            mKeyIndex.try_emplace(std::string(_Keyval), mNextInsertIndex);
+            mNextInsertIndex++;
+            return {iterator(mStorage, _Iter.first), _Result.second};
+        }
+        auto _Index = mKeyIndex.find(_Keyval);
+        return {iterator(mStorage, mInsertIndex.find(_Index->second)), _Result.second};
     }
+
+private:
+    StringHashMap<T>              mStorage{};
+    std::map<size_t, std::string> mInsertIndex{};
+    detail::StringHashMap<size_t> mKeyIndex{};
+    size_t                        mNextInsertIndex{};
 };
 
 } // namespace jsonc::detail

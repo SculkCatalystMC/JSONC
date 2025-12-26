@@ -5,13 +5,13 @@
 namespace jsonc {
 
 namespace detail {
-JSONC_RESULT(JsoncType) parse_jsonc_type(std::string_view& str, std::vector<std::string>&& comments_before, bool allow_trailing_comma);
-JSONC_RESULT(JsoncType) parse_jsonc_type(std::string_view& str, bool allow_trailing_comma);
+JSONC_RESULT(JsoncType) parse_jsonc_type(std::string_view& str, std::vector<std::string>&& comments_before, bool allow_trailing_comma)JSONC_EXCEPTION_TYPE;
+JSONC_RESULT(JsoncType) parse_jsonc_type(std::string_view& str, bool allow_trailing_comma) JSONC_EXCEPTION_TYPE;
 } // namespace detail
 
 namespace {
 
-inline JSONC_RESULT(std::string_view) extract_comment(std::string_view& s) {
+inline JSONC_RESULT(std::string_view) extract_comment(std::string_view& s) JSONC_EXCEPTION_TYPE {
     size_t           i = 0;
     std::string_view result;
     switch (s[i++]) {
@@ -85,7 +85,7 @@ inline void skip_spaces_nolinefeed(std::string_view& s) noexcept {
     s.remove_prefix(std::min(i - 1, s.size()));
 }
 
-inline std::vector<std::string> parse_comments(std::string_view comment) {
+inline std::vector<std::string> parse_comments(std::string_view comment) JSONC_EXCEPTION_TYPE {
     std::vector<std::string> result{};
     size_t                   pos = 0;
     while ((pos = comment.find('\n')) != std::string::npos) {
@@ -103,7 +103,7 @@ inline std::vector<std::string> parse_comments(std::string_view comment) {
     return result;
 }
 
-inline bool extract_comments(std::string_view& s, std::vector<std::string>& comments) {
+inline bool extract_comments(std::string_view& s, std::vector<std::string>& comments) JSONC_EXCEPTION_TYPE {
     skip_spaces(s);
     while (s.starts_with('/')) {
         s.remove_prefix(1);
@@ -119,7 +119,7 @@ inline bool extract_comments(std::string_view& s, std::vector<std::string>& comm
     return true;
 }
 
-inline bool extarct_comma_back_comments(std::string_view& s, std::vector<std::string>& comments) {
+inline bool extarct_comma_back_comments(std::string_view& s, std::vector<std::string>& comments) JSONC_EXCEPTION_TYPE {
     skip_spaces_nolinefeed(s);
     if (s.starts_with('/')) {
         s.remove_prefix(1);
@@ -134,14 +134,14 @@ inline bool extarct_comma_back_comments(std::string_view& s, std::vector<std::st
     return true;
 }
 
-inline constexpr char get_current_char(std::string_view& s) {
+inline constexpr char get_current_char(std::string_view& s) JSONC_EXCEPTION_TYPE {
     if (s.empty()) { return '\0'; }
     char c = s.front();
     s.remove_prefix(1);
     return c;
 }
 
-inline JSONC_RESULT(JsoncType) parse_null(std::string_view& str, std::vector<std::string>&& comments_before) {
+inline JSONC_RESULT(JsoncType) parse_null(std::string_view& str, std::vector<std::string>&& comments_before) JSONC_EXCEPTION_TYPE {
     if (str.starts_with("null")) {
         str.remove_prefix(4);
         JsoncType                result{nullptr};
@@ -155,7 +155,7 @@ inline JSONC_RESULT(JsoncType) parse_null(std::string_view& str, std::vector<std
 }
 
 template <bool Value>
-inline JSONC_RESULT(JsoncType) parse_boolean(std::string_view& str, std::vector<std::string>&& comments_before) {
+inline JSONC_RESULT(JsoncType) parse_boolean(std::string_view& str, std::vector<std::string>&& comments_before) JSONC_EXCEPTION_TYPE {
     if constexpr (Value == true) {
         if (str.starts_with("true")) {
             str.remove_prefix(4);
@@ -180,7 +180,7 @@ inline JSONC_RESULT(JsoncType) parse_boolean(std::string_view& str, std::vector<
     _JSONC_PARSE_ERROR("invalid value");
 }
 
-inline JSONC_RESULT(JsoncType) parse_number(std::string_view& str, std::vector<std::string>&& comments_before) {
+inline JSONC_RESULT(JsoncType) parse_number(std::string_view& str, std::vector<std::string>&& comments_before) JSONC_EXCEPTION_TYPE {
     size_t length = 0;
     bool   is_int = true;
     if (str.empty()) { _JSONC_PARSE_ERROR("illegal escape"); }
@@ -230,7 +230,7 @@ inline JSONC_RESULT(JsoncType) parse_number(std::string_view& str, std::vector<s
     return result;
 }
 
-inline JSONC_RESULT(int) get_codepoint(std::string_view& s) {
+inline JSONC_RESULT(int) get_codepoint(std::string_view& s) JSONC_EXCEPTION_TYPE {
     int codepoint = 0;
     for (const auto factor : {12u, 8u, 4u, 0u}) {
         auto current = get_current_char(s);
@@ -247,7 +247,7 @@ inline JSONC_RESULT(int) get_codepoint(std::string_view& s) {
     return codepoint;
 }
 
-inline JSONC_RESULT(JsoncType) parse_string(std::string_view& str, std::vector<std::string>&& comments_before) {
+inline JSONC_RESULT(JsoncType) parse_string(std::string_view& str, std::vector<std::string>&& comments_before) JSONC_EXCEPTION_TYPE {
     str.remove_prefix(1);
     std::string              res{};
     std::vector<std::string> comments_after{};
@@ -373,7 +373,9 @@ inline JSONC_RESULT(JsoncType) parse_string(std::string_view& str, std::vector<s
     _JSONC_PARSE_ERROR("");
 }
 
-inline JSONC_RESULT(JsoncType) parse_list(std::string_view& str, std::vector<std::string>&& comments_before, bool allow_trailing_comma) {
+inline JSONC_RESULT(
+    JsoncType
+) parse_list(std::string_view& str, std::vector<std::string>&& comments_before, bool allow_trailing_comma) JSONC_EXCEPTION_TYPE {
     str.remove_prefix(1);
     Array res{};
     bool  requre_value = false;
@@ -432,7 +434,9 @@ inline JSONC_RESULT(JsoncType) parse_list(std::string_view& str, std::vector<std
     _JSONC_PARSE_ERROR("");
 }
 
-inline JSONC_RESULT(JsoncType) parse_object(std::string_view& str, std::vector<std::string>&& comments_before, bool allow_trailing_comma) {
+inline JSONC_RESULT(
+    JsoncType
+) parse_object(std::string_view& str, std::vector<std::string>&& comments_before, bool allow_trailing_comma) JSONC_EXCEPTION_TYPE {
     str.remove_prefix(1);
     Object res{};
     bool   requre_value = false;
@@ -512,7 +516,9 @@ inline JSONC_RESULT(JsoncType) parse_object(std::string_view& str, std::vector<s
 
 namespace detail {
 
-inline JSONC_RESULT(JsoncType) parse_jsonc_type(std::string_view& str, std::vector<std::string>&& comments_before, bool allow_trailing_comma) {
+inline JSONC_RESULT(
+    JsoncType
+) parse_jsonc_type(std::string_view& str, std::vector<std::string>&& comments_before, bool allow_trailing_comma) JSONC_EXCEPTION_TYPE {
     if (str.empty()) { _JSONC_PARSE_ERROR("Could't parse an empty string"); }
     switch (str.front()) {
     case 't':
@@ -550,7 +556,7 @@ inline JSONC_RESULT(JsoncType) parse_jsonc_type(std::string_view& str, std::vect
     _JSONC_PARSE_ERROR("illegal escape");
 }
 
-inline JSONC_RESULT(JsoncType) parse_jsonc_type(std::string_view& str, bool allow_trailing_comma) {
+inline JSONC_RESULT(JsoncType) parse_jsonc_type(std::string_view& str, bool allow_trailing_comma) JSONC_EXCEPTION_TYPE {
     std::vector<std::string> comments_before{};
     if (!extract_comments(str, comments_before)) { _JSONC_PARSE_ERROR("invalid comments format"); }
     return parse_jsonc_type(str, std::move(comments_before), allow_trailing_comma);

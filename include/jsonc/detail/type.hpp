@@ -20,17 +20,6 @@ enum class ValueType : uint8_t {
 class JsoncType;
 
 class Object {
-    friend class JsoncType;
-
-public:
-    struct Comments {
-        std::vector<std::string> mBeforeComments{};
-        std::vector<std::string> mAfterComments{};
-    };
-
-    detail::OrderedStringHashMap<JsoncType> mStorage{};
-    detail::StringHashMap<Comments>         mKeyComments{};
-
 public:
     using iterator               = detail::OrderedStringHashMap<JsoncType>::iterator;
     using const_iterator         = detail::OrderedStringHashMap<JsoncType>::const_iterator;
@@ -38,14 +27,16 @@ public:
     using const_reverse_iterator = detail::OrderedStringHashMap<JsoncType>::const_reverse_iterator;
 
 public:
-    [[nodiscard]] JsoncType& operator[](std::string_view index);
-    [[nodiscard]] JSONC_RESULT(const JsoncType&) operator[](std::string_view index) const;
+    [[nodiscard]] JsoncType& operator[](std::string_view index) JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] JSONC_RESULT(const JsoncType&) operator[](std::string_view index) const JSONC_EXCEPTION_TYPE;
 
-    [[nodiscard]] JSONC_RESULT(JsoncType&) at(std::string_view index);
-    [[nodiscard]] JsoncType& at(std::string_view index, JsoncType const& default_value);
-    [[nodiscard]] JSONC_RESULT(const JsoncType&) at(std::string_view index) const;
+    [[nodiscard]] JSONC_RESULT(JsoncType&) at(std::string_view index) JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] JsoncType& at(std::string_view index, const JsoncType& default_value) JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] JSONC_RESULT(const JsoncType&) at(std::string_view index) const JSONC_EXCEPTION_TYPE;
 
     [[nodiscard]] bool contains(std::string_view index) const noexcept;
+
+    bool earse(std::string_view index) noexcept;
 
     [[nodiscard]] size_t size() const noexcept;
 
@@ -70,40 +61,44 @@ public:
     [[nodiscard]] bool has_key_before_comments(std::string_view index) const noexcept;
     [[nodiscard]] bool has_key_after_comments(std::string_view index) const noexcept;
 
-    [[nodiscard]] std::vector<std::string>& key_before_comments(std::string_view index);
-    [[nodiscard]] JSONC_RESULT(const std::vector<std::string>&) key_before_comments(std::string_view index) const;
+    [[nodiscard]] std::vector<std::string>& key_before_comments(std::string_view index) JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] JSONC_RESULT(const std::vector<std::string>&) key_before_comments(std::string_view index) const JSONC_EXCEPTION_TYPE;
 
-    [[nodiscard]] std::vector<std::string>& key_after_comments(std::string_view index);
-    [[nodiscard]] JSONC_RESULT(const std::vector<std::string>&) key_after_comments(std::string_view index) const;
+    [[nodiscard]] std::vector<std::string>& key_after_comments(std::string_view index) JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] JSONC_RESULT(const std::vector<std::string>&) key_after_comments(std::string_view index) const JSONC_EXCEPTION_TYPE;
 
-    [[nodiscard]] JSONC_RESULT(std::vector<std::string>) get_key_before_comments(std::string_view index) const;
-    [[nodiscard]] JSONC_RESULT(std::vector<std::string>) get_key_after_comments(std::string_view index) const;
+    [[nodiscard]] JSONC_RESULT(std::vector<std::string>) get_key_before_comments(std::string_view index) const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] JSONC_RESULT(std::vector<std::string>) get_key_after_comments(std::string_view index) const JSONC_EXCEPTION_TYPE;
 
-    [[nodiscard]] JSONC_RESULT(std::string) get_key_before_comments(std::string_view index, size_t comment_index) const;
-    [[nodiscard]] JSONC_RESULT(std::string) get_key_after_comments(std::string_view index, size_t comment_index) const;
+    [[nodiscard]] JSONC_RESULT(std::string) get_key_before_comments(std::string_view index, size_t comment_index) const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] JSONC_RESULT(std::string) get_key_after_comments(std::string_view index, size_t comment_index) const JSONC_EXCEPTION_TYPE;
 
-    bool set_key_before_comments(std::string_view index, std::vector<std::string> const& comments);
-    bool set_key_after_comments(std::string_view index, std::vector<std::string> const& comments);
+    bool set_key_before_comments(std::string_view index, const std::vector<std::string>& comments) JSONC_EXCEPTION_TYPE;
+    bool set_key_after_comments(std::string_view index, const std::vector<std::string>& comments) JSONC_EXCEPTION_TYPE;
 
-    bool add_key_before_comment(std::string_view index, std::string_view comment);
-    bool add_key_after_comment(std::string_view index, std::string_view comment);
+    bool add_key_before_comment(std::string_view index, std::string_view comment) JSONC_EXCEPTION_TYPE;
+    bool add_key_after_comment(std::string_view index, std::string_view comment) JSONC_EXCEPTION_TYPE;
 
-    void clear_key_before_comments(std::string_view index);
-    void clear_key_after_comments(std::string_view index);
+    void clear_key_before_comments(std::string_view index) JSONC_EXCEPTION_TYPE;
+    void clear_key_after_comments(std::string_view index) JSONC_EXCEPTION_TYPE;
 
-    bool remove_key_before_comment(std::string_view index, size_t comment_index);
-    bool remove_key_after_comment(std::string_view index, size_t comment_index);
+    bool remove_key_before_comment(std::string_view index, size_t comment_index) JSONC_EXCEPTION_TYPE;
+    bool remove_key_after_comment(std::string_view index, size_t comment_index) JSONC_EXCEPTION_TYPE;
 
     [[nodiscard]] size_t key_before_comments_size(std::string_view index) const noexcept;
     [[nodiscard]] size_t key_after_comments_size(std::string_view index) const noexcept;
+
+private:
+    struct Comments {
+        std::vector<std::string> mBeforeComments{};
+        std::vector<std::string> mAfterComments{};
+    };
+    friend class JsoncType;
+    detail::OrderedStringHashMap<JsoncType> mStorage{};
+    detail::StringHashMap<Comments>         mKeyComments{};
 };
 
 class Array {
-    friend class JsoncType;
-
-private:
-    std::vector<JsoncType> mStorage{};
-
 public:
     using iterator               = std::vector<JsoncType>::iterator;
     using const_iterator         = std::vector<JsoncType>::const_iterator;
@@ -114,13 +109,13 @@ public:
     [[nodiscard]] constexpr JsoncType& operator[](size_t index) noexcept;
     [[nodiscard]] constexpr JSONC_RESULT(const JsoncType&) operator[](size_t index) const noexcept;
 
-    [[nodiscard]] constexpr JSONC_RESULT(JsoncType&) at(size_t index);
-    [[nodiscard]] constexpr JSONC_RESULT(const JsoncType&) at(size_t index) const;
+    [[nodiscard]] constexpr JSONC_RESULT(JsoncType&) at(size_t index) JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] constexpr JSONC_RESULT(const JsoncType&) at(size_t index) const JSONC_EXCEPTION_TYPE;
 
     [[nodiscard]] constexpr size_t size() const noexcept;
 
-    void push_back(JsoncType const& val);
-    void push_back(JsoncType&& val);
+    void push_back(const JsoncType& val) JSONC_EXCEPTION_TYPE;
+    void push_back(JsoncType&& val) JSONC_EXCEPTION_TYPE;
 
     [[nodiscard]] iterator begin() noexcept;
     [[nodiscard]] iterator end() noexcept;
@@ -139,6 +134,10 @@ public:
 
     [[nodiscard]] const_reverse_iterator crbegin() const noexcept;
     [[nodiscard]] const_reverse_iterator crend() const noexcept;
+
+private:
+    friend class JsoncType;
+    std::vector<JsoncType> mStorage{};
 };
 
 namespace detail {
@@ -152,30 +151,25 @@ inline constexpr bool jsonc_type_convertible_v = [] {
 } // namespace detail
 
 class JsoncType {
-private:
-    detail::TypeVariant      mStorage{};
-    std::vector<std::string> mBeforeComments{};
-    std::vector<std::string> mAfterComments{};
-
 public:
     JsoncType() = default;
-    constexpr JsoncType(std::nullptr_t) : mStorage(std::monostate()) {};
-    constexpr JsoncType(bool val) : mStorage(val) {};
+    constexpr JsoncType(std::nullptr_t) JSONC_EXCEPTION_TYPE : mStorage(std::monostate()) {};
+    constexpr JsoncType(bool val) JSONC_EXCEPTION_TYPE : mStorage(val) {};
 
     template <std::signed_integral T>
-    constexpr JsoncType(T val) : mStorage(static_cast<int64_t>(val)){};
+    constexpr JsoncType(T val) JSONC_EXCEPTION_TYPE : mStorage(static_cast<int64_t>(val)){};
     template <std::unsigned_integral T>
         requires(!std::same_as<T, bool>)
-    constexpr JsoncType(T val) : mStorage(static_cast<uint64_t>(val)){};
-    constexpr JsoncType(std::string val) : mStorage(std::move(val)) {};
+    constexpr JsoncType(T val) JSONC_EXCEPTION_TYPE : mStorage(static_cast<uint64_t>(val)){};
+    constexpr JsoncType(std::string val) JSONC_EXCEPTION_TYPE : mStorage(std::move(val)) {};
     template <std::floating_point T>
-    constexpr JsoncType(T val) : mStorage(static_cast<double>(val)){};
+    constexpr JsoncType(T val) JSONC_EXCEPTION_TYPE : mStorage(static_cast<double>(val)){};
 
     template <size_t N>
-    [[nodiscard]] JsoncType(char const (&val)[N]) : mStorage(std::string{val, N - 1}) {}
+    [[nodiscard]] JsoncType(char const (&val)[N]) JSONC_EXCEPTION_TYPE : mStorage(std::string{val, N - 1}) {}
 
-    constexpr JsoncType(Object const& val) : mStorage(val) {};
-    constexpr JsoncType(Array const& val) : mStorage(val) {};
+    constexpr JsoncType(const Object& val) JSONC_EXCEPTION_TYPE : mStorage(val) {};
+    constexpr JsoncType(const Array& val) JSONC_EXCEPTION_TYPE : mStorage(val) {};
 
     [[nodiscard]] constexpr ValueType        type() const noexcept;
     [[nodiscard]] constexpr std::string_view type_name() const noexcept;
@@ -195,24 +189,24 @@ public:
     [[nodiscard]] constexpr bool is_primitive() const noexcept;
     [[nodiscard]] constexpr bool is_structured() const noexcept;
 
-    [[nodiscard]] std::string dump(int indent = 4, bool ensure_ascii = false, bool global_comments = true) const;
+    [[nodiscard]] std::string dump(int indent = 4, bool ensure_ascii = false, bool global_comments = true) const JSONC_EXCEPTION_TYPE;
 
     template <typename T>
         requires detail::jsonc_type_convertible_v<T>
-    [[nodiscard]] JSONC_RESULT(T) get() const;
+    [[nodiscard]] JSONC_RESULT(T) get() const JSONC_EXCEPTION_TYPE;
 
-    [[nodiscard]] JSONC_RESULT(JsoncType&) operator[](std::string_view index);
-    [[nodiscard]] JSONC_RESULT(const JsoncType&) operator[](std::string_view index) const;
+    [[nodiscard]] JSONC_RESULT(JsoncType&) operator[](std::string_view index) JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] JSONC_RESULT(const JsoncType&) operator[](std::string_view index) const JSONC_EXCEPTION_TYPE;
 
-    [[nodiscard]] JSONC_RESULT(JsoncType&) operator[](size_t index);
-    [[nodiscard]] JSONC_RESULT(const JsoncType&) operator[](size_t index) const;
+    [[nodiscard]] JSONC_RESULT(JsoncType&) operator[](size_t index) JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] JSONC_RESULT(const JsoncType&) operator[](size_t index) const JSONC_EXCEPTION_TYPE;
 
-    [[nodiscard]] JSONC_RESULT(JsoncType&) at(std::string_view index);
-    [[nodiscard]] JSONC_RESULT(JsoncType&) at(std::string_view index, JsoncType const& default_value);
-    [[nodiscard]] JSONC_RESULT(const JsoncType&) at(std::string_view index) const;
+    [[nodiscard]] JSONC_RESULT(JsoncType&) at(std::string_view index) JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] JSONC_RESULT(JsoncType&) at(std::string_view index, const JsoncType& default_value) JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] JSONC_RESULT(const JsoncType&) at(std::string_view index) const JSONC_EXCEPTION_TYPE;
 
-    [[nodiscard]] JSONC_RESULT(JsoncType&) at(size_t index);
-    [[nodiscard]] JSONC_RESULT(const JsoncType&) at(size_t index) const;
+    [[nodiscard]] JSONC_RESULT(JsoncType&) at(size_t index) JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] JSONC_RESULT(const JsoncType&) at(size_t index) const JSONC_EXCEPTION_TYPE;
 
     [[nodiscard]] constexpr bool has_before_comments() const noexcept;
     [[nodiscard]] constexpr bool has_after_comments() const noexcept;
@@ -223,23 +217,28 @@ public:
     [[nodiscard]] std::vector<std::string>&       after_comments() noexcept;
     [[nodiscard]] const std::vector<std::string>& after_comments() const noexcept;
 
-    [[nodiscard]] std::vector<std::string> get_before_comments() const;
-    [[nodiscard]] std::vector<std::string> get_after_comments() const;
+    [[nodiscard]] std::vector<std::string> get_before_comments() const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] std::vector<std::string> get_after_comments() const JSONC_EXCEPTION_TYPE;
 
-    void set_before_comments(std::vector<std::string> const& comments);
-    void set_after_comments(std::vector<std::string> const& comments);
+    void set_before_comments(const std::vector<std::string>& comments) JSONC_EXCEPTION_TYPE;
+    void set_after_comments(const std::vector<std::string>& comments) JSONC_EXCEPTION_TYPE;
 
-    void add_before_comment(std::string_view comment);
-    void add_after_comment(std::string_view comment);
+    void add_before_comment(std::string_view comment) JSONC_EXCEPTION_TYPE;
+    void add_after_comment(std::string_view comment) JSONC_EXCEPTION_TYPE;
 
-    void clear_before_comments();
-    void clear_after_comments();
+    void clear_before_comments() JSONC_EXCEPTION_TYPE;
+    void clear_after_comments() JSONC_EXCEPTION_TYPE;
 
-    bool remove_before_comment(size_t comment_index);
-    bool remove_after_comment(size_t comment_index);
+    bool remove_before_comment(size_t comment_index) JSONC_EXCEPTION_TYPE;
+    bool remove_after_comment(size_t comment_index) JSONC_EXCEPTION_TYPE;
 
     [[nodiscard]] constexpr size_t before_comments_size() const noexcept;
     [[nodiscard]] constexpr size_t after_comments_size() const noexcept;
+
+private:
+    detail::TypeVariant      mStorage{};
+    std::vector<std::string> mBeforeComments{};
+    std::vector<std::string> mAfterComments{};
 };
 
 } // namespace jsonc
