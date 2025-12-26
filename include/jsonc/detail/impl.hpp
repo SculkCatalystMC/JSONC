@@ -377,7 +377,7 @@ std::string JsoncType::dump(int indent, bool ensure_ascii, bool ignore_comments,
 }
 
 template <detail::is_jsonc_type_convertible T>
-[[nodiscard]] JSONC_RESULT(T&) JsoncType::as() JSONC_EXCEPTION_TYPE {
+JSONC_RESULT(T&) JsoncType::as() JSONC_EXCEPTION_TYPE {
     return std::visit(
         [](auto& val) -> T& {
             using Type = std::decay_t<decltype(val)>;
@@ -392,7 +392,7 @@ template <detail::is_jsonc_type_convertible T>
 }
 
 template <detail::is_jsonc_type_convertible T>
-[[nodiscard]] JSONC_RESULT(const T&) JsoncType::as() const JSONC_EXCEPTION_TYPE {
+JSONC_RESULT(const T&) JsoncType::as() const JSONC_EXCEPTION_TYPE {
     return std::visit(
         [](const auto& val) -> const T& {
             using Type = std::decay_t<decltype(val)>;
@@ -491,6 +491,24 @@ JSONC_RESULT(const JsoncType&) JsoncType::at(size_t index) const JSONC_EXCEPTION
     if (hold(ValueType::Array)) { return std::get<Array>(mStorage).at(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
+
+JsoncType::iterator JsoncType::begin() noexcept { return iterator::make_begin<false>(*this); }
+JsoncType::iterator JsoncType::end() noexcept { return iterator::make_end<false>(*this); }
+
+JsoncType::const_iterator JsoncType::begin() const noexcept { return const_iterator::make_begin<false>(*this); }
+JsoncType::const_iterator JsoncType::end() const noexcept { return const_iterator::make_end<false>(*this); }
+
+JsoncType::const_iterator JsoncType::cbegin() const noexcept { return const_iterator::make_begin<false>(*this); }
+JsoncType::const_iterator JsoncType::cend() const noexcept { return const_iterator::make_end<false>(*this); }
+
+JsoncType::reverse_iterator JsoncType::rbegin() noexcept { return reverse_iterator::make_begin<true>(*this); }
+JsoncType::reverse_iterator JsoncType::rend() noexcept { return reverse_iterator::make_end<true>(*this); }
+
+JsoncType::const_reverse_iterator JsoncType::rbegin() const noexcept { return const_reverse_iterator::make_begin<true>(*this); }
+JsoncType::const_reverse_iterator JsoncType::rend() const noexcept { return const_reverse_iterator::make_end<true>(*this); }
+
+JsoncType::const_reverse_iterator JsoncType::crbegin() const noexcept { return const_reverse_iterator::make_begin<true>(*this); }
+JsoncType::const_reverse_iterator JsoncType::crend() const noexcept { return const_reverse_iterator::make_end<true>(*this); }
 
 constexpr bool JsoncType::has_before_comments() const noexcept { return mBeforeComments.size() != 0; }
 constexpr bool JsoncType::has_after_comments() const noexcept { return mAfterComments.size() != 0; }

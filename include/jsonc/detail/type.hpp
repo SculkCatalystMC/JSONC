@@ -175,6 +175,123 @@ concept is_object_like = is_range_loopable<T> && requires {
 
 class JsoncType {
 public:
+    template <bool _Const, bool _Reserve>
+    class Iterator {
+    public:
+        using reference = std::conditional_t<_Const, const JsoncType, JsoncType>&;
+        using pointer   = std::add_pointer_t<reference>;
+
+    private:
+        friend class JsoncType;
+        using IteratorType = std::conditional_t<
+            _Const,
+            std::variant<
+                const JsoncType*,
+                std::conditional_t<_Reserve, Object::const_reverse_iterator, Object::const_iterator>,
+                std::conditional_t<_Reserve, Array::const_reverse_iterator, Array::const_iterator>>,
+            std::variant<
+                JsoncType*,
+                std::conditional_t<_Reserve, Object::reverse_iterator, Object::iterator>,
+                std::conditional_t<_Reserve, Array::reverse_iterator, Array::iterator>>>;
+        IteratorType mIterator;
+
+        template <bool Reserve>
+        [[nodiscard]] static Iterator make_begin(auto& var) noexcept {
+            Iterator result{};
+            switch (var.type()) {
+            case ValueType::Object:
+                if constexpr (Reserve) {
+                    result.mIterator.template emplace<1>(std::get<Object>(var.mStorage).rbegin());
+                } else {
+                    result.mIterator.template emplace<1>(std::get<Object>(var.mStorage).begin());
+                }
+                break;
+            case ValueType::Array:
+                if constexpr (Reserve) {
+                    result.mIterator.template emplace<2>(std::get<Array>(var.mStorage).rbegin());
+                } else {
+                    result.mIterator.template emplace<2>(std::get<Array>(var.mStorage).begin());
+                }
+                break;
+            case ValueType::Null:
+                result.mIterator.template emplace<0>(std::addressof(var) + 1);
+                break;
+            default:
+                result.mIterator.template emplace<0>(std::addressof(var));
+            }
+            return result;
+        }
+
+        template <bool Reserve>
+        [[nodiscard]] static Iterator make_end(auto& var) noexcept {
+            Iterator result{};
+            switch (var.type()) {
+            case ValueType::Object:
+                if constexpr (Reserve) {
+                    result.mIterator.template emplace<1>(std::get<Object>(var.mStorage).rend());
+                } else {
+                    result.mIterator.template emplace<1>(std::get<Object>(var.mStorage).end());
+                }
+                break;
+            case ValueType::Array:
+                if constexpr (Reserve) {
+                    result.mIterator.template emplace<2>(std::get<Array>(var.mStorage).rend());
+                } else {
+                    result.mIterator.template emplace<2>(std::get<Array>(var.mStorage).end());
+                }
+                break;
+            default:
+                result.mIterator.template emplace<0>(std::addressof(var) + 1);
+            }
+            return result;
+        }
+
+    public:
+        [[nodiscard]] reference operator*() const noexcept {
+            switch (mIterator.index()) {
+            case 1:
+                return std::get<1>(mIterator)->second;
+            case 2:
+                return *std::get<2>(mIterator);
+            default:
+                return *std::get<0>(mIterator);
+            }
+        }
+
+        [[nodiscard]] pointer operator->() const noexcept { return std::addressof(**this); }
+
+        Iterator& operator++() noexcept {
+            std::visit([](auto& val) { ++val; }, mIterator);
+            return *this;
+        }
+
+        Iterator operator++(int) noexcept {
+            Iterator tmp = *this;
+            ++*this;
+            return tmp;
+        }
+
+        Iterator& operator--() noexcept {
+            std::visit([](auto& val) { --val; }, mIterator);
+            return *this;
+        }
+
+        Iterator operator--(int) noexcept {
+            Iterator tmp = *this;
+            --*this;
+            return tmp;
+        }
+
+        [[nodiscard]] bool operator==(Iterator const& r) const noexcept { return this->mIterator == r.mIterator; }
+    };
+
+public:
+    using iterator               = Iterator<false, false>;
+    using const_iterator         = Iterator<true, false>;
+    using reverse_iterator       = Iterator<false, true>;
+    using const_reverse_iterator = Iterator<true, true>;
+
+public:
     JsoncType() = default;
     constexpr JsoncType(std::nullptr_t) JSONC_EXCEPTION_TYPE : mStorage(std::monostate()) {};
 
@@ -268,6 +385,24 @@ public:
 
     [[nodiscard]] JSONC_RESULT(bool) erase(std::string_view index) JSONC_EXCEPTION_TYPE;
 
+    [[nodiscard]] iterator begin() noexcept;
+    [[nodiscard]] iterator end() noexcept;
+
+    [[nodiscard]] const_iterator begin() const noexcept;
+    [[nodiscard]] const_iterator end() const noexcept;
+
+    [[nodiscard]] const_iterator cbegin() const noexcept;
+    [[nodiscard]] const_iterator cend() const noexcept;
+
+    [[nodiscard]] reverse_iterator rbegin() noexcept;
+    [[nodiscard]] reverse_iterator rend() noexcept;
+
+    [[nodiscard]] const_reverse_iterator rbegin() const noexcept;
+    [[nodiscard]] const_reverse_iterator rend() const noexcept;
+
+    [[nodiscard]] const_reverse_iterator crbegin() const noexcept;
+    [[nodiscard]] const_reverse_iterator crend() const noexcept;
+
     template <typename T>
         requires std::is_arithmetic_v<T>
     [[nodiscard]] operator T() const JSONC_EXCEPTION_TYPE;
@@ -316,7 +451,3 @@ private:
 };
 
 } // namespace jsonc
-
-// TODO:
-// 代理类迭代器
-// 更多封装
