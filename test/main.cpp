@@ -26,11 +26,13 @@ int main() {
             {"1", 2},
             {"3", 4},
         };
+        json["new_vec"]                = jsonc::array({1, 2, 3, 4, 5, 6, 7, 8});
         std::map<std::string, int> map = json["new_map"];
-        // auto vec = json["new"].get<std::vector<int>>();
+        auto                       vec = json["new_vec"].get<std::vector<int>>();
 #endif
         std::println("{}", json.dump());
         std::println("map {}", map);
+        std::println("vec {}", vec);
         return 0;
     } catch (const std::exception& e) { std::println("{}", e.what()); }
 }

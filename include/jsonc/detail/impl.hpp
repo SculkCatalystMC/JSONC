@@ -362,9 +362,9 @@ JsoncType::operator T() const JSONC_EXCEPTION_TYPE {
 #endif
 }
 
-std::string JsoncType::dump(int indent, bool ensure_ascii, bool global_comments) const JSONC_EXCEPTION_TYPE {
-    auto result = std::visit([&](const auto& val) { return detail::dump_typed(val, ensure_ascii, indent); }, mStorage);
-    if (global_comments) {
+std::string JsoncType::dump(int indent, bool ensure_ascii, bool ignore_comments, bool global_comments) const JSONC_EXCEPTION_TYPE {
+    auto result = std::visit([&](const auto& val) { return detail::dump_typed(val, ensure_ascii, indent, ignore_comments); }, mStorage);
+    if (!ignore_comments && global_comments) {
         auto before = detail::format_comments(mBeforeComments);
         if (!before.empty()) { result = before + result; }
         auto after = detail::format_comments(mAfterComments);
