@@ -296,12 +296,12 @@ constexpr bool JsoncType::is_primitive() const noexcept { return is_null() || is
 constexpr bool JsoncType::is_structured() const noexcept { return is_array() || is_object(); }
 
 JSONC_RESULT(bool) JsoncType::contains(std::string_view index) JSONC_EXCEPTION_TYPE {
-    if (hold(ValueType::Object)) { return std::get<Object>(mStorage).contains(index); }
+    if (auto* storage = std::get_if<Object>(&mStorage)) { return storage->contains(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 
 JSONC_RESULT(bool) JsoncType::erase(std::string_view index) JSONC_EXCEPTION_TYPE {
-    if (hold(ValueType::Object)) { return std::get<Object>(mStorage).earse(index); }
+    if (auto* storage = std::get_if<Object>(&mStorage)) { return storage->earse(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 
@@ -328,7 +328,7 @@ JsoncType::operator T() const JSONC_EXCEPTION_TYPE {
 template <typename T>
     requires std::is_convertible_v<T, std::string>
 JsoncType::operator T() const JSONC_EXCEPTION_TYPE {
-    if (hold(ValueType::String)) { return static_cast<T>(std::get<std::string>(mStorage)); }
+    if (auto* storage = std::get_if<std::string>(&mStorage)) { return *storage; }
 #ifdef JSONC_NO_EXCEPTION
     std::unreachable();
 #else
@@ -338,10 +338,7 @@ JsoncType::operator T() const JSONC_EXCEPTION_TYPE {
 
 template <detail::is_array_like T>
 JsoncType::operator T() const JSONC_EXCEPTION_TYPE {
-    if (hold(ValueType::Array)) {
-        const auto& val = std::get<Array>(mStorage);
-        return T(val.begin(), val.end());
-    }
+    if (auto* storage = std::get_if<Array>(&mStorage)) { return T(storage->begin(), storage->end()); }
 #ifdef JSONC_NO_EXCEPTION
     std::unreachable();
 #else
@@ -351,10 +348,7 @@ JsoncType::operator T() const JSONC_EXCEPTION_TYPE {
 
 template <detail::is_object_like T>
 JsoncType::operator T() const JSONC_EXCEPTION_TYPE {
-    if (hold(ValueType::Object)) {
-        const Object& val = std::get<Object>(mStorage);
-        return T(val.begin(), val.end());
-    }
+    if (auto* storage = std::get_if<Object>(&mStorage)) { return T(storage->begin(), storage->end()); }
 #ifdef JSONC_NO_EXCEPTION
     std::unreachable();
 #else
@@ -425,70 +419,63 @@ JSONC_RESULT(T) JsoncType::get() const JSONC_EXCEPTION_TYPE {
 template <typename T>
     requires std::is_convertible_v<T, std::string>
 JSONC_RESULT(T) JsoncType::get() const JSONC_EXCEPTION_TYPE {
-    if (hold(ValueType::String)) { return static_cast<T>(std::get<std::string>(mStorage)); }
+    if (auto* storage = std::get_if<std::string>(&mStorage)) { return *storage; }
     _JSONC_TYPE_ERROR("bad type cast");
 }
 
 template <detail::is_array_like T>
 JSONC_RESULT(T) JsoncType::get() const JSONC_EXCEPTION_TYPE {
-    if (hold(ValueType::Array)) {
-        const auto& val = std::get<Array>(mStorage);
-        return T(val.begin(), val.end());
-    }
+    if (auto* storage = std::get_if<Array>(&mStorage)) { return T(storage->begin(), storage->end()); }
     _JSONC_TYPE_ERROR("bad type cast");
 }
 
 template <detail::is_object_like T>
 JSONC_RESULT(T) JsoncType::get() const JSONC_EXCEPTION_TYPE {
-    if (hold(ValueType::Object)) {
-        const Object& val = std::get<Object>(mStorage);
-        return T(val.begin(), val.end());
-    }
+    if (auto* storage = std::get_if<Object>(&mStorage)) { return T(storage->begin(), storage->end()); }
     _JSONC_TYPE_ERROR("bad type cast");
 }
 
 JSONC_RESULT(JsoncType&) JsoncType::operator[](std::string_view index) JSONC_EXCEPTION_TYPE {
-    if (hold(ValueType::Object)) { return std::get<Object>(mStorage)[index]; }
+    if (auto* storage = std::get_if<Object>(&mStorage)) { return (*storage)[index]; }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 JSONC_RESULT(const JsoncType&) JsoncType::operator[](std::string_view index) const JSONC_EXCEPTION_TYPE {
-    if (hold(ValueType::Object)) {
-        auto& obj = std::get<Object>(mStorage);
-        auto  res = obj.mStorage.find(index);
-        if (res != obj.mStorage.end()) { return _JSONC_MAKE_RESULT(res->second); }
+    if (auto* storage = std::get_if<Object>(&mStorage)) {
+        auto res = storage->mStorage.find(index);
+        if (res != storage->mStorage.end()) { return _JSONC_MAKE_RESULT(res->second); }
         _JSONC_OUT_OF_RANGE(std::format("Invalid key: {}", index));
     }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 
 JSONC_RESULT(JsoncType&) JsoncType::operator[](size_t index) JSONC_EXCEPTION_TYPE {
-    if (hold(ValueType::Array)) { return std::get<Array>(mStorage)[index]; }
+    if (auto* storage = std::get_if<Array>(&mStorage)) { return (*storage)[index]; }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
 JSONC_RESULT(const JsoncType&) JsoncType::operator[](size_t index) const JSONC_EXCEPTION_TYPE {
-    if (hold(ValueType::Array)) { return std::get<Array>(mStorage)[index]; }
+    if (auto* storage = std::get_if<Array>(&mStorage)) { return (*storage)[index]; }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
 
 JSONC_RESULT(JsoncType&) JsoncType::at(std::string_view index) JSONC_EXCEPTION_TYPE {
-    if (hold(ValueType::Object)) { return std::get<Object>(mStorage).at(index); }
+    if (auto* storage = std::get_if<Object>(&mStorage)) { return storage->at(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 JSONC_RESULT(JsoncType&) JsoncType::at(std::string_view index, const JsoncType& default_value) JSONC_EXCEPTION_TYPE {
-    if (hold(ValueType::Object)) { return std::get<Object>(mStorage).at(index, default_value); }
+    if (auto* storage = std::get_if<Object>(&mStorage)) { return storage->at(index, default_value); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 JSONC_RESULT(const JsoncType&) JsoncType::at(std::string_view index) const JSONC_EXCEPTION_TYPE {
-    if (hold(ValueType::Object)) { return std::get<Object>(mStorage).at(index); }
+    if (auto* storage = std::get_if<Object>(&mStorage)) { return storage->at(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 
 JSONC_RESULT(JsoncType&) JsoncType::at(size_t index) JSONC_EXCEPTION_TYPE {
-    if (hold(ValueType::Array)) { return std::get<Array>(mStorage).at(index); }
+    if (auto* storage = std::get_if<Array>(&mStorage)) { return storage->at(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
 JSONC_RESULT(const JsoncType&) JsoncType::at(size_t index) const JSONC_EXCEPTION_TYPE {
-    if (hold(ValueType::Array)) { return std::get<Array>(mStorage).at(index); }
+    if (auto* storage = std::get_if<Array>(&mStorage)) { return storage->at(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
 

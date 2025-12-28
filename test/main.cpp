@@ -33,7 +33,8 @@ int main() {
         std::println("{}", json.dump());
         std::println("map {}", map);
         std::println("vec {}", vec);
-        for (int val : json["new_vec"]) { std::println("{}", val); }
+        const auto& value = json["new_vec"];
+        for (int val : value) { std::println("{}", val); }
         return 0;
     } catch (const std::exception& e) { std::println("{}", e.what()); }
 }

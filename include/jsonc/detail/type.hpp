@@ -198,64 +198,76 @@ public:
         template <bool Reserve>
         [[nodiscard]] static Iterator make_begin(auto& var) noexcept {
             Iterator result{};
-            switch (var.type()) {
-            case ValueType::Object:
-                if constexpr (Reserve) {
-                    result.mIterator.template emplace<1>(std::get<Object>(var.mStorage).rbegin());
-                } else {
-                    result.mIterator.template emplace<1>(std::get<Object>(var.mStorage).begin());
-                }
-                break;
-            case ValueType::Array:
-                if constexpr (Reserve) {
-                    result.mIterator.template emplace<2>(std::get<Array>(var.mStorage).rbegin());
-                } else {
-                    result.mIterator.template emplace<2>(std::get<Array>(var.mStorage).begin());
-                }
-                break;
-            case ValueType::Null:
-                result.mIterator.template emplace<0>(std::addressof(var) + 1);
-                break;
-            default:
-                result.mIterator.template emplace<0>(std::addressof(var));
-            }
+            std::visit(
+                [&](auto& val) {
+                    using T = std::decay_t<decltype(val)>;
+                    if constexpr (std::is_same_v<T, Object>) {
+                        if constexpr (Reserve) {
+                            result.mIterator.template emplace<1>(val.rbegin());
+                        } else {
+                            result.mIterator.template emplace<1>(val.begin());
+                        }
+                    } else if constexpr (std::is_same_v<T, Array>) {
+                        if constexpr (Reserve) {
+                            result.mIterator.template emplace<2>(val.rbegin());
+                        } else {
+                            result.mIterator.template emplace<2>(val.begin());
+                        }
+                    } else if constexpr (std::is_same_v<T, std::monostate>) {
+                        result.mIterator.template emplace<0>(std::addressof(var) + 1);
+                    } else {
+                        result.mIterator.template emplace<0>(std::addressof(var));
+                    }
+                },
+                var.mStorage
+            );
             return result;
         }
 
         template <bool Reserve>
         [[nodiscard]] static Iterator make_end(auto& var) noexcept {
             Iterator result{};
-            switch (var.type()) {
-            case ValueType::Object:
-                if constexpr (Reserve) {
-                    result.mIterator.template emplace<1>(std::get<Object>(var.mStorage).rend());
-                } else {
-                    result.mIterator.template emplace<1>(std::get<Object>(var.mStorage).end());
-                }
-                break;
-            case ValueType::Array:
-                if constexpr (Reserve) {
-                    result.mIterator.template emplace<2>(std::get<Array>(var.mStorage).rend());
-                } else {
-                    result.mIterator.template emplace<2>(std::get<Array>(var.mStorage).end());
-                }
-                break;
-            default:
-                result.mIterator.template emplace<0>(std::addressof(var) + 1);
-            }
+            std::visit(
+                [&](auto& val) {
+                    using T = std::decay_t<decltype(val)>;
+                    if constexpr (std::is_same_v<T, Object>) {
+                        if constexpr (Reserve) {
+                            result.mIterator.template emplace<1>(val.rend());
+                        } else {
+                            result.mIterator.template emplace<1>(val.end());
+                        }
+                    } else if constexpr (std::is_same_v<T, Array>) {
+                        if constexpr (Reserve) {
+                            result.mIterator.template emplace<2>(val.rend());
+                        } else {
+                            result.mIterator.template emplace<2>(val.end());
+                        }
+                    } else {
+                        result.mIterator.template emplace<0>(std::addressof(var) + 1);
+                    }
+                },
+                var.mStorage
+            );
             return result;
         }
 
     public:
         [[nodiscard]] reference operator*() const noexcept {
-            switch (mIterator.index()) {
-            case 1:
-                return std::get<1>(mIterator)->second;
-            case 2:
-                return *std::get<2>(mIterator);
-            default:
-                return *std::get<0>(mIterator);
-            }
+            return std::visit(
+                [](auto& val) -> reference {
+                    using T          = std::decay_t<decltype(val)>;
+                    using ObjectType = std::conditional_t<
+                        _Const,
+                        std::conditional_t<_Reserve, Object::const_reverse_iterator, Object::const_iterator>,
+                        std::conditional_t<_Reserve, Object::reverse_iterator, Object::iterator>>;
+                    if constexpr (std::is_same_v<T, ObjectType>) {
+                        return val->second;
+                    } else {
+                        return *val;
+                    }
+                },
+                mIterator
+            );
         }
 
         [[nodiscard]] pointer operator->() const noexcept { return std::addressof(**this); }
