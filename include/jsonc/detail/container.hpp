@@ -136,6 +136,13 @@ public:
         return {iterator(mStorage, mInsertIndex.find(_Index->second)), _Result.second};
     }
 
+    void clear() noexcept {
+        mStorage.clear();
+        mInsertIndex.clear();
+        mKeyIndex.clear();
+        mNextInsertIndex = 0;
+    }
+
 private:
     StringHashMap<T>              mStorage{};
     std::map<size_t, std::string> mInsertIndex{};

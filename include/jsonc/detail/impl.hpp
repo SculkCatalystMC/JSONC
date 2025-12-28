@@ -40,7 +40,19 @@ bool Object::contains(std::string_view index) const noexcept { return mStorage.c
 
 size_t Object::size() const noexcept { return mStorage.size(); }
 
-bool Object::earse(std::string_view index) noexcept { return mStorage.erase(index); }
+bool Object::erase(std::string_view index) noexcept {
+    mKeyComments.erase(index);
+    return mStorage.erase(index);
+}
+
+void Object::clear() noexcept {
+    mStorage.clear();
+    mKeyComments.clear();
+}
+
+std::string Object::dump(int indent, bool ensure_ascii, bool ignore_comments) const JSONC_EXCEPTION_TYPE {
+    return detail::dump_typed(*this, ensure_ascii, indent, ignore_comments);
+}
 
 bool Object::has_key_before_comments(std::string_view index) const noexcept {
     auto res = mKeyComments.find(index);
@@ -235,8 +247,35 @@ constexpr JSONC_RESULT(const JsoncType&) Array::at(size_t index) const JSONC_EXC
 
 constexpr size_t Array::size() const noexcept { return mStorage.size(); }
 
+void Array::clear() noexcept { mStorage.clear(); }
+
+bool Array::erase(size_t where) {
+    if (where < mStorage.size()) {
+        mStorage.erase(mStorage.begin() + static_cast<decltype(mStorage)::difference_type>(where));
+        return true;
+    }
+    return false;
+}
+bool Array::erase(size_t first, size_t last) {
+    if (first < last && last < mStorage.size()) {
+        mStorage.erase(
+            mStorage.begin() + static_cast<decltype(mStorage)::difference_type>(first),
+            mStorage.begin() + static_cast<decltype(mStorage)::difference_type>(last)
+        );
+        return true;
+    }
+    return false;
+}
+
+Array::iterator Array::erase(const_iterator where) { return mStorage.erase(where); }
+Array::iterator Array::erase(const_iterator first, const_iterator last) { return mStorage.erase(first, last); }
+
 void Array::push_back(const JsoncType& val) JSONC_EXCEPTION_TYPE { mStorage.push_back(val); }
 void Array::push_back(JsoncType&& val) JSONC_EXCEPTION_TYPE { mStorage.push_back(std::move(val)); }
+
+std::string Array::dump(int indent, bool ensure_ascii, bool ignore_comments) const JSONC_EXCEPTION_TYPE {
+    return detail::dump_typed(*this, ensure_ascii, indent, ignore_comments);
+}
 
 Array::iterator Array::begin() noexcept { return mStorage.begin(); }
 Array::iterator Array::end() noexcept { return mStorage.end(); }
@@ -301,8 +340,18 @@ JSONC_RESULT(bool) JsoncType::contains(std::string_view index) JSONC_EXCEPTION_T
 }
 
 JSONC_RESULT(bool) JsoncType::erase(std::string_view index) JSONC_EXCEPTION_TYPE {
-    if (auto* storage = std::get_if<Object>(&mStorage)) { return storage->earse(index); }
+    if (auto* storage = std::get_if<Object>(&mStorage)) { return storage->erase(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
+}
+
+JSONC_RESULT(bool) JsoncType::erase(size_t where) {
+    if (auto* storage = std::get_if<Array>(&mStorage)) { return storage->erase(where); }
+    _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
+}
+
+JSONC_RESULT(bool) JsoncType::erase(size_t first, size_t last) {
+    if (auto* storage = std::get_if<Array>(&mStorage)) { return storage->erase(first, last); }
+    _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
 
 template <typename T>
@@ -477,6 +526,31 @@ JSONC_RESULT(JsoncType&) JsoncType::at(size_t index) JSONC_EXCEPTION_TYPE {
 JSONC_RESULT(const JsoncType&) JsoncType::at(size_t index) const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<Array>(&mStorage)) { return storage->at(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
+}
+
+void JsoncType::push_back(const JsoncType& val) JSONC_EXCEPTION_TYPE {
+    if (hold(ValueType::Null)) { mStorage.emplace<7>(); }
+    if (auto* storage = std::get_if<Array>(&mStorage)) { return storage->push_back(val); }
+    _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
+}
+void JsoncType::push_back(JsoncType&& val) JSONC_EXCEPTION_TYPE {
+    if (hold(ValueType::Null)) { mStorage.emplace<7>(); }
+    if (auto* storage = std::get_if<Array>(&mStorage)) { return storage->push_back(std::move(val)); }
+    _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
+}
+
+JSONC_RESULT(void) JsoncType::clear() JSONC_EXCEPTION_TYPE {
+    std::visit(
+        [&](auto& val) {
+            using T = std::decay_t<decltype(val)>;
+            if constexpr (std::is_same_v<T, Object> || std::is_same_v<T, Array>) {
+                val.clear();
+            } else {
+                _JSONC_TYPE_ERROR(std::format("Type must be an array or object, but is {}", type_name()));
+            }
+        },
+        mStorage
+    );
 }
 
 JsoncType::iterator JsoncType::begin() noexcept { return iterator::make_begin<false>(*this); }
