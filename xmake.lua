@@ -7,10 +7,6 @@ end
 target("test")
     set_kind("binary")
     set_languages("c++23")
-    add_packages(
-        "binarystream",
-        "zlib"
-    )
     add_includedirs(
         "include",
         "test"
