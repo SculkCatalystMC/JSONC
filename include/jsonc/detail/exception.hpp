@@ -41,6 +41,7 @@ public:
 
 #define JSONC_RESULT(TYPE)         TYPE
 #define _JSONC_MAKE_RESULT(RESULT) RESULT
+#define _JSONC_MAKE_VOID_RESULT()
 
 #define JSONC_EXCEPTION_TYPE
 
@@ -74,6 +75,7 @@ using Result = std::expected<std::conditional_t<std::is_reference_v<T>, std::ref
 
 namespace detail {
 template <typename T>
+    requires(!std::is_void_v<T>)
 [[nodiscard]] constexpr Result<T> make_result(T&& t) noexcept {
     if constexpr (std::is_reference_v<T>) {
         static_assert(!std::is_rvalue_reference_v<T&&>, "make_result does not accept rvalue references");
@@ -82,10 +84,15 @@ template <typename T>
         return Result<T>{std::forward<T>(t)};
     }
 }
-
+template <typename T = void>
+    requires std::is_void_v<T>
+[[nodiscard]] constexpr Result<void> make_result() noexcept {
+    return Result<void>{};
+}
 } // namespace detail
 
 #define _JSONC_MAKE_RESULT(RESULT) detail::make_result(RESULT)
+#define _JSONC_MAKE_VOID_RESULT()  detail::make_result()
 #define JSONC_RESULT(TYPE)         Result<TYPE>
 
 } // namespace jsonc
@@ -94,7 +101,8 @@ template <typename T>
 #define _JSONC_THROW_EXCEPTION(TYPE, EXCEPTION) std::unreachable()
 
 #define _JSONC_MAKE_RESULT(RESULT) RESULT
-#define JSONC_RESULT(TYPE)         TYPE
+#define _JSONC_MAKE_VOID_RESULT()
+#define JSONC_RESULT(TYPE) TYPE
 #endif
 #define JSONC_EXCEPTION_TYPE noexcept
 #endif

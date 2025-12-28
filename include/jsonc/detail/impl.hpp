@@ -41,7 +41,7 @@ bool Object::contains(std::string_view index) const noexcept { return mStorage.c
 size_t Object::size() const noexcept { return mStorage.size(); }
 
 bool Object::erase(std::string_view index) noexcept {
-    mKeyComments.erase(index);
+    mKeyComments.erase(std::string(index));
     return mStorage.erase(index);
 }
 
@@ -528,23 +528,39 @@ JSONC_RESULT(const JsoncType&) JsoncType::at(size_t index) const JSONC_EXCEPTION
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
 
-void JsoncType::push_back(const JsoncType& val) JSONC_EXCEPTION_TYPE {
+JSONC_RESULT(void) JsoncType::push_back(const JsoncType& val) JSONC_EXCEPTION_TYPE {
     if (hold(ValueType::Null)) { mStorage.emplace<7>(); }
-    if (auto* storage = std::get_if<Array>(&mStorage)) { return storage->push_back(val); }
+    if (auto* storage = std::get_if<Array>(&mStorage)) {
+        storage->push_back(std::move(val));
+        return _JSONC_MAKE_VOID_RESULT();
+    }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
-void JsoncType::push_back(JsoncType&& val) JSONC_EXCEPTION_TYPE {
+JSONC_RESULT(void) JsoncType::push_back(JsoncType&& val) JSONC_EXCEPTION_TYPE {
     if (hold(ValueType::Null)) { mStorage.emplace<7>(); }
-    if (auto* storage = std::get_if<Array>(&mStorage)) { return storage->push_back(std::move(val)); }
+    if (auto* storage = std::get_if<Array>(&mStorage)) {
+        storage->push_back(std::move(val));
+        return _JSONC_MAKE_VOID_RESULT();
+    }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
 
+JSONC_RESULT(JsoncType::IteratorProxy) JsoncType::items() JSONC_EXCEPTION_TYPE {
+    if (auto* storage = std::get_if<Object>(&mStorage)) { return IteratorProxy(*storage); }
+    _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
+}
+JSONC_RESULT(JsoncType::IteratorProxyConst) JsoncType::items() const JSONC_EXCEPTION_TYPE {
+    if (auto* storage = std::get_if<Object>(&mStorage)) { return IteratorProxyConst(*storage); }
+    _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
+}
+
 JSONC_RESULT(void) JsoncType::clear() JSONC_EXCEPTION_TYPE {
-    std::visit(
-        [&](auto& val) {
+    return std::visit(
+        [&](auto& val) -> JSONC_RESULT(void) {
             using T = std::decay_t<decltype(val)>;
             if constexpr (std::is_same_v<T, Object> || std::is_same_v<T, Array>) {
                 val.clear();
+                return _JSONC_MAKE_VOID_RESULT();
             } else {
                 _JSONC_TYPE_ERROR(std::format("Type must be an array or object, but is {}", type_name()));
             }

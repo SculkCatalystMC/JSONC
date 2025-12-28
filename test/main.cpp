@@ -17,7 +17,15 @@ int main() {
             {"1", 2},
             {"3", 4},
         };
+        json["new_vec"]->get()         = jsonc::array({1, 2, 3, 4, 5, 6, 7, 8});
         std::map<std::string, int> map = json["new_map"]->get();
+        auto                       vec = *json["new_vec"]->get().get<std::vector<int>>();
+        std::println("{}", json.dump());
+        std::println("map {}", map);
+        std::println("vec {}", vec);
+        const auto& vec_value = json["new_vec"];
+        for (int val : vec_value->get()) { std::println("{}", val); }
+        for (auto& [k, v] : *json["new_map"]->get().items()) { std::println("{}: {}", k, (int)v); }
 #else
         auto json       = jsonc::parse(content);
         json["new_map"] = {
@@ -29,12 +37,13 @@ int main() {
         json["new_vec"]                = jsonc::array({1, 2, 3, 4, 5, 6, 7, 8});
         std::map<std::string, int> map = json["new_map"];
         auto                       vec = json["new_vec"].get<std::vector<int>>();
-#endif
         std::println("{}", json.dump());
         std::println("map {}", map);
         std::println("vec {}", vec);
-        const auto& value = json["new_vec"];
-        for (int val : value) { std::println("{}", val); }
+        const auto& vec_value = json["new_vec"];
+        for (int val : vec_value) { std::println("{}", val); }
+        for (auto& [k, v] : json["new_map"].items()) { std::println("{}: {}", k, (int)v); }
+#endif
         return 0;
     } catch (const std::exception& e) { std::println("{}", e.what()); }
 }

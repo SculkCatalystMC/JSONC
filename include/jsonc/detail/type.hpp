@@ -311,6 +311,28 @@ public:
         [[nodiscard]] bool operator==(Iterator const& r) const noexcept { return this->mIterator == r.mIterator; }
     };
 
+    class IteratorProxy {
+    public:
+        Object::iterator begin() noexcept { return mSelf.begin(); }
+        Object::iterator end() noexcept { return mSelf.end(); }
+
+    private:
+        friend class JsoncType;
+        Object& mSelf;
+        IteratorProxy(Object& self) : mSelf(self) {}
+    };
+
+    class IteratorProxyConst {
+    public:
+        Object::const_iterator begin() const noexcept { return mSelf.begin(); }
+        Object::const_iterator end() const noexcept { return mSelf.end(); }
+
+    private:
+        friend class JsoncType;
+        const Object& mSelf;
+        IteratorProxyConst(const Object& self) : mSelf(self) {}
+    };
+
 public:
     using iterator               = Iterator<false, false>;
     using const_iterator         = Iterator<true, false>;
@@ -415,8 +437,11 @@ public:
     JSONC_RESULT(bool) erase(size_t where);
     JSONC_RESULT(bool) erase(size_t first, size_t last);
 
-    void push_back(const JsoncType& val) JSONC_EXCEPTION_TYPE;
-    void push_back(JsoncType&& val) JSONC_EXCEPTION_TYPE;
+    JSONC_RESULT(void) push_back(const JsoncType& val) JSONC_EXCEPTION_TYPE;
+    JSONC_RESULT(void) push_back(JsoncType&& val) JSONC_EXCEPTION_TYPE;
+
+    JSONC_RESULT(IteratorProxy) items() JSONC_EXCEPTION_TYPE;
+    JSONC_RESULT(IteratorProxyConst) items() const JSONC_EXCEPTION_TYPE;
 
     [[nodiscard]] iterator begin() noexcept;
     [[nodiscard]] iterator end() noexcept;
