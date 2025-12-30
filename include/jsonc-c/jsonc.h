@@ -58,8 +58,8 @@ JSONC_API int64_t           jsonc_object_get_signed(JsoncObjectHandle handle, co
 JSONC_API void              jsonc_object_set_signed(JsoncObjectHandle handle, const char* key, int64_t value);
 JSONC_API uint64_t          jsonc_object_get_unsigned(JsoncObjectHandle handle, const char* key);
 JSONC_API void              jsonc_object_set_unsigned(JsoncObjectHandle handle, const char* key, uint64_t value);
-JSONC_API double            jsonc_object_get_double(JsoncObjectHandle handle, const char* key);
-JSONC_API void              jsonc_object_set_double(JsoncObjectHandle handle, const char* key, double value);
+JSONC_API double            jsonc_object_get_float(JsoncObjectHandle handle, const char* key);
+JSONC_API void              jsonc_object_set_float(JsoncObjectHandle handle, const char* key, double value);
 JSONC_API const char*       jsonc_object_get_string(JsoncObjectHandle handle, const char* key);
 JSONC_API void              jsonc_object_set_string(JsoncObjectHandle handle, const char* key, const char* value);
 JSONC_API JsoncObjectHandle jsonc_object_get_object(JsoncObjectHandle handle, const char* key);
@@ -92,9 +92,9 @@ JSONC_API void              jsonc_array_add_signed(JsoncArrayHandle handle, int6
 JSONC_API uint64_t          jsonc_array_get_unsigned(JsoncArrayHandle handle, size_t index);
 JSONC_API void              jsonc_array_set_unsigned(JsoncArrayHandle handle, size_t index, uint64_t value);
 JSONC_API void              jsonc_array_add_unsigend(JsoncArrayHandle handle, uint64_t value);
-JSONC_API double            jsonc_array_get_double(JsoncArrayHandle handle, size_t index);
-JSONC_API void              jsonc_array_set_double(JsoncArrayHandle handle, size_t index, double value);
-JSONC_API void              jsonc_array_add_double(JsoncArrayHandle handle, double value);
+JSONC_API double            jsonc_array_get_float(JsoncArrayHandle handle, size_t index);
+JSONC_API void              jsonc_array_set_float(JsoncArrayHandle handle, size_t index, double value);
+JSONC_API void              jsonc_array_add_float(JsoncArrayHandle handle, double value);
 JSONC_API const char*       jsonc_array_get_string(JsoncArrayHandle handle, size_t index);
 JSONC_API void              jsonc_array_set_string(JsoncArrayHandle handle, size_t index, const char* value);
 JSONC_API void              jsonc_array_add_string(JsoncArrayHandle handle, const char* value);
