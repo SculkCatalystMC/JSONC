@@ -75,9 +75,7 @@ void jsonc_object_set_unsigned(JsoncObjectHandle handle, const char* key, uint64
 double jsonc_object_get_float(JsoncObjectHandle handle, const char* key) {
     return static_cast<jsonc::Object*>(handle)->operator[](key).get<double>();
 }
-void jsonc_object_set_float(JsoncObjectHandle handle, const char* key, double value) {
-    static_cast<jsonc::Object*>(handle)->operator[](key) = value;
-}
+void jsonc_object_set_float(JsoncObjectHandle handle, const char* key, double value) { static_cast<jsonc::Object*>(handle)->operator[](key) = value; }
 
 const char* jsonc_object_get_string(JsoncObjectHandle handle, const char* key) {
     return make_cstr(static_cast<jsonc::Object*>(handle)->operator[](key).get<std::string>());
@@ -123,40 +121,52 @@ const char* jsonc_object_dump(JsoncObjectHandle handle, int indent, bool ensure_
 }
 
 const char* jsonc_object_get_key_comments_before(JsoncObjectHandle handle, const char* key) {
-    std::string result{};
-    for (auto& comment : static_cast<jsonc::Object*>(handle)->key_before_comments(key)) {
-        result.append(comment);
-        result.push_back('\n');
+    if (static_cast<jsonc::Object*>(handle)->has_key_before_comments(key)) {
+        std::string result{};
+        for (auto& comment : static_cast<jsonc::Object*>(handle)->key_before_comments(key)) {
+            result.append(comment);
+            result.push_back('\n');
+        }
+        result.pop_back();
+        return make_cstr(result);
     }
-    result.pop_back();
-    return make_cstr(result);
+    return nullptr;
 }
 const char* jsonc_object_get_key_comments_after(JsoncObjectHandle handle, const char* key) {
-    std::string result{};
-    for (auto& comment : static_cast<jsonc::Object*>(handle)->key_after_comments(key)) {
-        result.append(comment);
-        result.push_back('\n');
+    if (static_cast<jsonc::Object*>(handle)->has_key_after_comments(key)) {
+        std::string result{};
+        for (auto& comment : static_cast<jsonc::Object*>(handle)->key_after_comments(key)) {
+            result.append(comment);
+            result.push_back('\n');
+        }
+        result.pop_back();
+        return make_cstr(result);
     }
-    result.pop_back();
-    return make_cstr(result);
+    return nullptr;
 }
 const char* jsonc_object_get_value_comments_before(JsoncObjectHandle handle, const char* key) {
-    std::string result{};
-    for (auto& comment : static_cast<jsonc::Object*>(handle)->operator[](key).before_comments()) {
-        result.append(comment);
-        result.push_back('\n');
+    if (static_cast<jsonc::Object*>(handle)->operator[](key).has_before_comments()) {
+        std::string result{};
+        for (auto& comment : static_cast<jsonc::Object*>(handle)->operator[](key).before_comments()) {
+            result.append(comment);
+            result.push_back('\n');
+        }
+        result.pop_back();
+        return make_cstr(result);
     }
-    result.pop_back();
-    return make_cstr(result);
+    return nullptr;
 }
 const char* jsonc_object_get_value_comments_after(JsoncObjectHandle handle, const char* key) {
-    std::string result{};
-    for (auto& comment : static_cast<jsonc::Object*>(handle)->operator[](key).after_comments()) {
-        result.append(comment);
-        result.push_back('\n');
+    if (static_cast<jsonc::Object*>(handle)->operator[](key).has_after_comments()) {
+        std::string result{};
+        for (auto& comment : static_cast<jsonc::Object*>(handle)->operator[](key).after_comments()) {
+            result.append(comment);
+            result.push_back('\n');
+        }
+        result.pop_back();
+        return make_cstr(result);
     }
-    result.pop_back();
-    return make_cstr(result);
+    return nullptr;
 }
 
 void jsonc_object_set_key_comments_before(JsoncObjectHandle handle, const char* key, const char* comments) {
@@ -239,22 +249,28 @@ const char* jsonc_array_dump(JsoncArrayHandle handle, int indent, bool ensure_as
 }
 
 const char* jsonc_array_get_comments_before(JsoncObjectHandle handle, size_t index) {
-    std::string result{};
-    for (auto& comment : static_cast<jsonc::Array*>(handle)->operator[](index).before_comments()) {
-        result.append(comment);
-        result.push_back('\n');
+    if (static_cast<jsonc::Array*>(handle)->operator[](index).has_before_comments()) {
+        std::string result{};
+        for (auto& comment : static_cast<jsonc::Array*>(handle)->operator[](index).before_comments()) {
+            result.append(comment);
+            result.push_back('\n');
+        }
+        result.pop_back();
+        return make_cstr(result);
     }
-    result.pop_back();
-    return make_cstr(result);
+    return nullptr;
 }
 const char* jsonc_array_get_comments_after(JsoncObjectHandle handle, size_t index) {
-    std::string result{};
-    for (auto& comment : static_cast<jsonc::Array*>(handle)->operator[](index).after_comments()) {
-        result.append(comment);
-        result.push_back('\n');
+    if (static_cast<jsonc::Array*>(handle)->operator[](index).has_after_comments()) {
+        std::string result{};
+        for (auto& comment : static_cast<jsonc::Array*>(handle)->operator[](index).after_comments()) {
+            result.append(comment);
+            result.push_back('\n');
+        }
+        result.pop_back();
+        return make_cstr(result);
     }
-    result.pop_back();
-    return make_cstr(result);
+    return nullptr;
 }
 
 void jsonc_array_set_comments_before(JsoncObjectHandle handle, size_t index, const char* comments) {
