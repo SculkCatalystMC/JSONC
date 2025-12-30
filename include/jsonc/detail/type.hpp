@@ -38,6 +38,7 @@ public:
     [[nodiscard]] JSONC_RESULT(const JsoncType&) at(std::string_view index) const JSONC_EXCEPTION_TYPE;
 
     [[nodiscard]] bool contains(std::string_view index) const noexcept;
+    [[nodiscard]] bool contains(std::string_view index, ValueType type) const noexcept;
 
     bool erase(std::string_view index) noexcept;
 
@@ -430,6 +431,7 @@ public:
     [[nodiscard]] JSONC_RESULT(const JsoncType&) at(size_t index) const JSONC_EXCEPTION_TYPE;
 
     [[nodiscard]] JSONC_RESULT(bool) contains(std::string_view index) JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] JSONC_RESULT(bool) contains(std::string_view index, ValueType type) JSONC_EXCEPTION_TYPE;
 
     JSONC_RESULT(void) clear() JSONC_EXCEPTION_TYPE;
 

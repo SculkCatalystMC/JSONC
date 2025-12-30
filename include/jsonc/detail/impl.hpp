@@ -37,6 +37,11 @@ JsoncType& Object::at(std::string_view index, const JsoncType& default_value) JS
 }
 
 bool Object::contains(std::string_view index) const noexcept { return mStorage.contains(index); }
+bool Object::contains(std::string_view index, ValueType type) const noexcept {
+    auto result = mStorage.find(index);
+    if (result != mStorage.end()) { return result->second.type() == type; }
+    return false;
+}
 
 size_t Object::size() const noexcept { return mStorage.size(); }
 
@@ -184,7 +189,9 @@ bool Object::remove_key_before_comment(std::string_view index, size_t comment_in
     auto res = mKeyComments.find(index);
     if (res != mKeyComments.end()) {
         if (comment_index < res->second.mBeforeComments.size()) {
-            res->second.mAfterComments.erase(res->second.mBeforeComments.begin() + comment_index);
+            res->second.mAfterComments.erase(
+                res->second.mBeforeComments.begin() + static_cast<decltype(res->second.mBeforeComments)::difference_type>(comment_index)
+            );
             return true;
         }
     }
@@ -194,7 +201,9 @@ bool Object::remove_key_after_comment(std::string_view index, size_t comment_ind
     auto res = mKeyComments.find(index);
     if (res != mKeyComments.end()) {
         if (comment_index < res->second.mAfterComments.size()) {
-            res->second.mAfterComments.erase(res->second.mAfterComments.begin() + comment_index);
+            res->second.mAfterComments.erase(
+                res->second.mAfterComments.begin() + static_cast<decltype(res->second.mAfterComments)::difference_type>(comment_index)
+            );
             return true;
         }
     }
@@ -336,6 +345,11 @@ constexpr bool JsoncType::is_structured() const noexcept { return is_array() || 
 
 JSONC_RESULT(bool) JsoncType::contains(std::string_view index) JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<Object>(&mStorage)) { return storage->contains(index); }
+    _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
+}
+
+JSONC_RESULT(bool) JsoncType::contains(std::string_view index, ValueType type) JSONC_EXCEPTION_TYPE {
+    if (auto* storage = std::get_if<Object>(&mStorage)) { return storage->contains(index, type); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 
@@ -610,14 +624,14 @@ void JsoncType::clear_after_comments() JSONC_EXCEPTION_TYPE { mBeforeComments.cl
 
 bool JsoncType::remove_before_comment(size_t comment_index) JSONC_EXCEPTION_TYPE {
     if (comment_index < mBeforeComments.size()) {
-        mBeforeComments.erase(mBeforeComments.begin() + comment_index);
+        mBeforeComments.erase(mBeforeComments.begin() + static_cast<decltype(mBeforeComments)::difference_type>(comment_index));
         return true;
     }
     return false;
 }
 bool JsoncType::remove_after_comment(size_t comment_index) JSONC_EXCEPTION_TYPE {
     if (comment_index < mAfterComments.size()) {
-        mAfterComments.erase(mAfterComments.begin() + comment_index);
+        mAfterComments.erase(mAfterComments.begin() + static_cast<decltype(mAfterComments)::difference_type>(comment_index));
         return true;
     }
     return false;

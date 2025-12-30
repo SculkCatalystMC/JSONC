@@ -149,7 +149,7 @@ inline std::string dump_typed(const Array& val, bool ensure_ascii, int indent, b
 
     size_t      i = val.size();
     std::string indent_space{};
-    if (indent > 0) { indent_space.resize(indent, ' '); }
+    if (indent > 0) { indent_space.resize(static_cast<size_t>(indent), ' '); }
 
     bool line_feed = (indent >= 0);
 
@@ -184,7 +184,7 @@ inline std::string dump_typed(const Object& val, bool ensure_ascii, int indent, 
 
     size_t      i = val.size();
     std::string indent_space{};
-    if (indent > 0) { indent_space.resize(indent, ' '); }
+    if (indent > 0) { indent_space.resize(static_cast<size_t>(indent), ' '); }
 
     bool line_feed = (indent >= 0);
 

@@ -110,4 +110,11 @@ template <typename T = void>
 #define _JSONC_OUT_OF_RANGE(ERROR) _JSONC_THROW_EXCEPTION(out_of_range, ERROR)
 #define _JSONC_TYPE_ERROR(ERROR)   _JSONC_THROW_EXCEPTION(type_error, ERROR)
 #define _JSONC_KEY_ERROR(ERROR)    _JSONC_THROW_EXCEPTION(parse_error, ERROR)
-#define _JSONC_PARSE_ERROR(ERROR)  _JSONC_THROW_EXCEPTION(key_error, std::format("jsonc parse error: {}", ERROR))
+#if !defined(JSONC_NO_EXCEPTION) || defined(JSONC_USE_EXPECTED)
+#define _JSONC_PARSE_ERROR(ERROR) _JSONC_THROW_EXCEPTION(key_error, std::format("jsonc parse error: {}", ERROR))
+#define JSONC_PARSE_RESULT(TYPE)  JSONC_RESULT(TYPE)
+#else
+#include <optional>
+#define _JSONC_PARSE_ERROR(ERROR) return std::nullopt
+#define JSONC_PARSE_RESULT(TYPE)  std::optional<TYPE>
+#endif
