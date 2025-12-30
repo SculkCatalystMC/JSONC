@@ -1,7 +1,12 @@
 add_rules("mode.debug", "mode.release")
 
-if is_plat("windows") and not has_config("vs_runtime") then
-    set_runtimes("MD")
+if is_plat("windows") then
+    set_toolchains("msvc")
+    if not has_config("vs_runtime") then
+        set_runtimes("MD")
+    end
+else
+    set_toolchains("clang")
 end
 
 option("kind")
@@ -73,7 +78,7 @@ target("jsonc")
                     "-Wl,--no-undefined",
                     "-Wl,--exclude-libs,ALL"
                 )
-                add_syslinks("libc++.a")
+                add_syslinks("libc++.a", "pthread")
             end
             if is_plat("macosx") then
                 add_shflags("-dynamiclib")

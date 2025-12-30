@@ -48,6 +48,8 @@ public:
 
     [[nodiscard]] std::string dump(int indent = 4, bool ensure_ascii = false, bool ignore_comments = false) const JSONC_EXCEPTION_TYPE;
 
+    [[nodiscard]] const std::string& key_index(size_t index) const noexcept;
+
     [[nodiscard]] iterator begin() noexcept;
     [[nodiscard]] iterator end() noexcept;
 
@@ -132,6 +134,12 @@ public:
 
     bool erase(size_t where);
     bool erase(size_t first, size_t last);
+
+    [[nodiscard]] const JsoncType& front() const noexcept;
+    [[nodiscard]] JsoncType&       front() noexcept;
+
+    [[nodiscard]] const JsoncType& back() const noexcept;
+    [[nodiscard]] JsoncType&       back() noexcept;
 
     iterator erase(const_iterator where);
     iterator erase(const_iterator first, const_iterator last);
@@ -441,6 +449,12 @@ public:
 
     JSONC_RESULT(void) push_back(const JsoncType& val) JSONC_EXCEPTION_TYPE;
     JSONC_RESULT(void) push_back(JsoncType&& val) JSONC_EXCEPTION_TYPE;
+
+    [[nodiscard]] JSONC_RESULT(const JsoncType&) front() const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] JSONC_RESULT(JsoncType&) front() JSONC_EXCEPTION_TYPE;
+
+    [[nodiscard]] JSONC_RESULT(const JsoncType&) back() const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] JSONC_RESULT(JsoncType&) back() JSONC_EXCEPTION_TYPE;
 
     JSONC_RESULT(IteratorProxy) items() JSONC_EXCEPTION_TYPE;
     JSONC_RESULT(IteratorProxyConst) items() const JSONC_EXCEPTION_TYPE;

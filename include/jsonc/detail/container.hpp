@@ -143,6 +143,12 @@ public:
         mNextInsertIndex = 0;
     }
 
+    [[nodiscard]] const std::string& key_index(size_t index) const noexcept {
+        auto it = std::next(mInsertIndex.begin(), static_cast<std::map<size_t, std::string>::difference_type>(index));
+        if (it != mInsertIndex.end()) { return it->second; }
+        std::unreachable();
+    }
+
 private:
     StringHashMap<T>              mStorage{};
     std::map<size_t, std::string> mInsertIndex{};

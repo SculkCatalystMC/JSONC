@@ -1,8 +1,6 @@
 #pragma once
 #include "type.hpp"
 
-#include <print>
-
 namespace jsonc::detail {
 
 inline std::string

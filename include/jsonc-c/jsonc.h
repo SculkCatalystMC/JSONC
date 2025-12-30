@@ -45,9 +45,10 @@ JSONC_API uint64_t    jsonc_variant_to_unsigned(JsoncTypeVariantHandle handle);
 JSONC_API double      jsonc_variant_to_float(JsoncTypeVariantHandle handle);
 JSONC_API const char* jsonc_variant_to_string(JsoncTypeVariantHandle handle);
 
-JSONC_API JsoncObjectHandle jsonc_variant_to_object(JsoncTypeVariantHandle handle);
-JSONC_API JsoncArrayHandle  jsonc_variant_to_array(JsoncTypeVariantHandle handle);
-JSONC_API const char*       jsonc_variant_dump(JsoncTypeVariantHandle handle, int indent, bool ensure_ascii, bool ignore_comments);
+JSONC_API JsoncObjectHandle jsonc_variant_as_object(JsoncTypeVariantHandle handle);
+JSONC_API JsoncArrayHandle  jsonc_variant_as_array(JsoncTypeVariantHandle handle);
+
+JSONC_API const char* jsonc_variant_dump(JsoncTypeVariantHandle handle, int indent, bool ensure_ascii, bool ignore_comments);
 
 JSONC_API bool              jsonc_object_contains(JsoncObjectHandle handle, const char* key);
 JSONC_API JsoncValueType    jsonc_object_get_type(JsoncObjectHandle handle, const char* key);
@@ -81,7 +82,7 @@ JSONC_API void              jsonc_object_set_key_comments_after(JsoncObjectHandl
 JSONC_API void              jsonc_object_set_value_comments_before(JsoncObjectHandle handle, const char* key, const char* comments);
 JSONC_API void              jsonc_object_set_value_comments_after(JsoncObjectHandle handle, const char* key, const char* comments);
 
-JSONC_API JsoncValueType    jsonc_array_get_type(JsoncArrayHandle handle, size_t index, JsoncValueType type);
+JSONC_API JsoncValueType    jsonc_array_get_type(JsoncArrayHandle handle, size_t index);
 JSONC_API bool              jsonc_array_get_bool(JsoncArrayHandle handle, size_t index);
 JSONC_API void              jsonc_array_set_bool(JsoncArrayHandle handle, size_t index, bool value);
 JSONC_API void              jsonc_array_add_bool(JsoncArrayHandle handle, bool value);
@@ -96,12 +97,12 @@ JSONC_API void              jsonc_array_set_double(JsoncArrayHandle handle, size
 JSONC_API void              jsonc_array_add_double(JsoncArrayHandle handle, double value);
 JSONC_API const char*       jsonc_array_get_string(JsoncArrayHandle handle, size_t index);
 JSONC_API void              jsonc_array_set_string(JsoncArrayHandle handle, size_t index, const char* value);
-JSONC_API JsoncObjectHandle jsonc_array_get_object(JsoncArrayHandle handle, size_t index);
 JSONC_API void              jsonc_array_add_string(JsoncArrayHandle handle, const char* value);
-JSONC_API JsoncObjectHandle jsonc_array_add_new_object(JsoncArrayHandle handle, size_t index);
+JSONC_API JsoncObjectHandle jsonc_array_get_object(JsoncArrayHandle handle, size_t index);
+JSONC_API JsoncObjectHandle jsonc_array_add_new_object(JsoncArrayHandle handle);
 JSONC_API void              jsonc_array_set_object(JsoncArrayHandle handle, size_t index, JsoncObjectHandle value);
 JSONC_API JsoncArrayHandle  jsonc_array_get_array(JsoncArrayHandle handle, size_t index);
-JSONC_API JsoncArrayHandle  jsonc_array_add_new_array(JsoncArrayHandle handle, size_t index);
+JSONC_API JsoncArrayHandle  jsonc_array_add_new_array(JsoncArrayHandle handle);
 JSONC_API void              jsonc_array_set_array(JsoncArrayHandle handle, size_t index, JsoncArrayHandle value);
 JSONC_API size_t            jsonc_array_get_size(JsoncArrayHandle handle);
 JSONC_API void              jsonc_array_clear(JsoncArrayHandle handle);
@@ -111,6 +112,14 @@ JSONC_API const char*       jsonc_array_get_comments_before(JsoncObjectHandle ha
 JSONC_API const char*       jsonc_array_get_comments_after(JsoncObjectHandle handle, size_t index);
 JSONC_API void              jsonc_array_set_comments_before(JsoncObjectHandle handle, size_t index, const char* comments);
 JSONC_API void              jsonc_array_set_comments_after(JsoncObjectHandle handle, size_t index, const char* comments);
+
+JSONC_API JsoncObjectHandle jsonc_create_object();
+JSONC_API JsoncArrayHandle  jsonc_create_array();
+
+JSONC_API void jsonc_free_object(JsoncObjectHandle handle);
+JSONC_API void jsonc_free_array(JsoncArrayHandle handle);
+JSONC_API void jsonc_free_type_variant(JsoncTypeVariantHandle handle);
+JSONC_API void jsonc_free_string(const char* str);
 
 #ifdef __cplusplus
 }
