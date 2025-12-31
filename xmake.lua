@@ -21,7 +21,6 @@ target("jsonc")
     set_prefixname("lib")
     add_includedirs("include")
     add_files("src/**.cpp")
-    add_defines("JSONC_NO_EXCEPTION")
 
     if is_mode("debug") then
         set_symbols("debug")
