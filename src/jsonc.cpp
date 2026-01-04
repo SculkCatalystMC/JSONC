@@ -207,7 +207,7 @@ uint64_t jsonc_array_get_unsigned(JsoncArrayHandle handle, size_t index) {
 void jsonc_array_set_unsigned(JsoncArrayHandle handle, size_t index, uint64_t value) {
     static_cast<jsonc::Array*>(handle)->operator[](index) = value;
 }
-void jsonc_array_add_unsigend(JsoncArrayHandle handle, uint64_t value) { static_cast<jsonc::Array*>(handle)->push_back(value); }
+void jsonc_array_add_unsigned(JsoncArrayHandle handle, uint64_t value) { static_cast<jsonc::Array*>(handle)->push_back(value); }
 
 double jsonc_array_get_float(JsoncArrayHandle handle, size_t index) { return static_cast<jsonc::Array*>(handle)->operator[](index).get<double>(); }
 void   jsonc_array_set_float(JsoncArrayHandle handle, size_t index, double value) { static_cast<jsonc::Array*>(handle)->operator[](index) = value; }

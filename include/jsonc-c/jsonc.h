@@ -92,7 +92,7 @@ JSONC_API void                jsonc_array_set_signed(JsoncArrayHandle handle, si
 JSONC_API void                jsonc_array_add_signed(JsoncArrayHandle handle, int64_t value);
 JSONC_API uint64_t            jsonc_array_get_unsigned(JsoncArrayHandle handle, size_t index);
 JSONC_API void                jsonc_array_set_unsigned(JsoncArrayHandle handle, size_t index, uint64_t value);
-JSONC_API void                jsonc_array_add_unsigend(JsoncArrayHandle handle, uint64_t value);
+JSONC_API void                jsonc_array_add_unsigned(JsoncArrayHandle handle, uint64_t value);
 JSONC_API double              jsonc_array_get_float(JsoncArrayHandle handle, size_t index);
 JSONC_API void                jsonc_array_set_float(JsoncArrayHandle handle, size_t index, double value);
 JSONC_API void                jsonc_array_add_float(JsoncArrayHandle handle, double value);
