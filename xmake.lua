@@ -24,7 +24,10 @@ option_end()
 target("jsonc")
     set_kind("$(kind)")
     set_languages("c++23")
-    set_prefixname("lib")
+    if is_config("kind", "shared") then 
+        set_prefixname("lib")
+        add_defines("_JSONC_EXPORT")
+    end
     add_includedirs("include")
     add_files("src/**.cpp")
 
@@ -33,9 +36,6 @@ target("jsonc")
     else
         set_optimize("aggressive")
         set_strip("all")
-    end
-    if is_config("kind", "shared") then
-        add_defines("_JSONC_EXPORT")
     end
     
     if is_plat("windows") then

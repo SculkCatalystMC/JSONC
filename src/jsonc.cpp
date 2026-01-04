@@ -185,6 +185,10 @@ void jsonc_object_set_value_comments_after(JsoncObjectHandle handle, const char*
     static_cast<jsonc::Object*>(handle)->operator[](key).after_comments() = parse_comments(comments);
 }
 
+bool jsonc_object_equals(JsoncObjectHandle lhs, JsoncObjectHandle rhs) {
+    return (*static_cast<jsonc::Object*>(lhs)) == (*static_cast<jsonc::Object*>(rhs));
+}
+
 JsoncValueType jsonc_array_get_type(JsoncArrayHandle handle, size_t index) {
     return static_cast<JsoncValueType>(static_cast<jsonc::Array*>(handle)->operator[](index).type());
 }
@@ -281,6 +285,10 @@ void jsonc_array_set_comments_before(JsoncObjectHandle handle, size_t index, con
 }
 void jsonc_array_set_comments_after(JsoncObjectHandle handle, size_t index, const char* comments) {
     static_cast<jsonc::Array*>(handle)->operator[](index).after_comments() = parse_comments(comments);
+}
+
+bool jsonc_array_equals(JsoncArrayHandle lhs, JsoncArrayHandle rhs) {
+    return (*static_cast<jsonc::Array*>(lhs)) == (*static_cast<jsonc::Array*>(rhs));
 }
 
 JsoncObjectHandle jsonc_create_object() { return new jsonc::Object(); }

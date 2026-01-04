@@ -68,6 +68,12 @@ public:
     [[nodiscard]] const_reverse_iterator crbegin() const noexcept;
     [[nodiscard]] const_reverse_iterator crend() const noexcept;
 
+    void merge_patch(const Object& other, bool merge_list = false) JSONC_EXCEPTION_TYPE;
+    void merge_patch(const JsoncType& other) JSONC_EXCEPTION_TYPE;
+
+    [[nodiscard]] bool operator==(const Object& other) const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] bool operator==(const JsoncType& other) const JSONC_EXCEPTION_TYPE;
+
     [[nodiscard]] bool has_key_before_comments(std::string_view index) const noexcept;
     [[nodiscard]] bool has_key_after_comments(std::string_view index) const noexcept;
 
@@ -141,8 +147,8 @@ public:
     [[nodiscard]] const JsoncType& back() const noexcept;
     [[nodiscard]] JsoncType&       back() noexcept;
 
-    iterator erase(const_iterator where);
-    iterator erase(const_iterator first, const_iterator last);
+    iterator erase(const_iterator where) JSONC_EXCEPTION_TYPE;
+    iterator erase(const_iterator first, const_iterator last) JSONC_EXCEPTION_TYPE;
 
     [[nodiscard]] std::string dump(int indent = 4, bool ensure_ascii = false, bool ignore_comments = false) const JSONC_EXCEPTION_TYPE;
 
@@ -163,6 +169,12 @@ public:
 
     [[nodiscard]] const_reverse_iterator crbegin() const noexcept;
     [[nodiscard]] const_reverse_iterator crend() const noexcept;
+
+    void merge_patch(const Array& other) JSONC_EXCEPTION_TYPE;
+    void merge_patch(const JsoncType& other) JSONC_EXCEPTION_TYPE;
+
+    [[nodiscard]] bool operator==(const Array& other) const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] bool operator==(const JsoncType& other) const JSONC_EXCEPTION_TYPE;
 
 private:
     friend class JsoncType;
@@ -438,14 +450,14 @@ public:
     [[nodiscard]] JSONC_RESULT(JsoncType&) at(size_t index) JSONC_EXCEPTION_TYPE;
     [[nodiscard]] JSONC_RESULT(const JsoncType&) at(size_t index) const JSONC_EXCEPTION_TYPE;
 
-    [[nodiscard]] JSONC_RESULT(bool) contains(std::string_view index) JSONC_EXCEPTION_TYPE;
-    [[nodiscard]] JSONC_RESULT(bool) contains(std::string_view index, ValueType type) JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] JSONC_RESULT(bool) contains(std::string_view index) const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] JSONC_RESULT(bool) contains(std::string_view index, ValueType type) const JSONC_EXCEPTION_TYPE;
 
     JSONC_RESULT(void) clear() JSONC_EXCEPTION_TYPE;
 
     JSONC_RESULT(bool) erase(std::string_view index) JSONC_EXCEPTION_TYPE;
-    JSONC_RESULT(bool) erase(size_t where);
-    JSONC_RESULT(bool) erase(size_t first, size_t last);
+    JSONC_RESULT(bool) erase(size_t where) JSONC_EXCEPTION_TYPE;
+    JSONC_RESULT(bool) erase(size_t first, size_t last) JSONC_EXCEPTION_TYPE;
 
     JSONC_RESULT(void) push_back(const JsoncType& val) JSONC_EXCEPTION_TYPE;
     JSONC_RESULT(void) push_back(JsoncType&& val) JSONC_EXCEPTION_TYPE;
@@ -476,6 +488,10 @@ public:
 
     [[nodiscard]] const_reverse_iterator crbegin() const noexcept;
     [[nodiscard]] const_reverse_iterator crend() const noexcept;
+
+    void merge_patch(const JsoncType& other) JSONC_EXCEPTION_TYPE;
+
+    [[nodiscard]] bool operator==(const JsoncType& other) const JSONC_EXCEPTION_TYPE;
 
     template <typename T>
         requires std::is_arithmetic_v<T>
@@ -518,7 +534,13 @@ public:
     [[nodiscard]] constexpr size_t before_comments_size() const noexcept;
     [[nodiscard]] constexpr size_t after_comments_size() const noexcept;
 
+public:
+    static Object object() JSONC_EXCEPTION_TYPE { return Object(); }
+    static Array  array() JSONC_EXCEPTION_TYPE { return Array(); }
+
 private:
+    friend class Object;
+    friend class Array;
     detail::TypeVariant      mStorage{};
     std::vector<std::string> mBeforeComments{};
     std::vector<std::string> mAfterComments{};

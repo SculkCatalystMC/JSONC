@@ -241,6 +241,12 @@ Object::const_reverse_iterator Object::rend() const noexcept { return mStorage.r
 Object::const_reverse_iterator Object::crbegin() const noexcept { return mStorage.crbegin(); }
 Object::const_reverse_iterator Object::crend() const noexcept { return mStorage.crend(); }
 
+bool Object::operator==(const Object& other) const JSONC_EXCEPTION_TYPE { return mStorage == other.mStorage; }
+bool Object::operator==(const JsoncType& other) const JSONC_EXCEPTION_TYPE {
+    if (auto* rhs = std::get_if<Object>(&other.mStorage)) { return mStorage == rhs->mStorage; }
+    return false;
+}
+
 
 Array::Array(std::initializer_list<JsoncType> val) JSONC_EXCEPTION_TYPE : mStorage(val) {}
 
@@ -278,8 +284,8 @@ bool Array::erase(size_t first, size_t last) {
     return false;
 }
 
-Array::iterator Array::erase(const_iterator where) { return mStorage.erase(where); }
-Array::iterator Array::erase(const_iterator first, const_iterator last) { return mStorage.erase(first, last); }
+Array::iterator Array::erase(const_iterator where) JSONC_EXCEPTION_TYPE { return mStorage.erase(where); }
+Array::iterator Array::erase(const_iterator first, const_iterator last) JSONC_EXCEPTION_TYPE { return mStorage.erase(first, last); }
 
 void Array::push_back(const JsoncType& val) JSONC_EXCEPTION_TYPE { mStorage.push_back(val); }
 void Array::push_back(JsoncType&& val) JSONC_EXCEPTION_TYPE { mStorage.push_back(std::move(val)); }
@@ -311,6 +317,12 @@ Array::const_reverse_iterator Array::rend() const noexcept { return mStorage.ren
 
 Array::const_reverse_iterator Array::crbegin() const noexcept { return mStorage.crbegin(); }
 Array::const_reverse_iterator Array::crend() const noexcept { return mStorage.crend(); }
+
+bool Array::operator==(const Array& other) const JSONC_EXCEPTION_TYPE { return mStorage == other.mStorage; }
+bool Array::operator==(const JsoncType& other) const JSONC_EXCEPTION_TYPE {
+    if (auto* rhs = std::get_if<Array>(&other.mStorage)) { return mStorage == rhs->mStorage; }
+    return false;
+}
 
 
 constexpr ValueType        JsoncType::type() const noexcept { return static_cast<ValueType>(mStorage.index()); }
@@ -351,12 +363,12 @@ constexpr bool JsoncType::is_array() const noexcept { return hold(ValueType::Arr
 constexpr bool JsoncType::is_primitive() const noexcept { return is_null() || is_string() || is_number(); }
 constexpr bool JsoncType::is_structured() const noexcept { return is_array() || is_object(); }
 
-JSONC_RESULT(bool) JsoncType::contains(std::string_view index) JSONC_EXCEPTION_TYPE {
+JSONC_RESULT(bool) JsoncType::contains(std::string_view index) const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<Object>(&mStorage)) { return storage->contains(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 
-JSONC_RESULT(bool) JsoncType::contains(std::string_view index, ValueType type) JSONC_EXCEPTION_TYPE {
+JSONC_RESULT(bool) JsoncType::contains(std::string_view index, ValueType type) const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<Object>(&mStorage)) { return storage->contains(index, type); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
@@ -366,12 +378,12 @@ JSONC_RESULT(bool) JsoncType::erase(std::string_view index) JSONC_EXCEPTION_TYPE
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 
-JSONC_RESULT(bool) JsoncType::erase(size_t where) {
+JSONC_RESULT(bool) JsoncType::erase(size_t where) JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<Array>(&mStorage)) { return storage->erase(where); }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
 
-JSONC_RESULT(bool) JsoncType::erase(size_t first, size_t last) {
+JSONC_RESULT(bool) JsoncType::erase(size_t first, size_t last) JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<Array>(&mStorage)) { return storage->erase(first, last); }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
@@ -627,6 +639,8 @@ JsoncType::const_reverse_iterator JsoncType::rend() const noexcept { return cons
 
 JsoncType::const_reverse_iterator JsoncType::crbegin() const noexcept { return const_reverse_iterator::make_begin<true>(*this); }
 JsoncType::const_reverse_iterator JsoncType::crend() const noexcept { return const_reverse_iterator::make_end<true>(*this); }
+
+bool JsoncType::operator==(const JsoncType& other) const JSONC_EXCEPTION_TYPE { return mStorage == other.mStorage; }
 
 constexpr bool JsoncType::has_before_comments() const noexcept { return mBeforeComments.size() != 0; }
 constexpr bool JsoncType::has_after_comments() const noexcept { return mAfterComments.size() != 0; }

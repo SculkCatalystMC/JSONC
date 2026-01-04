@@ -81,6 +81,7 @@ JSONC_API void                jsonc_object_set_key_comments_before(JsoncObjectHa
 JSONC_API void                jsonc_object_set_key_comments_after(JsoncObjectHandle handle, const char* key, const char* comments);
 JSONC_API void                jsonc_object_set_value_comments_before(JsoncObjectHandle handle, const char* key, const char* comments);
 JSONC_API void                jsonc_object_set_value_comments_after(JsoncObjectHandle handle, const char* key, const char* comments);
+JSONC_API bool                jsonc_object_equals(JsoncObjectHandle lhs, JsoncObjectHandle rhs);
 
 JSONC_API enum JsoncValueType jsonc_array_get_type(JsoncArrayHandle handle, size_t index);
 JSONC_API bool                jsonc_array_get_bool(JsoncArrayHandle handle, size_t index);
@@ -112,6 +113,7 @@ JSONC_API const char*         jsonc_array_get_comments_before(JsoncObjectHandle 
 JSONC_API const char*         jsonc_array_get_comments_after(JsoncObjectHandle handle, size_t index);
 JSONC_API void                jsonc_array_set_comments_before(JsoncObjectHandle handle, size_t index, const char* comments);
 JSONC_API void                jsonc_array_set_comments_after(JsoncObjectHandle handle, size_t index, const char* comments);
+JSONC_API bool                jsonc_array_equals(JsoncArrayHandle lhs, JsoncArrayHandle rhs);
 
 JSONC_API JsoncObjectHandle jsonc_create_object();
 JSONC_API JsoncArrayHandle  jsonc_create_array();

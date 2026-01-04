@@ -149,6 +149,8 @@ public:
         std::unreachable();
     }
 
+    bool operator==(const OrderedStringHashMap& other) const JSONC_EXCEPTION_TYPE { return mStorage == other.mStorage; }
+
 private:
     StringHashMap<T>              mStorage{};
     std::map<size_t, std::string> mInsertIndex{};
