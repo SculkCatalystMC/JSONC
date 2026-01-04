@@ -53,6 +53,11 @@ inline JSONC_PARSE_RESULT(std::string_view) extract_comment(std::string_view& s)
                 continue;
             }
         }
+        if (i == s.size()) {
+            result = s.substr(1);
+            s.remove_prefix(s.size());
+            return result;
+        }
         break;
     }
     default: {
@@ -69,7 +74,7 @@ inline JSONC_PARSE_RESULT(std::string_view) extract_comment(std::string_view& s)
         break;
     }
     }
-    _JSONC_PARSE_ERROR("");
+    _JSONC_PARSE_ERROR("invalid comment format");
 }
 
 inline void skip_spaces(std::string_view& s) noexcept {

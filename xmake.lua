@@ -15,6 +15,12 @@ option("kind")
     set_showmenu(true)
 option_end()
 
+option("enable_test")
+    set_default(false)
+    set_values(true, false)
+    set_showmenu(true)
+option_end()
+
 target("jsonc")
     set_kind("$(kind)")
     set_languages("c++23")
@@ -120,3 +126,33 @@ target("jsonc")
             cprint("${bright green}[Shared Library]: ${reset}".. filename .. " already generated to " .. output_dir)
         end)
     end
+
+if is_config("enable_test", true) then 
+target("test")
+    set_kind("binary")
+    set_languages("c++23")
+    add_includedirs(
+        "include",
+        "test"
+    )
+    add_files("test/**.cpp")
+    -- add_defines("JSONC_USE_EXPECTED")
+    if is_plat("windows") then 
+        add_defines(
+            "NOMINMAX",
+            "UNICODE"
+        )
+        add_cxflags("/utf-8", "/W4")
+    else 
+        add_cxflags("-Wall", "-stdlib=libc++")
+        add_syslinks("c++")
+    end
+
+    after_build(function (target)
+        local file = target:targetfile()
+        local output_dir = path.join(os.projectdir(), "bin")
+        os.mkdir(output_dir)
+        os.cp(file, output_dir)
+        cprint("${bright green}[Execuatble]: ${reset}Execuatble file already generated to " .. output_dir)
+    end)
+end

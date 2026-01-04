@@ -436,6 +436,7 @@ std::string JsoncType::dump(int indent, bool ensure_ascii, bool ignore_comments,
         if (!after.empty()) {
             if (indent >= 0) { result.push_back(' '); }
             result.append(after);
+            if (result.back() == '\n') { result.pop_back(); }
         }
     }
     return result;
