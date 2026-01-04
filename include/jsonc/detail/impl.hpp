@@ -45,6 +45,8 @@ bool Object::contains(std::string_view index, ValueType type) const noexcept {
 
 size_t Object::size() const noexcept { return mStorage.size(); }
 
+bool Object::empty() const noexcept { return mStorage.empty(); }
+
 bool Object::erase(std::string_view index) noexcept {
     mKeyComments.erase(std::string(index));
     return mStorage.erase(index);
@@ -241,6 +243,14 @@ Object::const_reverse_iterator Object::rend() const noexcept { return mStorage.r
 Object::const_reverse_iterator Object::crbegin() const noexcept { return mStorage.crbegin(); }
 Object::const_reverse_iterator Object::crend() const noexcept { return mStorage.crend(); }
 
+void Object::merge_patch(const Object& other, bool merge_list) JSONC_EXCEPTION_TYPE {
+    for (auto const& [key, val] : other) { operator[](key).merge_patch(val, merge_list); }
+}
+JSONC_RESULT(void) Object::merge_patch(const JsoncType& other, bool merge_list) JSONC_EXCEPTION_TYPE {
+    if (auto* rhs = std::get_if<Object>(&other.mStorage)) { return merge_patch(*rhs, merge_list); }
+    _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", other.type_name()));
+}
+
 bool Object::operator==(const Object& other) const JSONC_EXCEPTION_TYPE { return mStorage == other.mStorage; }
 bool Object::operator==(const JsoncType& other) const JSONC_EXCEPTION_TYPE {
     if (auto* rhs = std::get_if<Object>(&other.mStorage)) { return mStorage == rhs->mStorage; }
@@ -263,6 +273,8 @@ constexpr JSONC_RESULT(const JsoncType&) Array::at(size_t index) const JSONC_EXC
 }
 
 constexpr size_t Array::size() const noexcept { return mStorage.size(); }
+
+constexpr bool Array::empty() const noexcept { return mStorage.empty(); }
 
 void Array::clear() noexcept { mStorage.clear(); }
 
@@ -318,6 +330,26 @@ Array::const_reverse_iterator Array::rend() const noexcept { return mStorage.ren
 Array::const_reverse_iterator Array::crbegin() const noexcept { return mStorage.crbegin(); }
 Array::const_reverse_iterator Array::crend() const noexcept { return mStorage.crend(); }
 
+void Array::merge_patch(const Array& other) JSONC_EXCEPTION_TYPE {
+    if (other.empty()) { return; }
+    for (auto const& val : other.mStorage) {
+        bool exist = false;
+        for (const auto& tag : mStorage) {
+            if (tag == val) {
+                exist = true;
+                break;
+            }
+        }
+        if (!exist) { mStorage.push_back(val); }
+    }
+}
+JSONC_RESULT(void) Array::merge_patch(const JsoncType& other) JSONC_EXCEPTION_TYPE {
+    if (auto* rhs = std::get_if<Array>(&other.mStorage)) {
+        { return merge_patch(*rhs); }
+    }
+    _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", other.type_name()));
+}
+
 bool Array::operator==(const Array& other) const JSONC_EXCEPTION_TYPE { return mStorage == other.mStorage; }
 bool Array::operator==(const JsoncType& other) const JSONC_EXCEPTION_TYPE {
     if (auto* rhs = std::get_if<Array>(&other.mStorage)) { return mStorage == rhs->mStorage; }
@@ -371,6 +403,20 @@ JSONC_RESULT(bool) JsoncType::contains(std::string_view index) const JSONC_EXCEP
 JSONC_RESULT(bool) JsoncType::contains(std::string_view index, ValueType type) const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<Object>(&mStorage)) { return storage->contains(index, type); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
+}
+
+JSONC_RESULT(bool) JsoncType::empty() const JSONC_EXCEPTION_TYPE {
+    return std::visit(
+        [](const auto& val) -> JSONC_RESULT(bool) {
+            using T = std::decay_t<decltype(val)>;
+            if constexpr (std::is_same_v<T, Object> || std::is_same_v<T, Array>) {
+                return val.empty();
+            } else {
+                _JSONC_TYPE_ERROR(std::format("Type must be an object or array, but is {}", type_name()));
+            }
+        },
+        mStorage
+    );
 }
 
 JSONC_RESULT(bool) JsoncType::erase(std::string_view index) JSONC_EXCEPTION_TYPE {
@@ -639,6 +685,16 @@ JsoncType::const_reverse_iterator JsoncType::rend() const noexcept { return cons
 
 JsoncType::const_reverse_iterator JsoncType::crbegin() const noexcept { return const_reverse_iterator::make_begin<true>(*this); }
 JsoncType::const_reverse_iterator JsoncType::crend() const noexcept { return const_reverse_iterator::make_end<true>(*this); }
+
+void JsoncType::merge_patch(const JsoncType& other, bool merge_list) JSONC_EXCEPTION_TYPE {
+    if (is_object() && other.is_object()) {
+        as<Object>().merge_patch(other.as<Object>(), merge_list);
+    } else if (is_array() && other.is_array() && merge_list) {
+        as<Array>().merge_patch(other.as<Array>());
+    } else {
+        operator=(other);
+    }
+}
 
 bool JsoncType::operator==(const JsoncType& other) const JSONC_EXCEPTION_TYPE { return mStorage == other.mStorage; }
 

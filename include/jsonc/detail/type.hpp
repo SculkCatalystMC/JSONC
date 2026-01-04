@@ -42,6 +42,8 @@ public:
 
     bool erase(std::string_view index) noexcept;
 
+    [[nodiscard]] bool empty() const noexcept;
+
     void clear() noexcept;
 
     [[nodiscard]] size_t size() const noexcept;
@@ -69,7 +71,7 @@ public:
     [[nodiscard]] const_reverse_iterator crend() const noexcept;
 
     void merge_patch(const Object& other, bool merge_list = false) JSONC_EXCEPTION_TYPE;
-    void merge_patch(const JsoncType& other) JSONC_EXCEPTION_TYPE;
+    JSONC_RESULT(void) merge_patch(const JsoncType& other, bool merge_list = false) JSONC_EXCEPTION_TYPE;
 
     [[nodiscard]] bool operator==(const Object& other) const JSONC_EXCEPTION_TYPE;
     [[nodiscard]] bool operator==(const JsoncType& other) const JSONC_EXCEPTION_TYPE;
@@ -135,6 +137,8 @@ public:
 
     void clear() noexcept;
 
+    [[nodiscard]] constexpr bool empty() const noexcept;
+
     void push_back(const JsoncType& val) JSONC_EXCEPTION_TYPE;
     void push_back(JsoncType&& val) JSONC_EXCEPTION_TYPE;
 
@@ -171,7 +175,7 @@ public:
     [[nodiscard]] const_reverse_iterator crend() const noexcept;
 
     void merge_patch(const Array& other) JSONC_EXCEPTION_TYPE;
-    void merge_patch(const JsoncType& other) JSONC_EXCEPTION_TYPE;
+    JSONC_RESULT(void) merge_patch(const JsoncType& other) JSONC_EXCEPTION_TYPE;
 
     [[nodiscard]] bool operator==(const Array& other) const JSONC_EXCEPTION_TYPE;
     [[nodiscard]] bool operator==(const JsoncType& other) const JSONC_EXCEPTION_TYPE;
@@ -455,6 +459,8 @@ public:
 
     JSONC_RESULT(void) clear() JSONC_EXCEPTION_TYPE;
 
+    [[nodiscard]] JSONC_RESULT(bool) empty() const JSONC_EXCEPTION_TYPE;
+
     JSONC_RESULT(bool) erase(std::string_view index) JSONC_EXCEPTION_TYPE;
     JSONC_RESULT(bool) erase(size_t where) JSONC_EXCEPTION_TYPE;
     JSONC_RESULT(bool) erase(size_t first, size_t last) JSONC_EXCEPTION_TYPE;
@@ -489,7 +495,7 @@ public:
     [[nodiscard]] const_reverse_iterator crbegin() const noexcept;
     [[nodiscard]] const_reverse_iterator crend() const noexcept;
 
-    void merge_patch(const JsoncType& other) JSONC_EXCEPTION_TYPE;
+    void merge_patch(const JsoncType& other, bool merge_list = false) JSONC_EXCEPTION_TYPE;
 
     [[nodiscard]] bool operator==(const JsoncType& other) const JSONC_EXCEPTION_TYPE;
 
