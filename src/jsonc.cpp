@@ -32,6 +32,38 @@ const char* jsonc_variant_to_string(JsoncTypeVariantHandle handle) { return make
 JsoncObjectHandle jsonc_variant_as_object(JsoncTypeVariantHandle handle) { return &static_cast<jsonc::JsoncType*>(handle)->as<jsonc::Object>(); }
 JsoncArrayHandle  jsonc_variant_as_array(JsoncTypeVariantHandle handle) { return &static_cast<jsonc::JsoncType*>(handle)->as<jsonc::Array>(); }
 
+const char* jsonc_variant_get_comments_before(JsoncTypeVariantHandle handle) {
+    if (static_cast<jsonc::JsoncType*>(handle)->has_before_comments()) {
+        std::string result{};
+        for (auto& comment : static_cast<jsonc::JsoncType*>(handle)->before_comments()) {
+            result.append(comment);
+            result.push_back('\n');
+        }
+        result.pop_back();
+        return make_cstr(result);
+    }
+    return nullptr;
+}
+const char* jsonc_variant_get_comments_after(JsoncTypeVariantHandle handle) {
+    if (static_cast<jsonc::JsoncType*>(handle)->has_after_comments()) {
+        std::string result{};
+        for (auto& comment : static_cast<jsonc::JsoncType*>(handle)->after_comments()) {
+            result.append(comment);
+            result.push_back('\n');
+        }
+        result.pop_back();
+        return make_cstr(result);
+    }
+    return nullptr;
+}
+
+void jsonc_variant_set_comments_before(JsoncTypeVariantHandle handle, const char* comments) {
+    static_cast<jsonc::JsoncType*>(handle)->before_comments() = jsonc::detail::split_comments(comments);
+}
+void jsonc_variant_set_comments_after(JsoncTypeVariantHandle handle, const char* comments) {
+    static_cast<jsonc::JsoncType*>(handle)->after_comments() = jsonc::detail::split_comments(comments);
+}
+
 const char* jsonc_variant_dump(JsoncTypeVariantHandle handle, int indent, bool ensure_ascii, bool ignore_comments) {
     return make_cstr(static_cast<jsonc::JsoncType*>(handle)->dump(indent, ensure_ascii, ignore_comments, true));
 }

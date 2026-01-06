@@ -47,6 +47,10 @@ JSONC_API const char* jsonc_variant_to_string(JsoncTypeVariantHandle handle);
 
 JSONC_API JsoncObjectHandle jsonc_variant_as_object(JsoncTypeVariantHandle handle);
 JSONC_API JsoncArrayHandle  jsonc_variant_as_array(JsoncTypeVariantHandle handle);
+JSONC_API const char*       jsonc_variant_get_comments_before(JsoncTypeVariantHandle handle);
+JSONC_API const char*       jsonc_variant_get_comments_after(JsoncTypeVariantHandle handle);
+JSONC_API void              jsonc_variant_set_comments_before(JsoncTypeVariantHandle handle, const char* comments);
+JSONC_API void              jsonc_variant_set_comments_after(JsoncTypeVariantHandle handle, const char* comments);
 
 JSONC_API const char* jsonc_variant_dump(JsoncTypeVariantHandle handle, int indent, bool ensure_ascii, bool ignore_comments);
 
