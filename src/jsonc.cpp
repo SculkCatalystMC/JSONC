@@ -12,22 +12,6 @@ inline const char* make_cstr(const std::string& s) noexcept {
     return buf;
 }
 
-inline std::vector<std::string> parse_comments(std::string_view comment) noexcept {
-    std::vector<std::string> result{};
-    if (!comment.empty()) {
-        size_t pos = 0;
-        while ((pos = comment.find('\n')) != std::string::npos) {
-            if (pos != 0) {
-                auto line = comment.substr(0, pos);
-                if (!line.empty()) { result.emplace_back(line); }
-            }
-            comment.remove_prefix(pos + 1);
-        }
-        if (!comment.empty()) { result.emplace_back(comment); }
-    }
-    return result;
-}
-
 extern "C" {
 
 JsoncTypeVariantHandle jsonc_parse_content(const char* content, bool allow_trailing_comma) {
@@ -173,16 +157,16 @@ const char* jsonc_object_get_value_comments_after(JsoncObjectHandle handle, cons
 }
 
 void jsonc_object_set_key_comments_before(JsoncObjectHandle handle, const char* key, const char* comments) {
-    static_cast<jsonc::Object*>(handle)->key_before_comments(key) = parse_comments(comments);
+    static_cast<jsonc::Object*>(handle)->key_before_comments(key) = jsonc::detail::split_comments(comments);
 }
 void jsonc_object_set_key_comments_after(JsoncObjectHandle handle, const char* key, const char* comments) {
-    static_cast<jsonc::Object*>(handle)->key_after_comments(key) = parse_comments(comments);
+    static_cast<jsonc::Object*>(handle)->key_after_comments(key) = jsonc::detail::split_comments(comments);
 }
 void jsonc_object_set_value_comments_before(JsoncObjectHandle handle, const char* key, const char* comments) {
-    static_cast<jsonc::Object*>(handle)->operator[](key).before_comments() = parse_comments(comments);
+    static_cast<jsonc::Object*>(handle)->operator[](key).before_comments() = jsonc::detail::split_comments(comments);
 }
 void jsonc_object_set_value_comments_after(JsoncObjectHandle handle, const char* key, const char* comments) {
-    static_cast<jsonc::Object*>(handle)->operator[](key).after_comments() = parse_comments(comments);
+    static_cast<jsonc::Object*>(handle)->operator[](key).after_comments() = jsonc::detail::split_comments(comments);
 }
 
 bool jsonc_object_equals(JsoncObjectHandle lhs, JsoncObjectHandle rhs) {
@@ -281,10 +265,10 @@ const char* jsonc_array_get_comments_after(JsoncObjectHandle handle, size_t inde
 }
 
 void jsonc_array_set_comments_before(JsoncObjectHandle handle, size_t index, const char* comments) {
-    static_cast<jsonc::Array*>(handle)->operator[](index).before_comments() = parse_comments(comments);
+    static_cast<jsonc::Array*>(handle)->operator[](index).before_comments() = jsonc::detail::split_comments(comments);
 }
 void jsonc_array_set_comments_after(JsoncObjectHandle handle, size_t index, const char* comments) {
-    static_cast<jsonc::Array*>(handle)->operator[](index).after_comments() = parse_comments(comments);
+    static_cast<jsonc::Array*>(handle)->operator[](index).after_comments() = jsonc::detail::split_comments(comments);
 }
 
 bool jsonc_array_equals(JsoncArrayHandle lhs, JsoncArrayHandle rhs) {

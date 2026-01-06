@@ -6,6 +6,24 @@
 
 namespace jsonc {
 
+namespace detail {
+inline std::vector<std::string> split_comments(std::string_view comment) noexcept {
+    std::vector<std::string> result{};
+    if (!comment.empty()) {
+        size_t pos = 0;
+        while ((pos = comment.find('\n')) != std::string::npos) {
+            if (pos != 0) {
+                auto line = comment.substr(0, pos);
+                if (!line.empty()) { result.emplace_back(line); }
+            }
+            comment.remove_prefix(pos + 1);
+        }
+        if (!comment.empty()) { result.emplace_back(comment); }
+    }
+    return result;
+}
+} // namespace detail
+
 Object::Object(std::initializer_list<std::pair<std::string, JsoncType>> val) JSONC_EXCEPTION_TYPE : mStorage(val) {}
 
 JsoncType& Object::operator[](std::string_view index) JSONC_EXCEPTION_TYPE {
@@ -159,9 +177,9 @@ bool Object::add_key_before_comment(std::string_view index, std::string_view com
     if (contains(index)) {
         auto res = mKeyComments.find(index);
         if (res != mKeyComments.end()) {
-            res->second.mBeforeComments.emplace_back(comment);
+            res->second.mBeforeComments.append_range(detail::split_comments(comment));
         } else {
-            mKeyComments.try_emplace(std::string(index)).first->second.mBeforeComments.emplace_back(comment);
+            mKeyComments.try_emplace(std::string(index)).first->second.mBeforeComments.append_range(detail::split_comments(comment));
         }
         return true;
     }
@@ -171,9 +189,9 @@ bool Object::add_key_after_comment(std::string_view index, std::string_view comm
     if (contains(index)) {
         auto res = mKeyComments.find(index);
         if (res != mKeyComments.end()) {
-            res->second.mAfterComments.emplace_back(comment);
+            res->second.mAfterComments.append_range(detail::split_comments(comment));
         } else {
-            mKeyComments.try_emplace(std::string(index)).first->second.mAfterComments.emplace_back(comment);
+            mKeyComments.try_emplace(std::string(index)).first->second.mAfterComments.append_range(detail::split_comments(comment));
         }
         return true;
     }
@@ -713,8 +731,8 @@ std::vector<std::string> JsoncType::get_after_comments() const JSONC_EXCEPTION_T
 void JsoncType::set_before_comments(const std::vector<std::string>& comments) JSONC_EXCEPTION_TYPE { mBeforeComments = comments; }
 void JsoncType::set_after_comments(const std::vector<std::string>& comments) JSONC_EXCEPTION_TYPE { mAfterComments = comments; }
 
-void JsoncType::add_before_comment(std::string_view comment) JSONC_EXCEPTION_TYPE { mBeforeComments.emplace_back(comment); }
-void JsoncType::add_after_comment(std::string_view comment) JSONC_EXCEPTION_TYPE { mAfterComments.emplace_back(comment); }
+void JsoncType::add_before_comment(std::string_view comment) JSONC_EXCEPTION_TYPE { mBeforeComments.append_range(detail::split_comments(comment)); }
+void JsoncType::add_after_comment(std::string_view comment) JSONC_EXCEPTION_TYPE { mAfterComments.append_range(detail::split_comments(comment)); }
 
 void JsoncType::clear_before_comments() JSONC_EXCEPTION_TYPE { mBeforeComments.clear(); }
 void JsoncType::clear_after_comments() JSONC_EXCEPTION_TYPE { mBeforeComments.clear(); }
