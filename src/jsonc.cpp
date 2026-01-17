@@ -23,11 +23,12 @@ JsoncValueType jsonc_get_variant_type(JsoncTypeVariantHandle handle) {
     return static_cast<JsoncValueType>(static_cast<jsonc::JsoncType*>(handle)->type());
 }
 
-bool        jsonc_variant_to_bool(JsoncTypeVariantHandle handle) { return static_cast<jsonc::JsoncType*>(handle)->get<bool>(); }
-int64_t     jsonc_variant_to_signed(JsoncTypeVariantHandle handle) { return static_cast<jsonc::JsoncType*>(handle)->get<int64_t>(); }
-uint64_t    jsonc_variant_to_unsigned(JsoncTypeVariantHandle handle) { return static_cast<jsonc::JsoncType*>(handle)->get<uint64_t>(); }
-double      jsonc_variant_to_float(JsoncTypeVariantHandle handle) { return static_cast<jsonc::JsoncType*>(handle)->get<double>(); }
-const char* jsonc_variant_to_string(JsoncTypeVariantHandle handle) { return make_cstr(static_cast<jsonc::JsoncType*>(handle)->get<std::string>()); }
+bool     jsonc_variant_to_bool(JsoncTypeVariantHandle handle) { return static_cast<jsonc::JsoncType*>(handle)->get<bool>(); }
+int64_t  jsonc_variant_to_signed(JsoncTypeVariantHandle handle) { return static_cast<jsonc::JsoncType*>(handle)->get<int64_t>(); }
+uint64_t jsonc_variant_to_unsigned(JsoncTypeVariantHandle handle) { return static_cast<jsonc::JsoncType*>(handle)->get<uint64_t>(); }
+double   jsonc_variant_to_float(JsoncTypeVariantHandle handle) { return static_cast<jsonc::JsoncType*>(handle)->get<double>(); }
+
+const char* jsonc_variant_as_string(JsoncTypeVariantHandle handle) { return static_cast<jsonc::JsoncType*>(handle)->as<std::string>().c_str(); }
 
 JsoncObjectHandle jsonc_variant_as_object(JsoncTypeVariantHandle handle) { return &static_cast<jsonc::JsoncType*>(handle)->as<jsonc::Object>(); }
 JsoncArrayHandle  jsonc_variant_as_array(JsoncTypeVariantHandle handle) { return &static_cast<jsonc::JsoncType*>(handle)->as<jsonc::Array>(); }
@@ -97,7 +98,7 @@ double jsonc_object_get_float(JsoncObjectHandle handle, const char* key) {
 void jsonc_object_set_float(JsoncObjectHandle handle, const char* key, double value) { static_cast<jsonc::Object*>(handle)->operator[](key) = value; }
 
 const char* jsonc_object_get_string(JsoncObjectHandle handle, const char* key) {
-    return make_cstr(static_cast<jsonc::Object*>(handle)->operator[](key).get<std::string>());
+    return static_cast<jsonc::Object*>(handle)->operator[](key).as<std::string>().c_str();
 }
 void jsonc_object_set_string(JsoncObjectHandle handle, const char* key, const char* value) {
     static_cast<jsonc::Object*>(handle)->operator[](key) = std::string_view(value);
@@ -128,7 +129,7 @@ void jsonc_object_set_array(JsoncObjectHandle handle, const char* key, JsoncArra
 size_t jsonc_object_get_size(JsoncObjectHandle handle) { return static_cast<jsonc::Object*>(handle)->size(); }
 
 const char* jsonc_object_get_key_at_index(JsoncObjectHandle handle, size_t index) {
-    return make_cstr(static_cast<jsonc::Object*>(handle)->key_index(index));
+    return static_cast<jsonc::Object*>(handle)->key_index(index).c_str();
 }
 
 void jsonc_object_clear(JsoncObjectHandle handle) { static_cast<jsonc::Object*>(handle)->clear(); }
@@ -230,7 +231,7 @@ void   jsonc_array_set_float(JsoncArrayHandle handle, size_t index, double value
 void   jsonc_array_add_float(JsoncArrayHandle handle, double value) { static_cast<jsonc::Array*>(handle)->push_back(value); }
 
 const char* jsonc_array_get_string(JsoncArrayHandle handle, size_t index) {
-    return make_cstr(static_cast<jsonc::Array*>(handle)->operator[](index).get<std::string>());
+    return static_cast<jsonc::Array*>(handle)->operator[](index).as<std::string>().c_str();
 }
 void jsonc_array_set_string(JsoncArrayHandle handle, size_t index, const char* value) {
     static_cast<jsonc::Array*>(handle)->operator[](index) = std::string_view(value);

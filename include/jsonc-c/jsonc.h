@@ -39,11 +39,12 @@ JSONC_API JsoncTypeVariantHandle jsonc_parse_content(const char* content, bool a
 
 JSONC_API enum JsoncValueType jsonc_get_variant_type(JsoncTypeVariantHandle handle);
 
-JSONC_API bool        jsonc_variant_to_bool(JsoncTypeVariantHandle handle);
-JSONC_API int64_t     jsonc_variant_to_signed(JsoncTypeVariantHandle handle);
-JSONC_API uint64_t    jsonc_variant_to_unsigned(JsoncTypeVariantHandle handle);
-JSONC_API double      jsonc_variant_to_float(JsoncTypeVariantHandle handle);
-JSONC_API const char* jsonc_variant_to_string(JsoncTypeVariantHandle handle);
+JSONC_API bool     jsonc_variant_to_bool(JsoncTypeVariantHandle handle);
+JSONC_API int64_t  jsonc_variant_to_signed(JsoncTypeVariantHandle handle);
+JSONC_API uint64_t jsonc_variant_to_unsigned(JsoncTypeVariantHandle handle);
+JSONC_API double   jsonc_variant_to_float(JsoncTypeVariantHandle handle);
+
+JSONC_API const char* jsonc_variant_as_string(JsoncTypeVariantHandle handle);
 
 JSONC_API JsoncObjectHandle jsonc_variant_as_object(JsoncTypeVariantHandle handle);
 JSONC_API JsoncArrayHandle  jsonc_variant_as_array(JsoncTypeVariantHandle handle);
