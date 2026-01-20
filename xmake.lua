@@ -153,6 +153,6 @@ target("test")
         local output_dir = path.join(os.projectdir(), "bin")
         os.mkdir(output_dir)
         os.cp(file, output_dir)
-        cprint("${bright green}[Execuatble]: ${reset}Execuatble file already generated to " .. output_dir)
+        cprint("${bright green}[Shared Library]: ${reset}Shared Library file already generated to " .. output_dir)
     end)
 end
