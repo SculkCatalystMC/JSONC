@@ -413,6 +413,22 @@ constexpr bool JsoncType::is_array() const noexcept { return hold(ValueType::Arr
 constexpr bool JsoncType::is_primitive() const noexcept { return is_null() || is_string() || is_number(); }
 constexpr bool JsoncType::is_structured() const noexcept { return is_array() || is_object(); }
 
+constexpr size_t JsoncType::size() const noexcept {
+    return std::visit(
+        [](const auto& val) -> size_t {
+            using T = std::decay_t<decltype(val)>;
+            if constexpr (std::is_same_v<T, Object> || std::is_same_v<T, Array>) {
+                return val.size();
+            } else if constexpr (std::is_same_v<T, std::monostate>) {
+                return 0;
+            } else {
+                return 1;
+            }
+        },
+        mStorage
+    );
+}
+
 JSONC_RESULT(bool) JsoncType::contains(std::string_view index) const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<Object>(&mStorage)) { return storage->contains(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));

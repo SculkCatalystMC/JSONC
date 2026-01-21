@@ -409,6 +409,8 @@ public:
     [[nodiscard]] constexpr bool is_primitive() const noexcept;
     [[nodiscard]] constexpr bool is_structured() const noexcept;
 
+    [[nodiscard]] constexpr size_t size() const noexcept;
+
     [[nodiscard]] std::string
     dump(int indent = 4, bool ensure_ascii = false, bool ignore_comments = false, bool global_comments = true) const JSONC_EXCEPTION_TYPE;
 
