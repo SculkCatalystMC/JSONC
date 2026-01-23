@@ -189,7 +189,7 @@ namespace detail {
 using TypeVariant = std::variant<std::monostate, bool, int64_t, uint64_t, double, std::string, Object, Array>;
 template <class T>
 inline constexpr bool is_jsonc_type_convertible_v = [] {
-    return []<std::size_t... I>(std::index_sequence<I...>) {
+    return []<size_t... I>(std::index_sequence<I...>) {
         return (std::is_convertible_v<std::variant_alternative_t<I, TypeVariant>, T> || ...);
     }(std::make_index_sequence<std::variant_size_v<TypeVariant>>{});
 }();
@@ -210,6 +210,19 @@ concept is_object_like = is_range_loopable<T> && requires {
     typename std::remove_cvref_t<T>::key_type;
     typename std::remove_cvref_t<T>::mapped_type;
 };
+template <class Var, size_t... Is>
+constexpr bool emplace_variant_impl(Var& v, size_t idx, std::index_sequence<Is...>) noexcept {
+    using emplace_func             = void (*)(Var&);
+    constexpr emplace_func table[] = {+[](Var& var) { var.template emplace<Is>(); }...};
+    if (idx >= sizeof...(Is)) { return false; }
+    table[idx](v);
+    return true;
+}
+template <class Var>
+constexpr bool emplace_variant(Var& v, size_t idx) noexcept {
+    constexpr size_t N = std::variant_size_v<std::remove_reference_t<Var>>;
+    return emplace_variant_impl(v, idx, std::make_index_sequence<N>{});
+}
 } // namespace detail
 
 class JsoncType {
@@ -366,30 +379,34 @@ public:
 
 public:
     JsoncType() = default;
-    constexpr JsoncType(std::nullptr_t) JSONC_EXCEPTION_TYPE : mStorage(std::monostate()) {};
 
-    constexpr JsoncType(bool val) JSONC_EXCEPTION_TYPE : mStorage(val) {};
+    constexpr JsoncType(ValueType type) noexcept { detail::emplace_variant(mStorage, static_cast<size_t>(type)); };
+
+    constexpr JsoncType(std::nullptr_t) noexcept : mStorage(std::monostate()) {};
+
+    constexpr JsoncType(bool val) noexcept : mStorage(val) {};
 
     template <std::signed_integral T>
-    constexpr JsoncType(T val) JSONC_EXCEPTION_TYPE : mStorage(static_cast<int64_t>(val)){};
+    constexpr JsoncType(T val) noexcept : mStorage(static_cast<int64_t>(val)){};
 
     template <std::unsigned_integral T>
         requires(!std::same_as<T, bool>)
-    constexpr JsoncType(T val) JSONC_EXCEPTION_TYPE : mStorage(static_cast<uint64_t>(val)){};
+    constexpr JsoncType(T val) noexcept : mStorage(static_cast<uint64_t>(val)){};
 
-    constexpr JsoncType(std::string_view val) JSONC_EXCEPTION_TYPE : mStorage(std::string(val)) {};
+    constexpr JsoncType(std::string_view val) noexcept : mStorage(std::string(val)) {};
 
     template <std::floating_point T>
-    constexpr JsoncType(T val) JSONC_EXCEPTION_TYPE : mStorage(static_cast<double>(val)){};
+    constexpr JsoncType(T val) noexcept : mStorage(static_cast<double>(val)){};
 
     template <size_t N>
-    [[nodiscard]] JsoncType(char const (&val)[N]) JSONC_EXCEPTION_TYPE : mStorage(std::string{val, N - 1}) {}
+    [[nodiscard]] JsoncType(char const (&val)[N]) noexcept : mStorage(std::string{val, N - 1}) {}
 
-    constexpr JsoncType(const Object& val) JSONC_EXCEPTION_TYPE : mStorage(val) {};
-    constexpr JsoncType(const Array& val) JSONC_EXCEPTION_TYPE : mStorage(val) {};
+    constexpr JsoncType(const Object& val) noexcept : mStorage(val) {};
+    constexpr JsoncType(const Array& val) noexcept : mStorage(val) {};
 
-    constexpr JsoncType(std::initializer_list<std::pair<std::string, JsoncType>> val) JSONC_EXCEPTION_TYPE
-    : mStorage(std::in_place_type<Object>, val) {}
+    constexpr JsoncType(std::initializer_list<std::pair<std::string, JsoncType>> val) noexcept : mStorage(std::in_place_type<Object>, val) {}
+
+    constexpr void emplace(ValueType type) noexcept { detail::emplace_variant(mStorage, static_cast<size_t>(type)); }
 
     [[nodiscard]] constexpr ValueType        type() const noexcept;
     [[nodiscard]] constexpr std::string_view type_name() const noexcept;
@@ -543,8 +560,8 @@ public:
     [[nodiscard]] constexpr size_t after_comments_size() const noexcept;
 
 public:
-    static Object object() JSONC_EXCEPTION_TYPE { return Object(); }
-    static Array  array() JSONC_EXCEPTION_TYPE { return Array(); }
+    static JsoncType object() JSONC_EXCEPTION_TYPE { return Object(); }
+    static JsoncType array() JSONC_EXCEPTION_TYPE { return Array(); }
 
 private:
     friend class Object;

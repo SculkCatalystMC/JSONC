@@ -600,6 +600,7 @@ JSONC_RESULT(T) JsoncType::get() const JSONC_EXCEPTION_TYPE {
 }
 
 JSONC_RESULT(JsoncType&) JsoncType::operator[](std::string_view index) JSONC_EXCEPTION_TYPE {
+    if (hold(ValueType::Null)) { mStorage.emplace<6>(); }
     if (auto* storage = std::get_if<Object>(&mStorage)) { return (*storage)[index]; }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
