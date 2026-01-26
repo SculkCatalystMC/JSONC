@@ -271,21 +271,25 @@ JSONC_RESULT(void) Object::merge_patch(const JsoncType& other, bool merge_list) 
 
 void Object::merge_comments(const Object& other) JSONC_EXCEPTION_TYPE {
     for (const auto& [key, val] : other) {
-        operator[](key).set_before_comments(val[key].get_before_comments());
-        operator[](key).set_after_comments(val[key].get_after_comments());
-        set_key_before_comments(key, val.get_key_before_comments(key));
-        set_key_after_comments(key, val.get_key_after_comments(key));
+        operator[](key).set_before_comments(val.get_before_comments());
+        operator[](key).set_after_comments(val.get_after_comments());
+        if (other.has_key_before_comments(key)) { set_key_before_comments(key, other.get_key_before_comments(key)); }
+        if (other.has_key_after_comments(key)) { set_key_after_comments(key, other.get_key_after_comments(key)); }
+        operator[](key).merge_comments(val);
     }
 }
 
 void Object::move_comments_to_before() JSONC_EXCEPTION_TYPE {
     for (const auto& [key, val] : *this) {
-        key_before_comments(key).append_range(get_key_after_comments(key));
-        clear_key_after_comments(key);
+        if (has_key_after_comments(key)) {
+            key_before_comments(key).append_range(get_key_after_comments(key));
+            clear_key_after_comments(key);
+        }
         key_before_comments(key).append_range(operator[](key).get_before_comments());
         operator[](key).clear_before_comments();
         key_before_comments(key).append_range(operator[](key).get_after_comments());
         operator[](key).clear_after_comments();
+        operator[](key).move_comments_to_before();
     }
 }
 
