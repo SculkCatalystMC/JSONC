@@ -467,6 +467,8 @@ public:
     template <detail::is_object_like T>
     [[nodiscard]] JSONC_RESULT(T) get() const JSONC_EXCEPTION_TYPE;
 
+    [[nodiscard]] JSONC_RESULT(std::string_view) get_big_int_view() const JSONC_EXCEPTION_TYPE;
+
     [[nodiscard]] JSONC_RESULT(JsoncType&) operator[](std::string_view index) JSONC_EXCEPTION_TYPE;
     [[nodiscard]] JSONC_RESULT(const JsoncType&) operator[](std::string_view index) const JSONC_EXCEPTION_TYPE;
 
@@ -610,6 +612,8 @@ public:
 public:
     static JsoncType object() JSONC_EXCEPTION_TYPE { return Object(); }
     static JsoncType array() JSONC_EXCEPTION_TYPE { return Array(); }
+
+    static JsoncType from_big_int(std::string_view view) { return JsoncType(detail::BigInt(view)); }
 
 private:
     friend class Object;

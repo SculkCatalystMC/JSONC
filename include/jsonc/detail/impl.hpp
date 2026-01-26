@@ -641,6 +641,11 @@ JSONC_RESULT(T) JsoncType::get() const JSONC_EXCEPTION_TYPE {
     _JSONC_TYPE_ERROR("bad type cast");
 }
 
+JSONC_RESULT(std::string_view) JsoncType::get_big_int_view() const JSONC_EXCEPTION_TYPE {
+    if (auto* storage = std::get_if<detail::BigInt>(&storage_)) { return storage->view_; }
+    _JSONC_TYPE_ERROR(std::format("Type must be a big integer, but is {}", type_name()));
+}
+
 JSONC_RESULT(JsoncType&) JsoncType::operator[](std::string_view index) JSONC_EXCEPTION_TYPE {
     if (hold(ValueType::Null)) { storage_.emplace<6>(); }
     if (auto* storage = std::get_if<Object>(&storage_)) { return (*storage)[index]; }
