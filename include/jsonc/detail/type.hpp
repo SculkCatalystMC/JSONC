@@ -409,8 +409,8 @@ public:
     constexpr JsoncType(std::string_view val) noexcept : storage_(std::string(val)) {};
     constexpr JsoncType(const std::string& val) noexcept : storage_(val) {};
 
-    template <std::floating_point T>
-    constexpr JsoncType(T val) noexcept : storage_(static_cast<double>(val)){};
+    constexpr JsoncType(double val) noexcept : storage_(val) {};
+    constexpr JsoncType(float val) noexcept : storage_(std::round(val * 1e7) / 1e7) {};
 
     template <size_t N>
     [[nodiscard]] JsoncType(char const (&val)[N]) noexcept : storage_(std::string{val, N - 1}) {}
