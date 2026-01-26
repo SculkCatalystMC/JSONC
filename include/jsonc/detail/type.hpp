@@ -6,6 +6,15 @@
 
 namespace jsonc {
 
+namespace detail {
+struct BigInt {
+    BigInt() noexcept = default;
+    BigInt(std::string_view val) noexcept : view_(val) {}
+    bool        operator==(const BigInt& other) const noexcept { return view_ == other.view_; }
+    std::string view_;
+};
+} // namespace detail
+
 enum class ValueType : uint8_t {
     Null     = 0,
     Boolean  = 1,
@@ -15,6 +24,7 @@ enum class ValueType : uint8_t {
     String   = 5,
     Object   = 6,
     Array    = 7,
+    BigInt   = 8,
 };
 
 class JsoncType;
@@ -72,6 +82,9 @@ public:
 
     void merge_patch(const Object& other, bool merge_list = false) JSONC_EXCEPTION_TYPE;
     JSONC_RESULT(void) merge_patch(const JsoncType& other, bool merge_list = false) JSONC_EXCEPTION_TYPE;
+
+    void merge_comments(const Object& other) JSONC_EXCEPTION_TYPE;
+    void move_comments_to_before() JSONC_EXCEPTION_TYPE;
 
     [[nodiscard]] bool operator==(const Object& other) const JSONC_EXCEPTION_TYPE;
     [[nodiscard]] bool operator==(const JsoncType& other) const JSONC_EXCEPTION_TYPE;
@@ -177,6 +190,9 @@ public:
     void merge_patch(const Array& other) JSONC_EXCEPTION_TYPE;
     JSONC_RESULT(void) merge_patch(const JsoncType& other) JSONC_EXCEPTION_TYPE;
 
+    void merge_comments(const Array& other) JSONC_EXCEPTION_TYPE;
+    void move_comments_to_before() JSONC_EXCEPTION_TYPE;
+
     [[nodiscard]] bool operator==(const Array& other) const JSONC_EXCEPTION_TYPE;
     [[nodiscard]] bool operator==(const JsoncType& other) const JSONC_EXCEPTION_TYPE;
 
@@ -186,7 +202,7 @@ private:
 };
 
 namespace detail {
-using TypeVariant = std::variant<std::monostate, bool, int64_t, uint64_t, double, std::string, Object, Array>;
+using TypeVariant = std::variant<std::monostate, bool, int64_t, uint64_t, double, std::string, Object, Array, BigInt>;
 template <class T>
 inline constexpr bool is_jsonc_type_convertible_v = [] {
     return []<size_t... I>(std::index_sequence<I...>) {
@@ -196,13 +212,10 @@ inline constexpr bool is_jsonc_type_convertible_v = [] {
 template <typename T>
 concept is_jsonc_type_convertible = is_jsonc_type_convertible_v<T>;
 template <typename T>
-concept is_range_loopable = (std::is_bounded_array_v<std::remove_cvref_t<T>> || requires(T t) {
+concept is_range_loopable = !std::is_constructible_v<std::string, T> && (std::is_bounded_array_v<std::remove_cvref_t<T>> || requires(T t) {
     t.begin();
     t.end();
-} || requires(T t) {
-    begin(t);
-    end(t);
-}) && !std::is_constructible_v<std::string, T> ;
+});
 template <typename T>
 concept is_array_like = is_range_loopable<T> && !requires { typename std::remove_cvref_t<T>::mapped_type; };
 template <typename T>
@@ -210,7 +223,7 @@ concept is_object_like = is_range_loopable<T> && requires {
     typename std::remove_cvref_t<T>::key_type;
     typename std::remove_cvref_t<T>::mapped_type;
 };
-template <class Var, size_t... Is>
+template <typename Var, size_t... Is>
 constexpr bool emplace_variant_impl(Var& v, size_t idx, std::index_sequence<Is...>) noexcept {
     using emplace_func             = void (*)(Var&);
     constexpr emplace_func table[] = {+[](Var& var) { var.template emplace<Is>(); }...};
@@ -218,7 +231,7 @@ constexpr bool emplace_variant_impl(Var& v, size_t idx, std::index_sequence<Is..
     table[idx](v);
     return true;
 }
-template <class Var>
+template <typename Var>
 constexpr bool emplace_variant(Var& v, size_t idx) noexcept {
     constexpr size_t N = std::variant_size_v<std::remove_reference_t<Var>>;
     return emplace_variant_impl(v, idx, std::make_index_sequence<N>{});
@@ -404,6 +417,7 @@ public:
 
     constexpr JsoncType(const Object& val) noexcept : storage_(val) {};
     constexpr JsoncType(const Array& val) noexcept : storage_(val) {};
+    constexpr JsoncType(const detail::BigInt& val) noexcept : storage_(val) {};
 
     constexpr JsoncType(std::initializer_list<std::pair<std::string, JsoncType>> val) noexcept : storage_(std::in_place_type<Object>, val) {}
 
@@ -424,6 +438,7 @@ public:
     [[nodiscard]] constexpr bool is_string() const noexcept;
     [[nodiscard]] constexpr bool is_object() const noexcept;
     [[nodiscard]] constexpr bool is_array() const noexcept;
+    [[nodiscard]] constexpr bool is_number_big_inteager() const noexcept;
     [[nodiscard]] constexpr bool is_primitive() const noexcept;
     [[nodiscard]] constexpr bool is_structured() const noexcept;
 
@@ -516,6 +531,8 @@ public:
     [[nodiscard]] const_reverse_iterator crend() const noexcept;
 
     void merge_patch(const JsoncType& other, bool merge_list = false) JSONC_EXCEPTION_TYPE;
+    void merge_comments(const JsoncType& other) JSONC_EXCEPTION_TYPE;
+    void move_comments_to_before() JSONC_EXCEPTION_TYPE;
 
     [[nodiscard]] bool operator==(const JsoncType& other) const JSONC_EXCEPTION_TYPE;
 
@@ -553,9 +570,6 @@ public:
 
     void clear_before_comments() JSONC_EXCEPTION_TYPE;
     void clear_after_comments() JSONC_EXCEPTION_TYPE;
-
-    std::vector<std::string>&& move_before_comments() noexcept;
-    std::vector<std::string>&& move_after_comments() noexcept;
 
     bool remove_before_comment(size_t comment_index) JSONC_EXCEPTION_TYPE;
     bool remove_after_comment(size_t comment_index) JSONC_EXCEPTION_TYPE;

@@ -244,7 +244,12 @@ inline std::string dump_typed(const Object& val, bool ensure_ascii, int indent, 
 template <typename T>
     requires std::is_arithmetic_v<T>
 inline std::string dump_typed(T val, bool, int, bool) JSONC_EXCEPTION_TYPE {
+    if constexpr (std::is_floating_point_v<T>) {
+        if (std::round(val) == val) { return std::format("{:.1f}", val); }
+    }
     return std::format("{}", val);
 }
+
+inline std::string dump_typed(BigInt val, bool, int, bool) JSONC_EXCEPTION_TYPE { return val.view_; }
 
 } // namespace jsonc::detail

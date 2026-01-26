@@ -262,11 +262,31 @@ Object::const_reverse_iterator Object::crbegin() const noexcept { return storage
 Object::const_reverse_iterator Object::crend() const noexcept { return storage_.crend(); }
 
 void Object::merge_patch(const Object& other, bool merge_list) JSONC_EXCEPTION_TYPE {
-    for (auto const& [key, val] : other) { operator[](key).merge_patch(val, merge_list); }
+    for (const auto& [key, val] : other) { operator[](key).merge_patch(val, merge_list); }
 }
 JSONC_RESULT(void) Object::merge_patch(const JsoncType& other, bool merge_list) JSONC_EXCEPTION_TYPE {
     if (auto* rhs = std::get_if<Object>(&other.storage_)) { return merge_patch(*rhs, merge_list); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", other.type_name()));
+}
+
+void Object::merge_comments(const Object& other) JSONC_EXCEPTION_TYPE {
+    for (const auto& [key, val] : other) {
+        operator[](key).set_before_comments(val[key].get_before_comments());
+        operator[](key).set_after_comments(val[key].get_after_comments());
+        set_key_before_comments(key, val.get_key_before_comments(key));
+        set_key_after_comments(key, val.get_key_after_comments(key));
+    }
+}
+
+void Object::move_comments_to_before() JSONC_EXCEPTION_TYPE {
+    for (const auto& [key, val] : *this) {
+        key_before_comments(key).append_range(get_key_after_comments(key));
+        clear_key_after_comments(key);
+        key_before_comments(key).append_range(operator[](key).get_before_comments());
+        operator[](key).clear_before_comments();
+        key_before_comments(key).append_range(operator[](key).get_after_comments());
+        operator[](key).clear_after_comments();
+    }
 }
 
 bool Object::operator==(const Object& other) const JSONC_EXCEPTION_TYPE { return storage_ == other.storage_; }
@@ -350,7 +370,7 @@ Array::const_reverse_iterator Array::crend() const noexcept { return storage_.cr
 
 void Array::merge_patch(const Array& other) JSONC_EXCEPTION_TYPE {
     if (other.empty()) { return; }
-    for (auto const& val : other.storage_) {
+    for (const auto& val : other.storage_) {
         bool exist = false;
         for (const auto& tag : storage_) {
             if (tag == val) {
@@ -366,6 +386,26 @@ JSONC_RESULT(void) Array::merge_patch(const JsoncType& other) JSONC_EXCEPTION_TY
         { return merge_patch(*rhs); }
     }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", other.type_name()));
+}
+
+void Array::merge_comments(const Array& other) JSONC_EXCEPTION_TYPE {
+    if (other.empty()) { return; }
+    for (const auto& val : other.storage_) {
+        for (auto& tag : storage_) {
+            if (tag == val) {
+                tag.set_before_comments(val.get_before_comments());
+                tag.set_after_comments(val.get_after_comments());
+                break;
+            }
+        }
+    }
+}
+
+void Array::move_comments_to_before() JSONC_EXCEPTION_TYPE {
+    for (auto& val : *this) {
+        val.before_comments_.append_range(val.after_comments_);
+        val.after_comments_.clear();
+    }
 }
 
 bool Array::operator==(const Array& other) const JSONC_EXCEPTION_TYPE { return storage_ == other.storage_; }
@@ -384,6 +424,7 @@ constexpr std::string_view JsoncType::type_name() const noexcept {
         return "boolean";
     case ValueType::Signed:
     case ValueType::Unsigned:
+    case ValueType::BigInt:
         return "inteager";
     case ValueType::String:
         return "string";
@@ -406,10 +447,11 @@ constexpr bool JsoncType::is_number_signed() const noexcept { return hold(ValueT
 constexpr bool JsoncType::is_number_unsigned() const noexcept { return hold(ValueType::Unsigned); }
 constexpr bool JsoncType::is_number_integer() const noexcept { return is_number_signed() || is_number_unsigned(); }
 constexpr bool JsoncType::is_number_float() const noexcept { return hold(ValueType::Float); }
-constexpr bool JsoncType::is_number() const noexcept { return is_number_integer() || is_number_float(); }
+constexpr bool JsoncType::is_number() const noexcept { return is_number_integer() || is_number_float() || is_number_big_inteager(); }
 constexpr bool JsoncType::is_string() const noexcept { return hold(ValueType::String); }
 constexpr bool JsoncType::is_object() const noexcept { return hold(ValueType::Object); }
 constexpr bool JsoncType::is_array() const noexcept { return hold(ValueType::Array); }
+constexpr bool JsoncType::is_number_big_inteager() const noexcept { return hold(ValueType::BigInt); }
 constexpr bool JsoncType::is_primitive() const noexcept { return is_null() || is_string() || is_number(); }
 constexpr bool JsoncType::is_structured() const noexcept { return is_array() || is_object(); }
 
@@ -731,6 +773,26 @@ void JsoncType::merge_patch(const JsoncType& other, bool merge_list) JSONC_EXCEP
     }
 }
 
+void JsoncType::merge_comments(const JsoncType& other) JSONC_EXCEPTION_TYPE {
+    if (is_object() && other.is_object()) {
+        as<Object>().merge_comments(other.as<Object>());
+    } else if (is_array() && other.is_array()) {
+        as<Array>().merge_comments(other.as<Array>());
+    }
+    set_before_comments(other.get_before_comments());
+    set_after_comments(other.get_after_comments());
+}
+
+void JsoncType::move_comments_to_before() JSONC_EXCEPTION_TYPE {
+    if (is_object()) {
+        as<Object>().move_comments_to_before();
+    } else if (is_array()) {
+        as<Array>().move_comments_to_before();
+    }
+    before_comments_.append_range(after_comments_);
+    after_comments_.clear();
+}
+
 bool JsoncType::operator==(const JsoncType& other) const JSONC_EXCEPTION_TYPE { return storage_ == other.storage_; }
 
 constexpr bool JsoncType::has_before_comments() const noexcept { return before_comments_.size() != 0; }
@@ -753,9 +815,6 @@ void JsoncType::add_after_comment(std::string_view comment) JSONC_EXCEPTION_TYPE
 
 void JsoncType::clear_before_comments() JSONC_EXCEPTION_TYPE { before_comments_.clear(); }
 void JsoncType::clear_after_comments() JSONC_EXCEPTION_TYPE { after_comments_.clear(); }
-
-std::vector<std::string>&& JsoncType::move_before_comments() noexcept { return std::move(before_comments_); }
-std::vector<std::string>&& JsoncType::move_after_comments() noexcept { return std::move(after_comments_); }
 
 bool JsoncType::remove_before_comment(size_t comment_index) JSONC_EXCEPTION_TYPE {
     if (comment_index < before_comments_.size()) {
