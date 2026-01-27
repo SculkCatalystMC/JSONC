@@ -648,9 +648,25 @@ JSONC_RESULT(T) JsoncType::get() const JSONC_EXCEPTION_TYPE {
     _JSONC_TYPE_ERROR("bad type cast");
 }
 
-JSONC_RESULT(std::string_view) JsoncType::get_big_int_view() const JSONC_EXCEPTION_TYPE {
+JSONC_RESULT(std::string) JsoncType::get_big_int_view() const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<detail::BigInt>(&storage_)) { return storage->view_; }
     _JSONC_TYPE_ERROR(std::format("Type must be a big integer, but is {}", type_name()));
+}
+
+JSONC_RESULT(std::string) JsoncType::get_any_int_view() const JSONC_EXCEPTION_TYPE {
+    return std::visit(
+        [](const auto& val) -> JSONC_RESULT(std::string) {
+            using Type = std::decay_t<decltype(val)>;
+            if constexpr (std::same_as<detail::BigInt, Type>) {
+                return val.view_;
+            } else if constexpr (std::same_as<int64_t, Type> || std::same_as<uint64_t, Type>) {
+                return std::to_string(val);
+            } else {
+                _JSONC_TYPE_ERROR(std::format("Type must be a any integer type, but is {}", type_name()));
+            }
+        },
+        storage_
+    );
 }
 
 JSONC_RESULT(JsoncType&) JsoncType::operator[](std::string_view index) JSONC_EXCEPTION_TYPE {
