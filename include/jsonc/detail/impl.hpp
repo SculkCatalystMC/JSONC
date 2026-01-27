@@ -2,7 +2,9 @@
 #include "exception.hpp"
 #include "serializer.hpp"
 #include "type.hpp"
+#include <algorithm>
 #include <format>
+#include <ranges>
 
 namespace jsonc {
 
@@ -450,12 +452,13 @@ constexpr bool JsoncType::is_boolean() const noexcept { return hold(ValueType::B
 constexpr bool JsoncType::is_number_signed() const noexcept { return hold(ValueType::Signed); }
 constexpr bool JsoncType::is_number_unsigned() const noexcept { return hold(ValueType::Unsigned); }
 constexpr bool JsoncType::is_number_integer() const noexcept { return is_number_signed() || is_number_unsigned(); }
+constexpr bool JsoncType::is_number_big_inteager() const noexcept { return hold(ValueType::BigInt); }
+constexpr bool JsoncType::is_number_any_inteager() const noexcept { return is_number_integer() || is_number_big_inteager(); }
 constexpr bool JsoncType::is_number_float() const noexcept { return hold(ValueType::Float); }
-constexpr bool JsoncType::is_number() const noexcept { return is_number_integer() || is_number_float() || is_number_big_inteager(); }
+constexpr bool JsoncType::is_number() const noexcept { return is_number_float() || is_number_any_inteager(); }
 constexpr bool JsoncType::is_string() const noexcept { return hold(ValueType::String); }
 constexpr bool JsoncType::is_object() const noexcept { return hold(ValueType::Object); }
 constexpr bool JsoncType::is_array() const noexcept { return hold(ValueType::Array); }
-constexpr bool JsoncType::is_number_big_inteager() const noexcept { return hold(ValueType::BigInt); }
 constexpr bool JsoncType::is_primitive() const noexcept { return is_null() || is_string() || is_number(); }
 constexpr bool JsoncType::is_structured() const noexcept { return is_array() || is_object(); }
 
@@ -931,6 +934,31 @@ size_t JsoncType::key_before_comments_size(std::string_view index) const JSONC_E
 size_t JsoncType::key_after_comments_size(std::string_view index) const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<Object>(&storage_)) { return storage->key_after_comments_size(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
+}
+
+inline bool is_int(std::string_view view) {
+    if (view.starts_with('-') || view.starts_with('+')) { view.remove_prefix(1); }
+    return std::ranges::all_of(view, [](unsigned char c) { return std::isdigit(c); });
+}
+
+std::optional<JsoncType> JsoncType::from_big_int(std::string_view view) noexcept {
+    if (view.empty()) { return std::nullopt; }
+    if (view.starts_with('-')) {
+        int64_t res{};
+        auto [ptr, ec] = std::from_chars(view.data(), view.data() + view.size(), res);
+        if (ec != std::errc() || ptr != view.data() + view.size()) {
+            if (is_int(view)) { return detail::BigInt(view); }
+            return std::nullopt;
+        }
+        return res;
+    }
+    uint64_t res{};
+    auto [ptr, ec] = std::from_chars(view.data(), view.data() + view.size(), res);
+    if (ec != std::errc() || ptr != view.data() + view.size()) {
+        if (is_int(view)) { return detail::BigInt(view); }
+        return std::nullopt;
+    }
+    return res;
 }
 
 } // namespace jsonc

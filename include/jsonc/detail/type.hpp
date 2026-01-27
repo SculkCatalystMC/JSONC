@@ -433,12 +433,13 @@ public:
     [[nodiscard]] constexpr bool is_number_signed() const noexcept;
     [[nodiscard]] constexpr bool is_number_unsigned() const noexcept;
     [[nodiscard]] constexpr bool is_number_integer() const noexcept;
+    [[nodiscard]] constexpr bool is_number_big_inteager() const noexcept;
+    [[nodiscard]] constexpr bool is_number_any_inteager() const noexcept;
     [[nodiscard]] constexpr bool is_number_float() const noexcept;
     [[nodiscard]] constexpr bool is_number() const noexcept;
     [[nodiscard]] constexpr bool is_string() const noexcept;
     [[nodiscard]] constexpr bool is_object() const noexcept;
     [[nodiscard]] constexpr bool is_array() const noexcept;
-    [[nodiscard]] constexpr bool is_number_big_inteager() const noexcept;
     [[nodiscard]] constexpr bool is_primitive() const noexcept;
     [[nodiscard]] constexpr bool is_structured() const noexcept;
 
@@ -613,7 +614,7 @@ public:
     static JsoncType object() JSONC_EXCEPTION_TYPE { return Object(); }
     static JsoncType array() JSONC_EXCEPTION_TYPE { return Array(); }
 
-    static JsoncType from_big_int(std::string_view view) { return JsoncType(detail::BigInt(view)); }
+    static std::optional<JsoncType> from_big_int(std::string_view view) noexcept;
 
 private:
     friend class Object;

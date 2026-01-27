@@ -226,13 +226,19 @@ inline JSONC_PARSE_RESULT(
         if (negative) {
             int64_t res{};
             auto [ptr, ec] = std::from_chars(number.data(), number.data() + number.size(), res);
-            if (ec != std::errc()) { result = detail::BigInt(number); }
-            result = res;
+            if (ec != std::errc()) {
+                result = detail::BigInt(number);
+            } else {
+                result = res;
+            }
         } else {
             uint64_t res{};
             auto [ptr, ec] = std::from_chars(number.data(), number.data() + number.size(), res);
-            if (ec != std::errc()) { result = detail::BigInt(number); }
-            result = res;
+            if (ec != std::errc()) {
+                result = detail::BigInt(number);
+            } else {
+                result = res;
+            }
         }
     } else {
         double res{};
