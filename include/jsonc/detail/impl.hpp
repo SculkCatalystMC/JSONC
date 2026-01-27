@@ -273,11 +273,13 @@ JSONC_RESULT(void) Object::merge_patch(const JsoncType& other, bool merge_list) 
 
 void Object::merge_comments(const Object& other) JSONC_EXCEPTION_TYPE {
     for (const auto& [key, val] : other) {
-        operator[](key).set_before_comments(val.get_before_comments());
-        operator[](key).set_after_comments(val.get_after_comments());
-        if (other.has_key_before_comments(key)) { set_key_before_comments(key, other.get_key_before_comments(key)); }
-        if (other.has_key_after_comments(key)) { set_key_after_comments(key, other.get_key_after_comments(key)); }
-        operator[](key).merge_comments(val);
+        if (contains(key)) {
+            operator[](key).set_before_comments(val.get_before_comments());
+            operator[](key).set_after_comments(val.get_after_comments());
+            if (other.has_key_before_comments(key)) { set_key_before_comments(key, other.get_key_before_comments(key)); }
+            if (other.has_key_after_comments(key)) { set_key_after_comments(key, other.get_key_after_comments(key)); }
+            operator[](key).merge_comments(val);
+        }
     }
 }
 
