@@ -100,7 +100,7 @@ void jsonc_object_set_unsigned(JsoncObjectHandle handle, const char* key, uint64
 }
 
 const char* jsonc_object_get_any_int(JsoncObjectHandle handle, const char* key) {
-    return static_cast<jsonc::Object*>(handle)->operator[](key).get_any_int_view().c_str();
+    return make_cstr(static_cast<jsonc::Object*>(handle)->operator[](key).get_any_int_view());
 }
 bool jsonc_object_set_any_int(JsoncObjectHandle handle, const char* key, const char* value) {
     auto val = jsonc::JsoncType::from_big_int(value);
@@ -247,7 +247,7 @@ void jsonc_array_set_unsigned(JsoncArrayHandle handle, size_t index, uint64_t va
 void jsonc_array_add_unsigned(JsoncArrayHandle handle, uint64_t value) { static_cast<jsonc::Array*>(handle)->push_back(value); }
 
 const char* jsonc_array_get_any_int(JsoncObjectHandle handle, size_t index) {
-    return static_cast<jsonc::Array*>(handle)->operator[](index).get_any_int_view().c_str();
+    return make_cstr(static_cast<jsonc::Array*>(handle)->operator[](index).get_any_int_view());
 }
 bool jsonc_array_set_any_int(JsoncObjectHandle handle, size_t index, const char* value) {
     auto val = jsonc::JsoncType::from_big_int(value);
