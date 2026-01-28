@@ -158,9 +158,12 @@ inline std::string dump_typed(const Array& val, bool ensure_ascii, int indent, b
         if (line_feed) { result += indent_space; }
 
         std::string value{};
-        if (!ignore_comments && element.has_before_comments()) { value += format_comments(element.before_comments(), indent_space, !line_feed); }
+        if (!ignore_comments && element.has_before_comments()) {
+            value += format_comments(element.before_comments(), indent_space, !line_feed);
+            value += indent_space;
+        }
         value  += element.dump(indent, ensure_ascii, ignore_comments, false);
-        result += fix_indent(value, indent_space);
+        result += value;
 
         if (i > 0) { result.push_back(','); }
 
