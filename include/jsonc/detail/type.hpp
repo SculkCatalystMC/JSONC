@@ -263,7 +263,7 @@ public:
         IteratorType iterator_;
 
         template <bool Reserve>
-        [[nodiscard]] inline static Iterator make_begin(auto& var) noexcept {
+        [[nodiscard]] static Iterator make_begin(auto& var) noexcept {
             Iterator result{};
             std::visit(
                 [&](auto& val) {
@@ -292,7 +292,7 @@ public:
         }
 
         template <bool Reserve>
-        [[nodiscard]] inline static Iterator make_end(auto& var) noexcept {
+        [[nodiscard]] static Iterator make_end(auto& var) noexcept {
             Iterator result{};
             std::visit(
                 [&](auto& val) {
@@ -319,7 +319,7 @@ public:
         }
 
     public:
-        [[nodiscard]] inline reference operator*() const noexcept {
+        [[nodiscard]] reference operator*() const noexcept {
             return std::visit(
                 [](auto& val) -> reference {
                     using T          = std::decay_t<decltype(val)>;
@@ -337,31 +337,31 @@ public:
             );
         }
 
-        [[nodiscard]] inline pointer operator->() const noexcept { return std::addressof(**this); }
+        [[nodiscard]] pointer operator->() const noexcept { return std::addressof(**this); }
 
-        inline Iterator& operator++() noexcept {
+        Iterator& operator++() noexcept {
             std::visit([](auto& val) { ++val; }, iterator_);
             return *this;
         }
 
-        inline Iterator operator++(int) noexcept {
+        Iterator operator++(int) noexcept {
             Iterator tmp = *this;
             ++*this;
             return tmp;
         }
 
-        inline Iterator& operator--() noexcept {
+        Iterator& operator--() noexcept {
             std::visit([](auto& val) { --val; }, iterator_);
             return *this;
         }
 
-        inline Iterator operator--(int) noexcept {
+        Iterator operator--(int) noexcept {
             Iterator tmp = *this;
             --*this;
             return tmp;
         }
 
-        [[nodiscard]] inline bool operator==(Iterator const& r) const noexcept { return this->iterator_ == r.iterator_; }
+        [[nodiscard]] bool operator==(Iterator const& r) const noexcept { return this->iterator_ == r.iterator_; }
     };
 
     class IteratorProxy {
@@ -503,7 +503,7 @@ public:
     [[nodiscard]] inline JSONC_RESULT(bool) contains(std::string_view index) const JSONC_EXCEPTION_TYPE;
     [[nodiscard]] inline JSONC_RESULT(bool) contains(std::string_view index, ValueType type) const JSONC_EXCEPTION_TYPE;
 
-    JSONC_RESULT(void) clear() JSONC_EXCEPTION_TYPE;
+    inline JSONC_RESULT(void) clear() JSONC_EXCEPTION_TYPE;
 
     [[nodiscard]] inline JSONC_RESULT(bool) empty() const JSONC_EXCEPTION_TYPE;
 
