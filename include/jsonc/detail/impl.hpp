@@ -77,8 +77,8 @@ void Object::clear() noexcept {
     key_comments_.clear();
 }
 
-std::string Object::dump(int indent, bool ensure_ascii, bool ignore_comments) const JSONC_EXCEPTION_TYPE {
-    return detail::dump_typed(*this, ensure_ascii, indent, ignore_comments);
+std::string Object::dump(int indent, bool ensure_ascii, bool ignore_comments, bool multi_line_comments_format) const JSONC_EXCEPTION_TYPE {
+    return detail::dump_typed(*this, ensure_ascii, indent, ignore_comments, multi_line_comments_format);
 }
 
 const std::string& Object::key_index(size_t index) const noexcept { return storage_.key_index(index); }
@@ -354,8 +354,8 @@ JsoncType&       Array::front() noexcept { return storage_.front(); }
 const JsoncType& Array::back() const noexcept { return storage_.back(); }
 JsoncType&       Array::back() noexcept { return storage_.back(); }
 
-std::string Array::dump(int indent, bool ensure_ascii, bool ignore_comments) const JSONC_EXCEPTION_TYPE {
-    return detail::dump_typed(*this, ensure_ascii, indent, ignore_comments);
+std::string Array::dump(int indent, bool ensure_ascii, bool ignore_comments, bool multi_line_comments_format) const JSONC_EXCEPTION_TYPE {
+    return detail::dump_typed(*this, ensure_ascii, indent, ignore_comments, multi_line_comments_format);
 }
 
 Array::iterator Array::begin() noexcept { return storage_.begin(); }
@@ -570,12 +570,21 @@ JsoncType::operator T() const JSONC_EXCEPTION_TYPE {
 #endif
 }
 
-std::string JsoncType::dump(int indent, bool ensure_ascii, bool ignore_comments, bool global_comments) const JSONC_EXCEPTION_TYPE {
-    auto result = std::visit([&](const auto& val) { return detail::dump_typed(val, ensure_ascii, indent, ignore_comments); }, storage_);
+std::string JsoncType::dump(
+    int  indent,
+    bool ensure_ascii,
+    bool ignore_comments,
+    bool global_comments,
+    bool multi_line_comments_format
+) const JSONC_EXCEPTION_TYPE {
+    auto result = std::visit(
+        [&](const auto& val) { return detail::dump_typed(val, ensure_ascii, indent, ignore_comments, multi_line_comments_format); },
+        storage_
+    );
     if (!ignore_comments && global_comments) {
-        auto before = detail::format_comments(before_comments_);
+        auto before = detail::format_comments(before_comments_, "", false, multi_line_comments_format);
         if (!before.empty()) { result = before + result; }
-        auto after = detail::format_comments(after_comments_);
+        auto after = detail::format_comments(after_comments_, "", false, multi_line_comments_format);
         if (!after.empty()) {
             if (indent >= 0) { result.push_back(' '); }
             result.append(after);

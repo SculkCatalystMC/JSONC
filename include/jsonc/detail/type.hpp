@@ -58,7 +58,8 @@ public:
 
     [[nodiscard]] size_t size() const noexcept;
 
-    [[nodiscard]] std::string dump(int indent = 4, bool ensure_ascii = false, bool ignore_comments = false) const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] std::string
+    dump(int indent = 4, bool ensure_ascii = false, bool ignore_comments = false, bool multi_line_comments_format = true) const JSONC_EXCEPTION_TYPE;
 
     [[nodiscard]] const std::string& key_index(size_t index) const noexcept;
 
@@ -167,7 +168,8 @@ public:
     iterator erase(const_iterator where) JSONC_EXCEPTION_TYPE;
     iterator erase(const_iterator first, const_iterator last) JSONC_EXCEPTION_TYPE;
 
-    [[nodiscard]] std::string dump(int indent = 4, bool ensure_ascii = false, bool ignore_comments = false) const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] std::string
+    dump(int indent = 4, bool ensure_ascii = false, bool ignore_comments = false, bool multi_line_comments_format = true) const JSONC_EXCEPTION_TYPE;
 
     [[nodiscard]] iterator begin() noexcept;
     [[nodiscard]] iterator end() noexcept;
@@ -445,8 +447,13 @@ public:
 
     [[nodiscard]] constexpr size_t size() const noexcept;
 
-    [[nodiscard]] std::string
-    dump(int indent = 4, bool ensure_ascii = false, bool ignore_comments = false, bool global_comments = true) const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] std::string dump(
+        int  indent                     = 4,
+        bool ensure_ascii               = false,
+        bool ignore_comments            = false,
+        bool global_comments            = true,
+        bool multi_line_comments_format = true
+    ) const JSONC_EXCEPTION_TYPE;
 
     template <detail::is_jsonc_type_convertible T>
     [[nodiscard]] JSONC_RESULT(T&) as() JSONC_EXCEPTION_TYPE;
