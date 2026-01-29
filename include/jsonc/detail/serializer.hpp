@@ -45,11 +45,13 @@ inline std::string format_comments(
                     result.append("*/");
                     result.push_back('\n');
                 } else {
+                    bool is_first = true;
                     for (const auto& comment : comments) {
-                        result.append(indent_space);
+                        if (!is_first) { result.append(indent_space); }
                         result.append("// ");
                         result.append(comment);
                         result.push_back('\n');
+                        is_first = false;
                     }
                 }
             }
