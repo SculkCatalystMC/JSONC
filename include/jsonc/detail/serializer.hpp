@@ -43,6 +43,7 @@ inline std::string format_comments(
                     }
                     result.append(indent_space);
                     result.append("*/");
+                    result.push_back('\n');
                 } else {
                     for (const auto& comment : comments) {
                         result.append(indent_space);
@@ -51,7 +52,6 @@ inline std::string format_comments(
                         result.push_back('\n');
                     }
                 }
-                result.push_back('\n');
             }
         }
     }
@@ -187,7 +187,7 @@ dump_typed(const Array& val, bool ensure_ascii, int indent, bool ignore_comments
             result += format_comments(element.before_comments(), indent_space, !line_feed, multi_line_comments_format);
             result += indent_space;
         }
-        auto value  = element.dump(indent, ensure_ascii, ignore_comments, false);
+        auto value  = element.dump(indent, ensure_ascii, ignore_comments, multi_line_comments_format, false);
         result     += fix_indent(value, indent_space);
 
         if (i > 0) { result.push_back(','); }
@@ -223,7 +223,7 @@ dump_typed(const Object& val, bool ensure_ascii, int indent, bool ignore_comment
 
         if (!ignore_comments && val.has_key_before_comments(k)) {
 #ifdef JSONC_USE_EXPECTED
-            result += format_comments(val.key_before_comments(k)->get(), indent_space, !line_feed);
+            result += format_comments(val.key_before_comments(k)->get(), indent_space, !line_feed, multi_line_comments_format);
 #else
             result += format_comments(val.key_before_comments(k), indent_space, !line_feed, multi_line_comments_format);
 #endif
@@ -251,7 +251,7 @@ dump_typed(const Object& val, bool ensure_ascii, int indent, bool ignore_comment
             value += format_comments(v.before_comments(), indent_space, true, multi_line_comments_format);
             if (line_feed) { value.push_back(' '); }
         }
-        value  += v.dump(indent, ensure_ascii, ignore_comments, false);
+        value  += v.dump(indent, ensure_ascii, ignore_comments, multi_line_comments_format, false);
         result += fix_indent(value, indent_space);
 
         if (i > 0) { result.push_back(','); }
