@@ -61,6 +61,10 @@ const char* jsonc_variant_get_comments_after(JsoncTypeVariantHandle handle) {
     return nullptr;
 }
 
+void jsonc_variant_merge_comments(JsoncTypeVariantHandle lhs, JsoncTypeVariantHandle rhs) {
+    static_cast<jsonc::JsoncType*>(lhs)->merge_comments(*static_cast<jsonc::JsoncType*>(rhs));
+}
+
 void jsonc_variant_set_comments_before(JsoncTypeVariantHandle handle, const char* comments) {
     static_cast<jsonc::JsoncType*>(handle)->before_comments() = jsonc::detail::split_comments(comments);
 }
@@ -68,8 +72,8 @@ void jsonc_variant_set_comments_after(JsoncTypeVariantHandle handle, const char*
     static_cast<jsonc::JsoncType*>(handle)->after_comments() = jsonc::detail::split_comments(comments);
 }
 
-const char* jsonc_variant_dump(JsoncTypeVariantHandle handle, int indent, bool ensure_ascii, bool ignore_comments) {
-    return make_cstr(static_cast<jsonc::JsoncType*>(handle)->dump(indent, ensure_ascii, ignore_comments, true));
+const char* jsonc_variant_dump(JsoncTypeVariantHandle handle, int indent, bool ensure_ascii, bool ignore_comments, bool multi_line_comments_format) {
+    return make_cstr(static_cast<jsonc::JsoncType*>(handle)->dump(indent, ensure_ascii, ignore_comments, multi_line_comments_format, true));
 }
 
 bool jsonc_object_contains(JsoncObjectHandle handle, const char* key) { return static_cast<jsonc::Object*>(handle)->contains(key); }
@@ -152,8 +156,8 @@ void jsonc_object_clear(JsoncObjectHandle handle) { static_cast<jsonc::Object*>(
 
 bool jsonc_object_remove(JsoncObjectHandle handle, const char* key) { return static_cast<jsonc::Object*>(handle)->erase(key); }
 
-const char* jsonc_object_dump(JsoncObjectHandle handle, int indent, bool ensure_ascii, bool ignore_comments) {
-    return make_cstr(static_cast<jsonc::Object*>(handle)->dump(indent, ensure_ascii, ignore_comments));
+const char* jsonc_object_dump(JsoncObjectHandle handle, int indent, bool ensure_ascii, bool ignore_comments, bool multi_line_comments_format) {
+    return make_cstr(static_cast<jsonc::Object*>(handle)->dump(indent, ensure_ascii, ignore_comments, multi_line_comments_format));
 }
 
 const char* jsonc_object_get_key_comments_before(JsoncObjectHandle handle, const char* key) {
@@ -302,8 +306,8 @@ void jsonc_array_clear(JsoncArrayHandle handle) { return static_cast<jsonc::Arra
 
 bool jsonc_array_remove(JsoncArrayHandle handle, size_t index) { return static_cast<jsonc::Array*>(handle)->erase(index); }
 
-const char* jsonc_array_dump(JsoncArrayHandle handle, int indent, bool ensure_ascii, bool ignore_comments) {
-    return make_cstr(static_cast<jsonc::Array*>(handle)->dump(indent, ensure_ascii, ignore_comments));
+const char* jsonc_array_dump(JsoncArrayHandle handle, int indent, bool ensure_ascii, bool ignore_comments, bool multi_line_comments_format) {
+    return make_cstr(static_cast<jsonc::Array*>(handle)->dump(indent, ensure_ascii, ignore_comments, multi_line_comments_format));
 }
 
 const char* jsonc_array_get_comments_before(JsoncObjectHandle handle, size_t index) {
