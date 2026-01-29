@@ -574,8 +574,8 @@ std::string JsoncType::dump(
     int  indent,
     bool ensure_ascii,
     bool ignore_comments,
-    bool global_comments,
-    bool multi_line_comments_format
+    bool multi_line_comments_format,
+    bool global_comments
 ) const JSONC_EXCEPTION_TYPE {
     auto result = std::visit(
         [&](const auto& val) { return detail::dump_typed(val, ensure_ascii, indent, ignore_comments, multi_line_comments_format); },

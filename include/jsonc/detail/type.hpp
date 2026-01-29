@@ -451,8 +451,8 @@ public:
         int  indent                     = 4,
         bool ensure_ascii               = false,
         bool ignore_comments            = false,
-        bool global_comments            = true,
-        bool multi_line_comments_format = true
+        bool multi_line_comments_format = true,
+        bool global_comments            = true
     ) const JSONC_EXCEPTION_TYPE;
 
     template <detail::is_jsonc_type_convertible T>
