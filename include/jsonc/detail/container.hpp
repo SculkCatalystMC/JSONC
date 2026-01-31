@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <utility>
 
-namespace jsonc::detail {
+namespace jsonc::inline abi_v1_1_0::detail {
 
 struct StringHash {
     using is_transparent = void;
@@ -57,7 +57,7 @@ public:
 
     private:
         friend class OrderedStringHashMap;
-        using StorageType  = std::conditional_t<_Const, const detail::StringHashMap<T>, detail::StringHashMap<T>>;
+        using StorageType  = std::conditional_t<_Const, const StringHashMap<T>, StringHashMap<T>>;
         using IteratorType = std::conditional_t<
             _Reverse,
             std::conditional_t<_Const, std::map<size_t, std::string>::const_reverse_iterator, std::map<size_t, std::string>::reverse_iterator>,
@@ -156,8 +156,8 @@ public:
 private:
     StringHashMap<T>              storage_{};
     std::map<size_t, std::string> insert_index_{};
-    detail::StringHashMap<size_t> key_index_{};
+    StringHashMap<size_t>         key_index_{};
     size_t                        next_insert_index_{};
 };
 
-} // namespace jsonc::detail
+} // namespace jsonc::inline abi_v1_1_0::detail

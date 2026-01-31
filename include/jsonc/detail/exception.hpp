@@ -15,7 +15,7 @@
 
 
 #ifndef JSONC_NO_EXCEPTION
-namespace jsonc::detail {
+namespace jsonc::inline abi_v1_1_0::detail {
 
 class out_of_range : public std::runtime_error {
 public:
@@ -37,7 +37,7 @@ public:
     using std::runtime_error::runtime_error;
 };
 
-#define _JSONC_THROW_EXCEPTION(TYPE, EXCEPTION) throw detail::TYPE(EXCEPTION)
+#define _JSONC_THROW_EXCEPTION(TYPE, EXCEPTION) throw TYPE(EXCEPTION)
 
 #define JSONC_RESULT(TYPE)         TYPE
 #define _JSONC_MAKE_RESULT(RESULT) RESULT
@@ -45,10 +45,10 @@ public:
 
 #define JSONC_EXCEPTION_TYPE
 
-} // namespace jsonc::detail
+} // namespace jsonc::inline abi_v1_1_0::detail
 #else
 #ifdef JSONC_USE_EXPECTED
-namespace jsonc {
+namespace jsonc::inline abi_v1_1_0::detail {
 
 enum class error_code : uint8_t {
     out_of_range = 0,
@@ -73,7 +73,6 @@ using ErrorInfo = error_code;
 template <typename T = void>
 using Result = std::expected<std::conditional_t<std::is_reference_v<T>, std::reference_wrapper<std::remove_reference_t<T>>, T>, ErrorInfo>;
 
-namespace detail {
 template <typename T>
     requires(!std::is_void_v<T>)
 [[nodiscard]] constexpr Result<T> make_result(T&& t) noexcept {
@@ -89,13 +88,12 @@ template <typename T = void>
 [[nodiscard]] constexpr Result<void> make_result() noexcept {
     return Result<void>{};
 }
-} // namespace detail
 
-#define _JSONC_MAKE_RESULT(RESULT) detail::make_result(RESULT)
-#define _JSONC_MAKE_VOID_RESULT()  detail::make_result()
+#define _JSONC_MAKE_RESULT(RESULT) make_result(RESULT)
+#define _JSONC_MAKE_VOID_RESULT()  make_result()
 #define JSONC_RESULT(TYPE)         Result<TYPE>
 
-} // namespace jsonc
+} // namespace jsonc::inline abi_v1_1_0::detail
 
 #else
 #define _JSONC_THROW_EXCEPTION(TYPE, EXCEPTION) std::unreachable()

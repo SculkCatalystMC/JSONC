@@ -5,50 +5,51 @@
 #include <vector>
 
 namespace jsonc {
+inline namespace abi_v1_1_0 {
+
+enum class value_type : uint8_t {
+    null                    = 0,
+    boolean                 = 1,
+    number_integer_signed   = 2,
+    number_integer_unsigned = 3,
+    number_floating_point   = 4,
+    string                  = 5,
+    object                  = 6,
+    array                   = 7,
+    number_big_integer      = 8,
+};
 
 namespace detail {
-struct BigInt {
-    BigInt() noexcept = default;
-    BigInt(std::string_view val) noexcept : view_(val) {}
-    bool        operator==(const BigInt& other) const noexcept { return view_ == other.view_; }
+
+struct basic_big_int {
+    basic_big_int() noexcept = default;
+    basic_big_int(std::string_view val) noexcept : view_(val) {}
+    bool        operator==(const basic_big_int& other) const noexcept { return view_ == other.view_; }
     std::string view_;
 };
-} // namespace detail
 
-enum class ValueType : uint8_t {
-    Null     = 0,
-    Boolean  = 1,
-    Signed   = 2,
-    Unsigned = 3,
-    Float    = 4,
-    String   = 5,
-    Object   = 6,
-    Array    = 7,
-    BigInt   = 8,
-};
+class basic_jsonc;
 
-class JsoncType;
-
-class Object {
+class basic_object {
 public:
-    using iterator               = detail::OrderedStringHashMap<JsoncType>::iterator;
-    using const_iterator         = detail::OrderedStringHashMap<JsoncType>::const_iterator;
-    using reverse_iterator       = detail::OrderedStringHashMap<JsoncType>::reverse_iterator;
-    using const_reverse_iterator = detail::OrderedStringHashMap<JsoncType>::const_reverse_iterator;
+    using iterator               = OrderedStringHashMap<basic_jsonc>::iterator;
+    using const_iterator         = OrderedStringHashMap<basic_jsonc>::const_iterator;
+    using reverse_iterator       = OrderedStringHashMap<basic_jsonc>::reverse_iterator;
+    using const_reverse_iterator = OrderedStringHashMap<basic_jsonc>::const_reverse_iterator;
 
 public:
-    Object() JSONC_EXCEPTION_TYPE = default;
-    inline Object(std::initializer_list<std::pair<std::string, JsoncType>> val) JSONC_EXCEPTION_TYPE;
+    basic_object() JSONC_EXCEPTION_TYPE = default;
+    inline basic_object(std::initializer_list<std::pair<std::string, basic_jsonc>> val) JSONC_EXCEPTION_TYPE;
 
-    [[nodiscard]] inline JsoncType& operator[](std::string_view index) JSONC_EXCEPTION_TYPE;
-    [[nodiscard]] inline JSONC_RESULT(const JsoncType&) operator[](std::string_view index) const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] inline basic_jsonc& operator[](std::string_view index) JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] inline JSONC_RESULT(const basic_jsonc&) operator[](std::string_view index) const JSONC_EXCEPTION_TYPE;
 
-    [[nodiscard]] inline JSONC_RESULT(JsoncType&) at(std::string_view index) JSONC_EXCEPTION_TYPE;
-    [[nodiscard]] inline JsoncType& at(std::string_view index, const JsoncType& default_value) JSONC_EXCEPTION_TYPE;
-    [[nodiscard]] inline JSONC_RESULT(const JsoncType&) at(std::string_view index) const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] inline JSONC_RESULT(basic_jsonc&) at(std::string_view index) JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] inline basic_jsonc& at(std::string_view index, const basic_jsonc& default_value) JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] inline JSONC_RESULT(const basic_jsonc&) at(std::string_view index) const JSONC_EXCEPTION_TYPE;
 
     [[nodiscard]] inline bool contains(std::string_view index) const noexcept;
-    [[nodiscard]] inline bool contains(std::string_view index, ValueType type) const noexcept;
+    [[nodiscard]] inline bool contains(std::string_view index, value_type type) const noexcept;
 
     inline bool erase(std::string_view index) noexcept;
 
@@ -81,14 +82,14 @@ public:
     [[nodiscard]] inline const_reverse_iterator crbegin() const noexcept;
     [[nodiscard]] inline const_reverse_iterator crend() const noexcept;
 
-    inline void merge_patch(const Object& other, bool merge_list = false) JSONC_EXCEPTION_TYPE;
-    inline JSONC_RESULT(void) merge_patch(const JsoncType& other, bool merge_list = false) JSONC_EXCEPTION_TYPE;
+    inline void merge_patch(const basic_object& other, bool merge_list = false) JSONC_EXCEPTION_TYPE;
+    inline JSONC_RESULT(void) merge_patch(const basic_jsonc& other, bool merge_list = false) JSONC_EXCEPTION_TYPE;
 
-    inline void merge_comments(const Object& other) JSONC_EXCEPTION_TYPE;
+    inline void merge_comments(const basic_object& other) JSONC_EXCEPTION_TYPE;
     inline void move_comments_to_before() JSONC_EXCEPTION_TYPE;
 
-    [[nodiscard]] inline bool operator==(const Object& other) const JSONC_EXCEPTION_TYPE;
-    [[nodiscard]] inline bool operator==(const JsoncType& other) const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] inline bool operator==(const basic_object& other) const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] inline bool operator==(const basic_jsonc& other) const JSONC_EXCEPTION_TYPE;
 
     [[nodiscard]] inline bool has_key_before_comments(std::string_view index) const noexcept;
     [[nodiscard]] inline bool has_key_after_comments(std::string_view index) const noexcept;
@@ -121,31 +122,31 @@ public:
     [[nodiscard]] inline size_t key_after_comments_size(std::string_view index) const noexcept;
 
 private:
-    struct Comments {
+    struct key_comments {
         std::vector<std::string> before_comments_{};
         std::vector<std::string> after_comments_{};
     };
-    friend class JsoncType;
-    detail::OrderedStringHashMap<JsoncType> storage_{};
-    detail::StringHashMap<Comments>         key_comments_{};
+    friend class basic_jsonc;
+    OrderedStringHashMap<basic_jsonc> storage_{};
+    StringHashMap<key_comments>       key_comments_{};
 };
 
-class Array {
+class basic_array {
 public:
-    using iterator               = std::vector<JsoncType>::iterator;
-    using const_iterator         = std::vector<JsoncType>::const_iterator;
-    using reverse_iterator       = std::vector<JsoncType>::reverse_iterator;
-    using const_reverse_iterator = std::vector<JsoncType>::const_reverse_iterator;
+    using iterator               = std::vector<basic_jsonc>::iterator;
+    using const_iterator         = std::vector<basic_jsonc>::const_iterator;
+    using reverse_iterator       = std::vector<basic_jsonc>::reverse_iterator;
+    using const_reverse_iterator = std::vector<basic_jsonc>::const_reverse_iterator;
 
 public:
-    Array() JSONC_EXCEPTION_TYPE = default;
-    inline Array(std::initializer_list<JsoncType> val) JSONC_EXCEPTION_TYPE;
+    basic_array() JSONC_EXCEPTION_TYPE = default;
+    inline basic_array(std::initializer_list<basic_jsonc> val) JSONC_EXCEPTION_TYPE;
 
-    [[nodiscard]] inline constexpr JsoncType& operator[](size_t index) noexcept;
-    [[nodiscard]] inline constexpr JSONC_RESULT(const JsoncType&) operator[](size_t index) const noexcept;
+    [[nodiscard]] inline constexpr basic_jsonc& operator[](size_t index) noexcept;
+    [[nodiscard]] inline constexpr JSONC_RESULT(const basic_jsonc&) operator[](size_t index) const noexcept;
 
-    [[nodiscard]] inline constexpr JSONC_RESULT(JsoncType&) at(size_t index) JSONC_EXCEPTION_TYPE;
-    [[nodiscard]] inline constexpr JSONC_RESULT(const JsoncType&) at(size_t index) const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] inline constexpr JSONC_RESULT(basic_jsonc&) at(size_t index) JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] inline constexpr JSONC_RESULT(const basic_jsonc&) at(size_t index) const JSONC_EXCEPTION_TYPE;
 
     [[nodiscard]] inline constexpr size_t size() const noexcept;
 
@@ -153,17 +154,17 @@ public:
 
     [[nodiscard]] inline constexpr bool empty() const noexcept;
 
-    inline void push_back(const JsoncType& val) JSONC_EXCEPTION_TYPE;
-    inline void push_back(JsoncType&& val) JSONC_EXCEPTION_TYPE;
+    inline void push_back(const basic_jsonc& val) JSONC_EXCEPTION_TYPE;
+    inline void push_back(basic_jsonc&& val) JSONC_EXCEPTION_TYPE;
 
     inline bool erase(size_t where);
     inline bool erase(size_t first, size_t last);
 
-    [[nodiscard]] inline const JsoncType& front() const noexcept;
-    [[nodiscard]] inline JsoncType&       front() noexcept;
+    [[nodiscard]] inline const basic_jsonc& front() const noexcept;
+    [[nodiscard]] inline basic_jsonc&       front() noexcept;
 
-    [[nodiscard]] inline const JsoncType& back() const noexcept;
-    [[nodiscard]] inline JsoncType&       back() noexcept;
+    [[nodiscard]] inline const basic_jsonc& back() const noexcept;
+    [[nodiscard]] inline basic_jsonc&       back() noexcept;
 
     inline iterator erase(const_iterator where) JSONC_EXCEPTION_TYPE;
     inline iterator erase(const_iterator first, const_iterator last) JSONC_EXCEPTION_TYPE;
@@ -189,27 +190,26 @@ public:
     [[nodiscard]] inline const_reverse_iterator crbegin() const noexcept;
     [[nodiscard]] inline const_reverse_iterator crend() const noexcept;
 
-    inline void merge_patch(const Array& other) JSONC_EXCEPTION_TYPE;
-    inline JSONC_RESULT(void) merge_patch(const JsoncType& other) JSONC_EXCEPTION_TYPE;
+    inline void merge_patch(const basic_array& other) JSONC_EXCEPTION_TYPE;
+    inline JSONC_RESULT(void) merge_patch(const basic_jsonc& other) JSONC_EXCEPTION_TYPE;
 
-    inline void merge_comments(const Array& other) JSONC_EXCEPTION_TYPE;
+    inline void merge_comments(const basic_array& other) JSONC_EXCEPTION_TYPE;
     inline void move_comments_to_before() JSONC_EXCEPTION_TYPE;
 
-    [[nodiscard]] inline bool operator==(const Array& other) const JSONC_EXCEPTION_TYPE;
-    [[nodiscard]] inline bool operator==(const JsoncType& other) const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] inline bool operator==(const basic_array& other) const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] inline bool operator==(const basic_jsonc& other) const JSONC_EXCEPTION_TYPE;
 
 private:
-    friend class JsoncType;
-    std::vector<JsoncType> storage_{};
+    friend class basic_jsonc;
+    std::vector<basic_jsonc> storage_{};
 };
 
-namespace detail {
-using TypeVariant = std::variant<std::monostate, bool, int64_t, uint64_t, double, std::string, Object, Array, BigInt>;
+using type_variant = std::variant<std::monostate, bool, int64_t, uint64_t, double, std::string, basic_object, basic_array, basic_big_int>;
 template <class T>
 inline constexpr bool is_jsonc_type_convertible_v = [] {
     return []<size_t... I>(std::index_sequence<I...>) {
-        return (std::is_convertible_v<std::variant_alternative_t<I, TypeVariant>, T> || ...);
-    }(std::make_index_sequence<std::variant_size_v<TypeVariant>>{});
+        return (std::is_convertible_v<std::variant_alternative_t<I, type_variant>, T> || ...);
+    }(std::make_index_sequence<std::variant_size_v<type_variant>>{});
 }();
 template <typename T>
 concept is_jsonc_type_convertible = is_jsonc_type_convertible_v<T>;
@@ -238,43 +238,42 @@ constexpr bool emplace_variant(Var& v, size_t idx) noexcept {
     constexpr size_t N = std::variant_size_v<std::remove_reference_t<Var>>;
     return emplace_variant_impl(v, idx, std::make_index_sequence<N>{});
 }
-} // namespace detail
 
-class JsoncType {
+class basic_jsonc {
 public:
     template <bool _Const, bool _Reserve>
-    class Iterator {
+    class basic_iterator {
     public:
-        using reference = std::conditional_t<_Const, const JsoncType, JsoncType>&;
+        using reference = std::conditional_t<_Const, const basic_jsonc, basic_jsonc>&;
         using pointer   = std::add_pointer_t<reference>;
 
     private:
-        friend class JsoncType;
+        friend class basic_jsonc;
         using IteratorType = std::conditional_t<
             _Const,
             std::variant<
-                const JsoncType*,
-                std::conditional_t<_Reserve, Object::const_reverse_iterator, Object::const_iterator>,
-                std::conditional_t<_Reserve, Array::const_reverse_iterator, Array::const_iterator>>,
+                const basic_jsonc*,
+                std::conditional_t<_Reserve, basic_object::const_reverse_iterator, basic_object::const_iterator>,
+                std::conditional_t<_Reserve, basic_array::const_reverse_iterator, basic_array::const_iterator>>,
             std::variant<
-                JsoncType*,
-                std::conditional_t<_Reserve, Object::reverse_iterator, Object::iterator>,
-                std::conditional_t<_Reserve, Array::reverse_iterator, Array::iterator>>>;
+                basic_jsonc*,
+                std::conditional_t<_Reserve, basic_object::reverse_iterator, basic_object::iterator>,
+                std::conditional_t<_Reserve, basic_array::reverse_iterator, basic_array::iterator>>>;
         IteratorType iterator_;
 
         template <bool Reserve>
-        [[nodiscard]] static Iterator make_begin(auto& var) noexcept {
-            Iterator result{};
+        [[nodiscard]] static basic_iterator make_begin(auto& var) noexcept {
+            basic_iterator result{};
             std::visit(
                 [&](auto& val) {
                     using T = std::decay_t<decltype(val)>;
-                    if constexpr (std::is_same_v<T, Object>) {
+                    if constexpr (std::is_same_v<T, basic_object>) {
                         if constexpr (Reserve) {
                             result.iterator_.template emplace<1>(val.rbegin());
                         } else {
                             result.iterator_.template emplace<1>(val.begin());
                         }
-                    } else if constexpr (std::is_same_v<T, Array>) {
+                    } else if constexpr (std::is_same_v<T, basic_array>) {
                         if constexpr (Reserve) {
                             result.iterator_.template emplace<2>(val.rbegin());
                         } else {
@@ -292,18 +291,18 @@ public:
         }
 
         template <bool Reserve>
-        [[nodiscard]] static Iterator make_end(auto& var) noexcept {
-            Iterator result{};
+        [[nodiscard]] static basic_iterator make_end(auto& var) noexcept {
+            basic_iterator result{};
             std::visit(
                 [&](auto& val) {
                     using T = std::decay_t<decltype(val)>;
-                    if constexpr (std::is_same_v<T, Object>) {
+                    if constexpr (std::is_same_v<T, basic_object>) {
                         if constexpr (Reserve) {
                             result.iterator_.template emplace<1>(val.rend());
                         } else {
                             result.iterator_.template emplace<1>(val.end());
                         }
-                    } else if constexpr (std::is_same_v<T, Array>) {
+                    } else if constexpr (std::is_same_v<T, basic_array>) {
                         if constexpr (Reserve) {
                             result.iterator_.template emplace<2>(val.rend());
                         } else {
@@ -325,8 +324,8 @@ public:
                     using T          = std::decay_t<decltype(val)>;
                     using ObjectType = std::conditional_t<
                         _Const,
-                        std::conditional_t<_Reserve, Object::const_reverse_iterator, Object::const_iterator>,
-                        std::conditional_t<_Reserve, Object::reverse_iterator, Object::iterator>>;
+                        std::conditional_t<_Reserve, basic_object::const_reverse_iterator, basic_object::const_iterator>,
+                        std::conditional_t<_Reserve, basic_object::reverse_iterator, basic_object::iterator>>;
                     if constexpr (std::is_same_v<T, ObjectType>) {
                         return val->second;
                     } else {
@@ -339,96 +338,97 @@ public:
 
         [[nodiscard]] pointer operator->() const noexcept { return std::addressof(**this); }
 
-        Iterator& operator++() noexcept {
+        basic_iterator& operator++() noexcept {
             std::visit([](auto& val) { ++val; }, iterator_);
             return *this;
         }
 
-        Iterator operator++(int) noexcept {
-            Iterator tmp = *this;
+        basic_iterator operator++(int) noexcept {
+            basic_iterator tmp = *this;
             ++*this;
             return tmp;
         }
 
-        Iterator& operator--() noexcept {
+        basic_iterator& operator--() noexcept {
             std::visit([](auto& val) { --val; }, iterator_);
             return *this;
         }
 
-        Iterator operator--(int) noexcept {
-            Iterator tmp = *this;
+        basic_iterator operator--(int) noexcept {
+            basic_iterator tmp = *this;
             --*this;
             return tmp;
         }
 
-        [[nodiscard]] bool operator==(Iterator const& r) const noexcept { return this->iterator_ == r.iterator_; }
+        [[nodiscard]] bool operator==(basic_iterator const& r) const noexcept { return this->iterator_ == r.iterator_; }
     };
 
-    class IteratorProxy {
+    class iterator_proxy {
     public:
-        Object::iterator begin() noexcept { return mSelf.begin(); }
-        Object::iterator end() noexcept { return mSelf.end(); }
+        basic_object::iterator begin() noexcept { return self_.begin(); }
+        basic_object::iterator end() noexcept { return self_.end(); }
 
     private:
-        friend class JsoncType;
-        Object& mSelf;
-        IteratorProxy(Object& self) : mSelf(self) {}
+        friend class basic_jsonc;
+        basic_object& self_;
+        iterator_proxy(basic_object& self) : self_(self) {}
     };
 
-    class IteratorProxyConst {
+    class const_iterator_proxy {
     public:
-        Object::const_iterator begin() const noexcept { return mSelf.begin(); }
-        Object::const_iterator end() const noexcept { return mSelf.end(); }
+        basic_object::const_iterator begin() const noexcept { return self_.begin(); }
+        basic_object::const_iterator end() const noexcept { return self_.end(); }
 
     private:
-        friend class JsoncType;
-        const Object& mSelf;
-        IteratorProxyConst(const Object& self) : mSelf(self) {}
+        friend class basic_jsonc;
+        const basic_object& self_;
+        const_iterator_proxy(const basic_object& self) : self_(self) {}
     };
 
 public:
-    using iterator               = Iterator<false, false>;
-    using const_iterator         = Iterator<true, false>;
-    using reverse_iterator       = Iterator<false, true>;
-    using const_reverse_iterator = Iterator<true, true>;
+    using iterator               = basic_iterator<false, false>;
+    using const_iterator         = basic_iterator<true, false>;
+    using reverse_iterator       = basic_iterator<false, true>;
+    using const_reverse_iterator = basic_iterator<true, true>;
 
 public:
-    JsoncType() = default;
+    basic_jsonc() = default;
 
-    inline constexpr JsoncType(ValueType type) noexcept { detail::emplace_variant(storage_, static_cast<size_t>(type)); };
+    inline constexpr basic_jsonc(value_type type) noexcept { emplace_variant(storage_, static_cast<size_t>(type)); };
 
-    inline constexpr JsoncType(std::nullptr_t) noexcept : storage_(std::monostate()) {};
+    inline constexpr basic_jsonc(std::nullptr_t) noexcept : storage_(std::monostate()) {};
 
-    inline constexpr JsoncType(bool val) noexcept : storage_(val) {};
+    inline constexpr basic_jsonc(bool val) noexcept : storage_(val) {};
 
     template <std::signed_integral T>
-    inline constexpr JsoncType(T val) noexcept : storage_(static_cast<int64_t>(val)){};
+    inline constexpr basic_jsonc(T val) noexcept : storage_(static_cast<int64_t>(val)){};
 
     template <std::unsigned_integral T>
         requires(!std::same_as<T, bool>)
-    inline constexpr JsoncType(T val) noexcept : storage_(static_cast<uint64_t>(val)){};
+    inline constexpr basic_jsonc(T val) noexcept : storage_(static_cast<uint64_t>(val)){};
 
-    inline constexpr JsoncType(std::string_view val) noexcept : storage_(std::string(val)) {};
-    inline constexpr JsoncType(const std::string& val) noexcept : storage_(val) {};
+    inline constexpr basic_jsonc(std::string_view val) noexcept : storage_(std::string(val)) {};
+    inline constexpr basic_jsonc(const std::string& val) noexcept : storage_(val) {};
 
-    inline constexpr JsoncType(double val) noexcept : storage_(val) {};
-    inline constexpr JsoncType(float val) noexcept : storage_(std::round(val * 1e6) / 1e6) {};
+    inline constexpr basic_jsonc(double val) noexcept : storage_(val) {};
+    inline constexpr basic_jsonc(float val) noexcept : storage_(std::round(val * 1e6) / 1e6) {};
 
     template <size_t N>
-    [[nodiscard]] inline JsoncType(char const (&val)[N]) noexcept : storage_(std::string{val, N - 1}) {}
+    [[nodiscard]] inline basic_jsonc(char const (&val)[N]) noexcept : storage_(std::string{val, N - 1}) {}
 
-    inline constexpr JsoncType(const Object& val) noexcept : storage_(val) {};
-    inline constexpr JsoncType(const Array& val) noexcept : storage_(val) {};
-    inline constexpr JsoncType(const detail::BigInt& val) noexcept : storage_(val) {};
+    inline constexpr basic_jsonc(const basic_object& val) noexcept : storage_(val) {};
+    inline constexpr basic_jsonc(const basic_array& val) noexcept : storage_(val) {};
+    inline constexpr basic_jsonc(const basic_big_int& val) noexcept : storage_(val) {};
 
-    inline constexpr JsoncType(std::initializer_list<std::pair<std::string, JsoncType>> val) noexcept : storage_(std::in_place_type<Object>, val) {}
+    inline constexpr basic_jsonc(std::initializer_list<std::pair<std::string, basic_jsonc>> val) noexcept
+    : storage_(std::in_place_type<basic_object>, val) {}
 
-    inline constexpr void emplace(ValueType type) noexcept { detail::emplace_variant(storage_, static_cast<size_t>(type)); }
+    inline constexpr void emplace(value_type type) noexcept { emplace_variant(storage_, static_cast<size_t>(type)); }
 
-    [[nodiscard]] inline constexpr ValueType        type() const noexcept;
+    [[nodiscard]] inline constexpr value_type       type() const noexcept;
     [[nodiscard]] inline constexpr std::string_view type_name() const noexcept;
 
-    [[nodiscard]] inline constexpr bool hold(ValueType value_type) const noexcept;
+    [[nodiscard]] inline constexpr bool hold(value_type value_type) const noexcept;
 
     [[nodiscard]] inline constexpr bool is_null() const noexcept;
     [[nodiscard]] inline constexpr bool is_boolean() const noexcept;
@@ -455,10 +455,10 @@ public:
         bool global_comments            = true
     ) const JSONC_EXCEPTION_TYPE;
 
-    template <detail::is_jsonc_type_convertible T>
+    template <is_jsonc_type_convertible T>
     [[nodiscard]] inline JSONC_RESULT(T&) as() JSONC_EXCEPTION_TYPE;
 
-    template <detail::is_jsonc_type_convertible T>
+    template <is_jsonc_type_convertible T>
     [[nodiscard]] inline JSONC_RESULT(const T&) as() const JSONC_EXCEPTION_TYPE;
 
     template <typename T>
@@ -469,39 +469,39 @@ public:
         requires std::is_convertible_v<T, std::string>
     [[nodiscard]] inline JSONC_RESULT(T) get() const JSONC_EXCEPTION_TYPE;
 
-    template <detail::is_array_like T>
+    template <is_array_like T>
     [[nodiscard]] inline JSONC_RESULT(T) get() const JSONC_EXCEPTION_TYPE;
 
-    template <detail::is_object_like T>
+    template <is_object_like T>
     [[nodiscard]] inline JSONC_RESULT(T) get() const JSONC_EXCEPTION_TYPE;
 
     [[nodiscard]] inline JSONC_RESULT(std::string) get_big_int_view() const JSONC_EXCEPTION_TYPE;
     [[nodiscard]] inline JSONC_RESULT(std::string) get_any_int_view() const JSONC_EXCEPTION_TYPE;
 
-    [[nodiscard]] inline JSONC_RESULT(JsoncType&) operator[](std::string_view index) JSONC_EXCEPTION_TYPE;
-    [[nodiscard]] inline JSONC_RESULT(const JsoncType&) operator[](std::string_view index) const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] inline JSONC_RESULT(basic_jsonc&) operator[](std::string_view index) JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] inline JSONC_RESULT(const basic_jsonc&) operator[](std::string_view index) const JSONC_EXCEPTION_TYPE;
 
     template <size_t N>
-    [[nodiscard]] inline JSONC_RESULT(JsoncType&) operator[](char const (&index)[N]) JSONC_EXCEPTION_TYPE {
+    [[nodiscard]] inline JSONC_RESULT(basic_jsonc&) operator[](char const (&index)[N]) JSONC_EXCEPTION_TYPE {
         return operator[](std::string_view{index, N - 1});
     }
     template <size_t N>
-    [[nodiscard]] inline JSONC_RESULT(const JsoncType&) operator[](char const (&index)[N]) const JSONC_EXCEPTION_TYPE {
+    [[nodiscard]] inline JSONC_RESULT(const basic_jsonc&) operator[](char const (&index)[N]) const JSONC_EXCEPTION_TYPE {
         return operator[](std::string_view{index, N - 1});
     }
 
-    [[nodiscard]] inline JSONC_RESULT(JsoncType&) operator[](size_t index) JSONC_EXCEPTION_TYPE;
-    [[nodiscard]] inline JSONC_RESULT(const JsoncType&) operator[](size_t index) const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] inline JSONC_RESULT(basic_jsonc&) operator[](size_t index) JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] inline JSONC_RESULT(const basic_jsonc&) operator[](size_t index) const JSONC_EXCEPTION_TYPE;
 
-    [[nodiscard]] inline JSONC_RESULT(JsoncType&) at(std::string_view index) JSONC_EXCEPTION_TYPE;
-    [[nodiscard]] inline JSONC_RESULT(JsoncType&) at(std::string_view index, const JsoncType& default_value) JSONC_EXCEPTION_TYPE;
-    [[nodiscard]] inline JSONC_RESULT(const JsoncType&) at(std::string_view index) const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] inline JSONC_RESULT(basic_jsonc&) at(std::string_view index) JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] inline JSONC_RESULT(basic_jsonc&) at(std::string_view index, const basic_jsonc& default_value) JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] inline JSONC_RESULT(const basic_jsonc&) at(std::string_view index) const JSONC_EXCEPTION_TYPE;
 
-    [[nodiscard]] inline JSONC_RESULT(JsoncType&) at(size_t index) JSONC_EXCEPTION_TYPE;
-    [[nodiscard]] inline JSONC_RESULT(const JsoncType&) at(size_t index) const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] inline JSONC_RESULT(basic_jsonc&) at(size_t index) JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] inline JSONC_RESULT(const basic_jsonc&) at(size_t index) const JSONC_EXCEPTION_TYPE;
 
     [[nodiscard]] inline JSONC_RESULT(bool) contains(std::string_view index) const JSONC_EXCEPTION_TYPE;
-    [[nodiscard]] inline JSONC_RESULT(bool) contains(std::string_view index, ValueType type) const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] inline JSONC_RESULT(bool) contains(std::string_view index, value_type type) const JSONC_EXCEPTION_TYPE;
 
     inline JSONC_RESULT(void) clear() JSONC_EXCEPTION_TYPE;
 
@@ -511,17 +511,17 @@ public:
     inline JSONC_RESULT(bool) erase(size_t where) JSONC_EXCEPTION_TYPE;
     inline JSONC_RESULT(bool) erase(size_t first, size_t last) JSONC_EXCEPTION_TYPE;
 
-    inline JSONC_RESULT(void) push_back(const JsoncType& val) JSONC_EXCEPTION_TYPE;
-    inline JSONC_RESULT(void) push_back(JsoncType&& val) JSONC_EXCEPTION_TYPE;
+    inline JSONC_RESULT(void) push_back(const basic_jsonc& val) JSONC_EXCEPTION_TYPE;
+    inline JSONC_RESULT(void) push_back(basic_jsonc&& val) JSONC_EXCEPTION_TYPE;
 
-    [[nodiscard]] inline JSONC_RESULT(const JsoncType&) front() const JSONC_EXCEPTION_TYPE;
-    [[nodiscard]] inline JSONC_RESULT(JsoncType&) front() JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] inline JSONC_RESULT(const basic_jsonc&) front() const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] inline JSONC_RESULT(basic_jsonc&) front() JSONC_EXCEPTION_TYPE;
 
-    [[nodiscard]] inline JSONC_RESULT(const JsoncType&) back() const JSONC_EXCEPTION_TYPE;
-    [[nodiscard]] inline JSONC_RESULT(JsoncType&) back() JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] inline JSONC_RESULT(const basic_jsonc&) back() const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] inline JSONC_RESULT(basic_jsonc&) back() JSONC_EXCEPTION_TYPE;
 
-    inline JSONC_RESULT(IteratorProxy) items() JSONC_EXCEPTION_TYPE;
-    inline JSONC_RESULT(IteratorProxyConst) items() const JSONC_EXCEPTION_TYPE;
+    inline JSONC_RESULT(iterator_proxy) items() JSONC_EXCEPTION_TYPE;
+    inline JSONC_RESULT(const_iterator_proxy) items() const JSONC_EXCEPTION_TYPE;
 
     [[nodiscard]] inline iterator begin() noexcept;
     [[nodiscard]] inline iterator end() noexcept;
@@ -541,11 +541,11 @@ public:
     [[nodiscard]] inline const_reverse_iterator crbegin() const noexcept;
     [[nodiscard]] inline const_reverse_iterator crend() const noexcept;
 
-    inline void merge_patch(const JsoncType& other, bool merge_list = false) JSONC_EXCEPTION_TYPE;
-    inline void merge_comments(const JsoncType& other) JSONC_EXCEPTION_TYPE;
+    inline void merge_patch(const basic_jsonc& other, bool merge_list = false) JSONC_EXCEPTION_TYPE;
+    inline void merge_comments(const basic_jsonc& other) JSONC_EXCEPTION_TYPE;
     inline void move_comments_to_before() JSONC_EXCEPTION_TYPE;
 
-    [[nodiscard]] inline bool operator==(const JsoncType& other) const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] inline bool operator==(const basic_jsonc& other) const JSONC_EXCEPTION_TYPE;
 
     template <typename T>
         requires std::is_arithmetic_v<T>
@@ -555,10 +555,10 @@ public:
         requires std::is_convertible_v<T, std::string>
     [[nodiscard]] inline operator T() const JSONC_EXCEPTION_TYPE;
 
-    template <detail::is_array_like T>
+    template <is_array_like T>
     [[nodiscard]] inline operator T() const JSONC_EXCEPTION_TYPE;
 
-    template <detail::is_object_like T>
+    template <is_object_like T>
     [[nodiscard]] inline operator T() const JSONC_EXCEPTION_TYPE;
 
     [[nodiscard]] inline constexpr bool has_before_comments() const noexcept;
@@ -619,17 +619,21 @@ public:
     [[nodiscard]] inline size_t key_after_comments_size(std::string_view index) const JSONC_EXCEPTION_TYPE;
 
 public:
-    inline static JsoncType object() JSONC_EXCEPTION_TYPE { return Object(); }
-    inline static JsoncType array() JSONC_EXCEPTION_TYPE { return Array(); }
+    inline static basic_jsonc object() JSONC_EXCEPTION_TYPE { return basic_object(); }
+    inline static basic_jsonc array() JSONC_EXCEPTION_TYPE { return basic_array(); }
 
-    inline static std::optional<JsoncType> from_big_int(std::string_view view) noexcept;
+    inline static std::optional<basic_jsonc> from_big_int(std::string_view view) noexcept;
 
 private:
-    friend class Object;
-    friend class Array;
-    detail::TypeVariant      storage_{};
+    friend class basic_object;
+    friend class basic_array;
+    type_variant             storage_{};
     std::vector<std::string> before_comments_{};
     std::vector<std::string> after_comments_{};
 };
+
+} // namespace detail
+
+} // namespace abi_v1_1_0
 
 } // namespace jsonc

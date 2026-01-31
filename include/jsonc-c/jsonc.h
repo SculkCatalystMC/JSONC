@@ -25,16 +25,18 @@ typedef void* JsoncObjectHandle;
 typedef void* JsoncArrayHandle;
 
 enum JsoncValueType {
-    Null     = 0,
-    Boolean  = 1,
-    Signed   = 2,
-    Unsigned = 3,
-    Float    = 4,
-    String   = 5,
-    Object   = 6,
-    Array    = 7,
-    BigInt   = 8,
+    JSONC_TYPE_NULL     = 0,
+    JSONC_TYPE_BOOLEAN  = 1,
+    JSONC_TYPE_SIGNED   = 2,
+    JSONC_TYPE_UNSIGNED = 3,
+    JSONC_TYPE_FLOAT    = 4,
+    JSONC_TYPE_STRING   = 5,
+    JSONC_TYPE_OBJECT   = 6,
+    JSONC_TYPE_ARRAY    = 7,
+    JSONC_TYPE_BIG_INT  = 8,
 };
+
+JSONC_API const char* jsonc_get_library_version();
 
 JSONC_API JsoncTypeVariantHandle jsonc_parse_content(const char* content, bool allow_trailing_comma);
 

@@ -47,7 +47,8 @@ target("jsonc")
             "/EHsc",
             "/utf-8",
             "/W4",
-            "/EHs-c-"
+            "/EHs-c-",
+            "/GR-"
         )
         set_exceptions("none")
         if is_mode("release") then
@@ -55,6 +56,10 @@ target("jsonc")
                 "/O2",
                 "/Ob3"
             )
+        end
+        if is_config("kind", "shared") then
+            add_cxflags("/GL")
+            add_shflags("/LGCT")
         end
     else
         add_cxflags(
@@ -64,7 +69,8 @@ target("jsonc")
             "-pedantic",
             "-fno-exceptions",
             "-fPIC",
-            "-stdlib=libc++"
+            "-stdlib=libc++",
+            "-fno-rtti"
         )
         if is_mode("release") then
             add_cxflags(
@@ -72,6 +78,7 @@ target("jsonc")
             )
         end
         if is_config("kind", "shared") then
+            set_policy("build.optimization.lto", true)
             add_cxflags(
                 "-fvisibility=hidden",
                 "-fvisibility-inlines-hidden"
