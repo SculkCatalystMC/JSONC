@@ -4,6 +4,13 @@
 #include "jsonc/jsonc.hpp"
 #include "jsonc-c/jsonc.h"
 
+#define JSONC_VERSION_MAJOR 1
+#define JSONC_VERSION_MINOR 1
+#define JSONC_VERSION_PATCH 1
+
+#define _STRINGIZE(S) #S
+#define STRINGIZE(S)  _STRINGIZE(S)
+
 inline const char* make_cstr(const std::string& s) noexcept {
     const size_t n   = s.size();
     char*        buf = new char[n + 1]{};
@@ -14,10 +21,13 @@ inline const char* make_cstr(const std::string& s) noexcept {
 
 extern "C" {
 
-const char* jsonc_get_library_version() {
-    static constexpr std::string version{"v1.1.0"};
+const char* jsonc_get_library_version_string() {
+    static constexpr std::string version{"v" STRINGIZE(JSONC_VERSION_MAJOR.JSONC_VERSION_MINOR.JSONC_VERSION_PATCH)};
     return version.c_str();
 }
+uint8_t jsonc_get_library_version_major() { return JSONC_VERSION_MAJOR; }
+uint8_t jsonc_get_library_version_minor() { return JSONC_VERSION_MINOR; }
+uint8_t jsonc_get_library_version_patch() { return JSONC_VERSION_PATCH; }
 
 jsonc_variant_t jsonc_parse_content(const char* content, bool allow_trailing_comma) {
     if (auto result = jsonc::parse(content, allow_trailing_comma)) { return new jsonc::jsonc(result.value()); }
@@ -235,7 +245,7 @@ JsoncValueType jsonc_array_get_type(jsonc_array_t handle, size_t index) {
     return static_cast<JsoncValueType>(static_cast<jsonc::array_type*>(handle)->operator[](index).type());
 }
 
-JSONC_API bool jsonc_array_value_is_any_int_type(jsonc_object_t handle, size_t index) {
+bool jsonc_array_value_is_any_int_type(jsonc_object_t handle, size_t index) {
     return static_cast<JsoncValueType>(static_cast<jsonc::array_type*>(handle)->operator[](index).is_number_any_inteager());
 }
 

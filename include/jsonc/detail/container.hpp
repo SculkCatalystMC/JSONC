@@ -4,25 +4,25 @@
 #include <unordered_map>
 #include <utility>
 
-namespace jsonc::inline abi_v1_1_0::detail {
+namespace jsonc::inline abi_v1_1_1::detail {
 
-struct StringHash {
+struct string_hash {
     using is_transparent = void;
     size_t operator()(std::string_view sv) const noexcept { return std::hash<std::string_view>{}(sv); }
     size_t operator()(const std::string& s) const noexcept { return std::hash<std::string>{}(s); }
     size_t operator()(const char* s) const noexcept { return std::hash<std::string_view>{}(s); }
 };
 
-struct StringEqual {
+struct string_equall {
     using is_transparent = void;
     bool operator()(std::string_view a, std::string_view b) const noexcept { return a == b; }
 };
 
 template <typename T>
-using StringHashMap = std::unordered_map<std::string, T, StringHash, StringEqual>;
+using string_hash_map = std::unordered_map<std::string, T, string_hash, string_equall>;
 
 template <typename T>
-class OrderedStringHashMap {
+class ordered_string_hash_map {
 public:
     template <bool _Const, bool _Reverse>
     class _Iterator {
@@ -56,8 +56,8 @@ public:
         [[nodiscard]] bool operator==(const _Iterator& rhs) const noexcept { return iterator_ == rhs.iterator_; }
 
     private:
-        friend class OrderedStringHashMap;
-        using StorageType  = std::conditional_t<_Const, const StringHashMap<T>, StringHashMap<T>>;
+        friend class ordered_string_hash_map;
+        using StorageType  = std::conditional_t<_Const, const string_hash_map<T>, string_hash_map<T>>;
         using IteratorType = std::conditional_t<
             _Reverse,
             std::conditional_t<_Const, std::map<size_t, std::string>::const_reverse_iterator, std::map<size_t, std::string>::reverse_iterator>,
@@ -76,8 +76,8 @@ public:
     using const_reverse_iterator = _Iterator<true, true>;
 
 public:
-    [[nodiscard]] OrderedStringHashMap() = default;
-    [[nodiscard]] OrderedStringHashMap(std::initializer_list<std::pair<std::string, T>> val) {
+    [[nodiscard]] ordered_string_hash_map() = default;
+    [[nodiscard]] ordered_string_hash_map(std::initializer_list<std::pair<std::string, T>> val) {
         for (const auto& [k, v] : val) { try_emplace(k, v); }
     }
 
@@ -151,13 +151,13 @@ public:
         std::unreachable();
     }
 
-    [[nodiscard]] bool operator==(const OrderedStringHashMap& other) const JSONC_EXCEPTION_TYPE { return storage_ == other.storage_; }
+    [[nodiscard]] bool operator==(const ordered_string_hash_map& other) const JSONC_EXCEPTION_TYPE { return storage_ == other.storage_; }
 
 private:
-    StringHashMap<T>              storage_{};
+    string_hash_map<T>            storage_{};
     std::map<size_t, std::string> insert_index_{};
-    StringHashMap<size_t>         key_index_{};
+    string_hash_map<size_t>       key_index_{};
     size_t                        next_insert_index_{};
 };
 
-} // namespace jsonc::inline abi_v1_1_0::detail
+} // namespace jsonc::inline abi_v1_1_1::detail
