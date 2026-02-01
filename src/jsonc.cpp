@@ -34,7 +34,7 @@ jsonc_variant_t jsonc_parse_content(const char* content, bool allow_trailing_com
     return nullptr;
 }
 
-JsoncValueType jsonc_get_variant_type(jsonc_variant_t handle) { return static_cast<JsoncValueType>(static_cast<jsonc::jsonc*>(handle)->type()); }
+int jsonc_get_variant_type(jsonc_variant_t handle) { return static_cast<int>(static_cast<jsonc::jsonc*>(handle)->type()); }
 
 bool     jsonc_variant_to_bool(jsonc_variant_t handle) { return static_cast<jsonc::jsonc*>(handle)->get<bool>(); }
 int64_t  jsonc_variant_to_signed(jsonc_variant_t handle) { return static_cast<jsonc::jsonc*>(handle)->get<int64_t>(); }
@@ -95,26 +95,12 @@ bool jsonc_object_value_is_any_int_type(jsonc_object_t handle, const char* key) 
     return static_cast<jsonc::object_type*>(handle)->operator[](key).is_number_any_inteager();
 }
 
-JsoncValueType jsonc_object_get_type(jsonc_object_t handle, const char* key) {
-    return static_cast<JsoncValueType>(static_cast<jsonc::object_type*>(handle)->operator[](key).type());
+int jsonc_object_get_type(jsonc_object_t handle, const char* key) {
+    return static_cast<int>(static_cast<jsonc::object_type*>(handle)->operator[](key).type());
 }
 
 bool jsonc_object_get_bool(jsonc_object_t handle, const char* key) { return static_cast<jsonc::object_type*>(handle)->operator[](key).get<bool>(); }
 void jsonc_object_set_bool(jsonc_object_t handle, const char* key, bool value) { static_cast<jsonc::object_type*>(handle)->operator[](key) = value; }
-
-int64_t jsonc_object_get_signed(jsonc_object_t handle, const char* key) {
-    return static_cast<jsonc::object_type*>(handle)->operator[](key).get<int64_t>();
-}
-void jsonc_object_set_signed(jsonc_object_t handle, const char* key, int64_t value) {
-    static_cast<jsonc::object_type*>(handle)->operator[](key) = value;
-}
-
-uint64_t jsonc_object_get_unsigned(jsonc_object_t handle, const char* key) {
-    return static_cast<jsonc::object_type*>(handle)->operator[](key).get<uint64_t>();
-}
-void jsonc_object_set_unsigned(jsonc_object_t handle, const char* key, uint64_t value) {
-    static_cast<jsonc::object_type*>(handle)->operator[](key) = value;
-}
 
 const char* jsonc_object_get_any_int(jsonc_object_t handle, const char* key) {
     return make_cstr(static_cast<jsonc::object_type*>(handle)->operator[](key).get_any_int_view());
@@ -241,36 +227,22 @@ bool jsonc_object_equals(jsonc_object_t lhs, jsonc_object_t rhs) {
     return (*static_cast<jsonc::object_type*>(lhs)) == (*static_cast<jsonc::object_type*>(rhs));
 }
 
-JsoncValueType jsonc_array_get_type(jsonc_array_t handle, size_t index) {
-    return static_cast<JsoncValueType>(static_cast<jsonc::array_type*>(handle)->operator[](index).type());
+int jsonc_array_get_type(jsonc_array_t handle, size_t index) {
+    return static_cast<int>(static_cast<jsonc::array_type*>(handle)->operator[](index).type());
 }
 
-bool jsonc_array_value_is_any_int_type(jsonc_object_t handle, size_t index) {
-    return static_cast<JsoncValueType>(static_cast<jsonc::array_type*>(handle)->operator[](index).is_number_any_inteager());
+bool jsonc_array_value_is_any_int_type(jsonc_array_t handle, size_t index) {
+    return static_cast<jsonc::array_type*>(handle)->operator[](index).is_number_any_inteager();
 }
 
 bool jsonc_array_get_bool(jsonc_array_t handle, size_t index) { return static_cast<jsonc::array_type*>(handle)->operator[](index).get<bool>(); }
 void jsonc_array_set_bool(jsonc_array_t handle, size_t index, bool value) { static_cast<jsonc::array_type*>(handle)->operator[](index) = value; }
 void jsonc_array_add_bool(jsonc_array_t handle, bool value) { static_cast<jsonc::array_type*>(handle)->push_back(value); }
 
-int64_t jsonc_array_get_signed(jsonc_array_t handle, size_t index) {
-    return static_cast<jsonc::array_type*>(handle)->operator[](index).get<int64_t>();
-}
-void jsonc_array_set_signed(jsonc_array_t handle, size_t index, int64_t value) { static_cast<jsonc::array_type*>(handle)->operator[](index) = value; }
-void jsonc_array_add_signed(jsonc_array_t handle, int64_t value) { static_cast<jsonc::array_type*>(handle)->push_back(value); }
-
-uint64_t jsonc_array_get_unsigned(jsonc_array_t handle, size_t index) {
-    return static_cast<jsonc::array_type*>(handle)->operator[](index).get<uint64_t>();
-}
-void jsonc_array_set_unsigned(jsonc_array_t handle, size_t index, uint64_t value) {
-    static_cast<jsonc::array_type*>(handle)->operator[](index) = value;
-}
-void jsonc_array_add_unsigned(jsonc_array_t handle, uint64_t value) { static_cast<jsonc::array_type*>(handle)->push_back(value); }
-
-const char* jsonc_array_get_any_int(jsonc_object_t handle, size_t index) {
+const char* jsonc_array_get_any_int(jsonc_array_t handle, size_t index) {
     return make_cstr(static_cast<jsonc::array_type*>(handle)->operator[](index).get_any_int_view());
 }
-bool jsonc_array_set_any_int(jsonc_object_t handle, size_t index, const char* value) {
+bool jsonc_array_set_any_int(jsonc_array_t handle, size_t index, const char* value) {
     auto val = jsonc::jsonc::from_big_int(value);
     if (val) { static_cast<jsonc::array_type*>(handle)->operator[](index) = *val; }
     return val.has_value();
