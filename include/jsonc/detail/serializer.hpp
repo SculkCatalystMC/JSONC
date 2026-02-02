@@ -79,20 +79,20 @@ inline std::string dump_typed(const std::string& str, bool ensure_ascii, int, bo
     if (str.empty()) { return "\"\""; }
 
     std::string result{};
-    result.reserve(static_cast<size_t>(static_cast<double>(str.size()) * 1.2));
+    result.reserve(static_cast<std::size_t>(static_cast<double>(str.size()) * 1.2));
 
     if (ensure_ascii) {
         auto it = str.begin();
         while (it != str.end()) {
-            const uint8_t c         = static_cast<uint8_t>(*it++);
-            uint32_t      codepoint = c;
-            size_t        char_len  = 1;
+            const std::uint8_t c         = static_cast<std::uint8_t>(*it++);
+            std::uint32_t      codepoint = c;
+            std::size_t        char_len  = 1;
 
             if (c >= 0xC0) {
                 char_len = (c >= 0xF0) ? 4 : (c >= 0xE0) ? 3 : 2;
 
                 codepoint = c & (0xFFu >> (char_len + 1));
-                for (size_t i = 1; i < char_len; ++i) { codepoint = (codepoint << 6) | (static_cast<uint8_t>(*it++) & 0x3F); }
+                for (std::size_t i = 1; i < char_len; ++i) { codepoint = (codepoint << 6) | (static_cast<std::uint8_t>(*it++) & 0x3F); }
             }
 
             switch (codepoint) {
@@ -157,7 +157,7 @@ inline std::string dump_typed(const std::string& str, bool ensure_ascii, int, bo
                 result += "\\t";
                 break;
             default:
-                if (static_cast<uint8_t>(c) <= 0x1F) {
+                if (static_cast<std::uint8_t>(c) <= 0x1F) {
                     result.append(std::format("\\u{:04x}", c));
                 } else {
                     result.push_back(c);
@@ -173,9 +173,9 @@ inline std::string
 dump_typed(const basic_array& val, bool ensure_ascii, int indent, bool ignore_comments, bool multi_line_comments_format) JSONC_EXCEPTION_TYPE {
     std::string result{"["};
 
-    size_t      i = val.size();
+    std::size_t i = val.size();
     std::string indent_space{};
-    if (indent > 0) { indent_space.resize(static_cast<size_t>(indent), ' '); }
+    if (indent > 0) { indent_space.resize(static_cast<std::size_t>(indent), ' '); }
 
     bool line_feed = (indent >= 0);
 
@@ -211,9 +211,9 @@ inline std::string
 dump_typed(const basic_object& val, bool ensure_ascii, int indent, bool ignore_comments, bool multi_line_comments_format) JSONC_EXCEPTION_TYPE {
     std::string result{"{"};
 
-    size_t      i = val.size();
+    std::size_t i = val.size();
     std::string indent_space{};
-    if (indent > 0) { indent_space.resize(static_cast<size_t>(indent), ' '); }
+    if (indent > 0) { indent_space.resize(static_cast<std::size_t>(indent), ' '); }
 
     bool line_feed = (indent >= 0);
 

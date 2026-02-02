@@ -8,9 +8,9 @@ namespace jsonc::inline abi_v1_1_1::detail {
 
 struct string_hash {
     using is_transparent = void;
-    size_t operator()(std::string_view sv) const noexcept { return std::hash<std::string_view>{}(sv); }
-    size_t operator()(const std::string& s) const noexcept { return std::hash<std::string>{}(s); }
-    size_t operator()(const char* s) const noexcept { return std::hash<std::string_view>{}(s); }
+    std::size_t operator()(std::string_view sv) const noexcept { return std::hash<std::string_view>{}(sv); }
+    std::size_t operator()(const std::string& s) const noexcept { return std::hash<std::string>{}(s); }
+    std::size_t operator()(const char* s) const noexcept { return std::hash<std::string_view>{}(s); }
 };
 
 struct string_equall {
@@ -60,8 +60,11 @@ public:
         using StorageType  = std::conditional_t<_Const, const string_hash_map<T>, string_hash_map<T>>;
         using IteratorType = std::conditional_t<
             _Reverse,
-            std::conditional_t<_Const, std::map<size_t, std::string>::const_reverse_iterator, std::map<size_t, std::string>::reverse_iterator>,
-            std::conditional_t<_Const, std::map<size_t, std::string>::const_iterator, std::map<size_t, std::string>::iterator>>;
+            std::conditional_t<
+                _Const,
+                std::map<std::size_t, std::string>::const_reverse_iterator,
+                std::map<std::size_t, std::string>::reverse_iterator>,
+            std::conditional_t<_Const, std::map<std::size_t, std::string>::const_iterator, std::map<std::size_t, std::string>::iterator>>;
 
         StorageType& storage_;
         IteratorType iterator_;
@@ -81,8 +84,8 @@ public:
         for (const auto& [k, v] : val) { try_emplace(k, v); }
     }
 
-    [[nodiscard]] size_t size() const noexcept { return storage_.size(); }
-    [[nodiscard]] bool   empty() const noexcept { return storage_.empty(); }
+    [[nodiscard]] std::size_t size() const noexcept { return storage_.size(); }
+    [[nodiscard]] bool        empty() const noexcept { return storage_.empty(); }
 
     [[nodiscard]] bool contains(std::string_view _Keyval) const noexcept { return storage_.contains(_Keyval); }
 
@@ -145,8 +148,8 @@ public:
         next_insert_index_ = 0;
     }
 
-    [[nodiscard]] const std::string& key_index(size_t index) const noexcept {
-        auto it = std::next(insert_index_.begin(), static_cast<std::map<size_t, std::string>::difference_type>(index));
+    [[nodiscard]] const std::string& key_index(std::size_t index) const noexcept {
+        auto it = std::next(insert_index_.begin(), static_cast<std::map<std::size_t, std::string>::difference_type>(index));
         if (it != insert_index_.end()) { return it->second; }
         std::unreachable();
     }
@@ -154,10 +157,10 @@ public:
     [[nodiscard]] bool operator==(const ordered_string_hash_map& other) const JSONC_EXCEPTION_TYPE { return storage_ == other.storage_; }
 
 private:
-    string_hash_map<T>            storage_{};
-    std::map<size_t, std::string> insert_index_{};
-    string_hash_map<size_t>       key_index_{};
-    size_t                        next_insert_index_{};
+    string_hash_map<T>                 storage_{};
+    std::map<std::size_t, std::string> insert_index_{};
+    string_hash_map<std::size_t>       key_index_{};
+    std::size_t                        next_insert_index_{};
 };
 
 } // namespace jsonc::inline abi_v1_1_1::detail

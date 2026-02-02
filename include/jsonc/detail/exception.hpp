@@ -50,7 +50,7 @@ public:
 #ifdef JSONC_USE_EXPECTED
 namespace jsonc::inline abi_v1_1_1::detail {
 
-enum class error_code : uint8_t {
+enum class error_code : std::uint8_t {
     out_of_range = 0,
     type_error   = 1,
     key_error    = 2,

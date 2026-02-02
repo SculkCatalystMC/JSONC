@@ -11,7 +11,7 @@ JSONC_PARSE_RESULT(basic_jsonc) parse_jsonc_type(std::string_view& str, bool all
 namespace {
 
 inline JSONC_PARSE_RESULT(std::string_view) extract_comment(std::string_view& s) JSONC_EXCEPTION_TYPE {
-    size_t           i = 0;
+    std::size_t      i = 0;
     std::string_view result;
     switch (s[i++]) {
     case '*': {
@@ -77,13 +77,13 @@ inline JSONC_PARSE_RESULT(std::string_view) extract_comment(std::string_view& s)
 }
 
 inline void skip_spaces(std::string_view& s) noexcept {
-    size_t i = 0;
+    std::size_t i = 0;
     while (i <= s.size() && std::isspace(s[i++])) {}
     s.remove_prefix(std::min(i - 1, s.size()));
 }
 
 inline void skip_spaces_nolinefeed(std::string_view& s) noexcept {
-    size_t      i                  = 0;
+    std::size_t i                  = 0;
     static auto isspace_nolinefeed = [](char c) { return c == ' ' || c == '\t' || c == '\v' || c == '\f'; };
     while (i <= s.size() && (isspace_nolinefeed(s[i++]))) {}
     s.remove_prefix(std::min(i - 1, s.size()));
@@ -91,7 +91,7 @@ inline void skip_spaces_nolinefeed(std::string_view& s) noexcept {
 
 inline std::vector<std::string> parse_comments(std::string_view comment) JSONC_EXCEPTION_TYPE {
     std::vector<std::string> result{};
-    size_t                   pos = 0;
+    std::size_t              pos = 0;
     while ((pos = comment.find('\n')) != std::string::npos) {
         if (pos != 0) {
             auto line = comment.substr(0, pos);
@@ -191,8 +191,8 @@ inline JSONC_PARSE_RESULT(
 inline JSONC_PARSE_RESULT(
     basic_jsonc
 ) parse_number(std::string_view& str, std::vector<std::string>&& comments_before, bool ignore_comments) JSONC_EXCEPTION_TYPE {
-    size_t length = 0;
-    bool   is_int = true;
+    std::size_t length = 0;
+    bool        is_int = true;
     if (str.empty()) { _JSONC_PARSE_ERROR("illegal escape"); }
 
     auto it    = str.begin();
@@ -214,15 +214,15 @@ inline JSONC_PARSE_RESULT(
         while (it != end && std::isdigit(*it)) { ++it; }
     }
 
-    length      = static_cast<size_t>(it - str.begin());
-    auto number = str.substr(static_cast<size_t>(start - str.begin()), static_cast<size_t>(it - start));
+    length      = static_cast<std::size_t>(it - str.begin());
+    auto number = str.substr(static_cast<std::size_t>(start - str.begin()), static_cast<std::size_t>(it - start));
     str.remove_prefix(length);
 
     basic_jsonc result{};
 
     if (is_int) {
         if (negative) {
-            int64_t res{};
+            std::int64_t res{};
             auto [ptr, ec] = std::from_chars(number.data(), number.data() + number.size(), res);
             if (ec != std::errc()) {
                 result = basic_big_int(number);
@@ -230,7 +230,7 @@ inline JSONC_PARSE_RESULT(
                 result = res;
             }
         } else {
-            uint64_t res{};
+            std::uint64_t res{};
             auto [ptr, ec] = std::from_chars(number.data(), number.data() + number.size(), res);
             if (ec != std::errc()) {
                 result = basic_big_int(number);
@@ -256,11 +256,11 @@ inline JSONC_PARSE_RESULT(int) get_codepoint(std::string_view& s) JSONC_EXCEPTIO
     for (const auto factor : {12u, 8u, 4u, 0u}) {
         auto current = get_current_char(s);
         if (current >= '0' && current <= '9') {
-            codepoint += static_cast<int>((static_cast<uint32_t>(current) - 0x30u) << factor);
+            codepoint += static_cast<int>((static_cast<std::uint32_t>(current) - 0x30u) << factor);
         } else if (current >= 'A' && current <= 'F') {
-            codepoint += static_cast<int>((static_cast<uint32_t>(current) - 0x37u) << factor);
+            codepoint += static_cast<int>((static_cast<std::uint32_t>(current) - 0x37u) << factor);
         } else if (current >= 'a' && current <= 'f') {
-            codepoint += static_cast<int>((static_cast<uint32_t>(current) - 0x57u) << factor);
+            codepoint += static_cast<int>((static_cast<std::uint32_t>(current) - 0x57u) << factor);
         } else {
             _JSONC_PARSE_ERROR("");
         }
@@ -355,7 +355,9 @@ inline JSONC_PARSE_RESULT(
                         int codepoint2 = get_codepoint(str);
 #endif
                         if ((0xDC00 <= codepoint2 && codepoint2 <= 0xDFFF)) {
-                            codepoint = static_cast<int>((static_cast<uint32_t>(codepoint1) << 10u) + static_cast<uint32_t>(codepoint2) - 0x35FDC00u);
+                            codepoint = static_cast<int>(
+                                (static_cast<std::uint32_t>(codepoint1) << 10u) + static_cast<std::uint32_t>(codepoint2) - 0x35FDC00u
+                            );
                         } else {
                             _JSONC_PARSE_ERROR("");
                         }
@@ -368,17 +370,17 @@ inline JSONC_PARSE_RESULT(
                 if (codepoint < 0x80) {
                     res.push_back(static_cast<char>(codepoint));
                 } else if (codepoint <= 0x7FF) {
-                    res.push_back(static_cast<char>(0xC0u | (static_cast<uint32_t>(codepoint) >> 6u)));
-                    res.push_back(static_cast<char>(0x80u | (static_cast<uint32_t>(codepoint) & 0x3Fu)));
+                    res.push_back(static_cast<char>(0xC0u | (static_cast<std::uint32_t>(codepoint) >> 6u)));
+                    res.push_back(static_cast<char>(0x80u | (static_cast<std::uint32_t>(codepoint) & 0x3Fu)));
                 } else if (codepoint <= 0xFFFF) {
-                    res.push_back(static_cast<char>(0xE0u | (static_cast<uint32_t>(codepoint) >> 12u)));
-                    res.push_back(static_cast<char>(0x80u | ((static_cast<uint32_t>(codepoint) >> 6u) & 0x3Fu)));
-                    res.push_back(static_cast<char>(0x80u | (static_cast<uint32_t>(codepoint) & 0x3Fu)));
+                    res.push_back(static_cast<char>(0xE0u | (static_cast<std::uint32_t>(codepoint) >> 12u)));
+                    res.push_back(static_cast<char>(0x80u | ((static_cast<std::uint32_t>(codepoint) >> 6u) & 0x3Fu)));
+                    res.push_back(static_cast<char>(0x80u | (static_cast<std::uint32_t>(codepoint) & 0x3Fu)));
                 } else {
-                    res.push_back(static_cast<char>(0xF0u | (static_cast<uint32_t>(codepoint) >> 18u)));
-                    res.push_back(static_cast<char>(0x80u | ((static_cast<uint32_t>(codepoint) >> 12u) & 0x3Fu)));
-                    res.push_back(static_cast<char>(0x80u | ((static_cast<uint32_t>(codepoint) >> 6u) & 0x3Fu)));
-                    res.push_back(static_cast<char>(0x80u | (static_cast<uint32_t>(codepoint) & 0x3Fu)));
+                    res.push_back(static_cast<char>(0xF0u | (static_cast<std::uint32_t>(codepoint) >> 18u)));
+                    res.push_back(static_cast<char>(0x80u | ((static_cast<std::uint32_t>(codepoint) >> 12u) & 0x3Fu)));
+                    res.push_back(static_cast<char>(0x80u | ((static_cast<std::uint32_t>(codepoint) >> 6u) & 0x3Fu)));
+                    res.push_back(static_cast<char>(0x80u | (static_cast<std::uint32_t>(codepoint) & 0x3Fu)));
                 }
                 break;
             }
