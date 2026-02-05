@@ -620,34 +620,52 @@ inline std::string basic_jsonc::dump(
     return result;
 }
 
-template <is_jsonc_type_convertible T>
+template <typename T>
+constexpr bool always_false_v = false;
+
+template <typename T>
+constexpr bool is_jsonc_type_convertible_v = [] {
+    return []<std::size_t... I>(std::index_sequence<I...>) {
+        return (std::same_as<std::variant_alternative_t<I, basic_jsonc::type_variant>, T> || ...);
+    }(std::make_index_sequence<std::variant_size_v<basic_jsonc::type_variant>>{});
+}();
+
+template <typename T>
 inline JSONC_RESULT(T&) basic_jsonc::as() JSONC_EXCEPTION_TYPE {
-    return std::visit(
-        [](auto& val) -> JSONC_RESULT(T&) {
-            using Type = std::decay_t<decltype(val)>;
-            if constexpr (std::is_convertible_v<Type, T>) {
-                return static_cast<T&>(val);
-            } else {
-                _JSONC_TYPE_ERROR("bad type cast");
-            }
-        },
-        storage_
-    );
+    if constexpr (is_jsonc_type_convertible_v<T>) {
+        return std::visit(
+            [](auto& val) -> JSONC_RESULT(T&) {
+                using Type = std::decay_t<decltype(val)>;
+                if constexpr (std::same_as<Type, T>) {
+                    return val;
+                } else {
+                    _JSONC_TYPE_ERROR("bad type cast");
+                }
+            },
+            storage_
+        );
+    } else {
+        static_assert(always_false_v<T>, "Type is not any jsonc internal Type, use get<T> instead of as<T>");
+    }
 }
 
-template <is_jsonc_type_convertible T>
+template <typename T>
 inline JSONC_RESULT(const T&) basic_jsonc::as() const JSONC_EXCEPTION_TYPE {
-    return std::visit(
-        [](const auto& val) -> JSONC_RESULT(const T&) {
-            using Type = std::decay_t<decltype(val)>;
-            if constexpr (std::is_convertible_v<Type, T>) {
-                return static_cast<const T&>(val);
-            } else {
-                _JSONC_TYPE_ERROR("bad type cast");
-            }
-        },
-        storage_
-    );
+    if constexpr (is_jsonc_type_convertible_v<T>) {
+        return std::visit(
+            [](const auto& val) -> JSONC_RESULT(const T&) {
+                using Type = std::decay_t<decltype(val)>;
+                if constexpr (std::same_as<Type, T>) {
+                    return val;
+                } else {
+                    _JSONC_TYPE_ERROR("bad type cast");
+                }
+            },
+            storage_
+        );
+    } else {
+        static_assert(always_false_v<T>, "Type is not any jsonc internal Type, use get<T> instead of as<T>");
+    }
 }
 
 template <typename T>

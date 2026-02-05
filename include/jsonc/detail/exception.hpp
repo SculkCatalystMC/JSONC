@@ -7,6 +7,7 @@
 #define JSONC_NO_EXCEPTION
 #endif
 #include <expected>
+#include <functional>
 #endif
 
 #ifndef JSONC_NO_EXCEPTION

@@ -47,15 +47,6 @@ constexpr bool emplace_variant(Var& v, std::size_t idx) noexcept {
     constexpr std::size_t N = std::variant_size_v<std::remove_reference_t<Var>>;
     return emplace_variant_impl(v, idx, std::make_index_sequence<N>{});
 }
-class basic_jsonc;
-template <class T>
-constexpr bool is_jsonc_type_convertible_v = [] {
-    return []<std::size_t... I>(std::index_sequence<I...>) {
-        return (std::is_convertible_v<std::variant_alternative_t<I, basic_jsonc::type_variant>, T> || ...);
-    }(std::make_index_sequence<std::variant_size_v<basic_jsonc::type_variant>>{});
-}();
-template <typename T>
-concept is_jsonc_type_convertible = is_jsonc_type_convertible_v<T>;
 
 class basic_jsonc {
 public:
@@ -470,10 +461,10 @@ public:
         bool global_comments            = true
     ) const JSONC_EXCEPTION_TYPE;
 
-    template <is_jsonc_type_convertible T>
+    template <typename T>
     [[nodiscard]] JSONC_RESULT(T&) as() JSONC_EXCEPTION_TYPE;
 
-    template <is_jsonc_type_convertible T>
+    template <typename T>
     [[nodiscard]] JSONC_RESULT(const T&) as() const JSONC_EXCEPTION_TYPE;
 
     template <typename T>

@@ -128,7 +128,7 @@ public:
         return iterator(storage_, insert_index_.end());
     }
 
-    template <class... _Mappedty>
+    template <typename... _Mappedty>
     std::pair<iterator, bool> try_emplace(std::string_view _Keyval, _Mappedty&&... _Mapval) JSONC_EXCEPTION_TYPE {
         const auto _Result = storage_.try_emplace(std::string(_Keyval), std::forward<_Mappedty>(_Mapval)...);
         if (_Result.second) {
