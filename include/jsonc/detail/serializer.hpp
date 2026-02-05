@@ -1,7 +1,7 @@
 #pragma once
 #include "type.hpp"
 
-namespace jsonc::inline abi_v1_1_1::detail {
+namespace jsonc::inline abi_v1_2_0::detail {
 
 inline std::string format_comments(
     const std::vector<std::string>& comments,
@@ -293,4 +293,4 @@ inline std::string dump_typed(T val, bool, int, bool, bool) JSONC_EXCEPTION_TYPE
 
 inline std::string dump_typed(basic_jsonc::basic_big_int val, bool, int, bool, bool) JSONC_EXCEPTION_TYPE { return val.view_; }
 
-} // namespace jsonc::inline abi_v1_1_1::detail
+} // namespace jsonc::inline abi_v1_2_0::detail

@@ -6,7 +6,7 @@
 #include <format>
 #include <ranges>
 
-namespace jsonc::inline abi_v1_1_1::detail {
+namespace jsonc::inline abi_v1_2_0::detail {
 
 inline std::vector<std::string> split_comments(std::string_view comment) noexcept {
     std::vector<std::string> result{};
@@ -1046,4 +1046,4 @@ inline std::optional<basic_jsonc> basic_jsonc::from_big_int(std::string_view vie
     return res;
 }
 
-} // namespace jsonc::inline abi_v1_1_1::detail
+} // namespace jsonc::inline abi_v1_2_0::detail

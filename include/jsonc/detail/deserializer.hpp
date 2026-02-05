@@ -3,7 +3,7 @@
 #include "type.hpp"
 #include <charconv>
 
-namespace jsonc::inline abi_v1_1_1::detail {
+namespace jsonc::inline abi_v1_2_0::detail {
 
 JSONC_PARSE_RESULT(basic_jsonc) parse_jsonc_type(std::string_view& str, std::vector<std::string>&& comments_before, bool allow_trailing_comma, bool ignore_comments) JSONC_EXCEPTION_TYPE;
 JSONC_PARSE_RESULT(basic_jsonc) parse_jsonc_type(std::string_view& str, bool allow_trailing_comma, bool ignore_comments) JSONC_EXCEPTION_TYPE;
@@ -605,4 +605,4 @@ inline JSONC_PARSE_RESULT(basic_jsonc) parse_jsonc_type(std::string_view& str, b
     return parse_jsonc_type(str, std::move(comments_before), allow_trailing_comma, ignore_comments);
 }
 
-} // namespace jsonc::inline abi_v1_1_1::detail
+} // namespace jsonc::inline abi_v1_2_0::detail
