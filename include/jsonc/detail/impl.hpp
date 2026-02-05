@@ -24,75 +24,76 @@ inline std::vector<std::string> split_comments(std::string_view comment) noexcep
     return result;
 }
 
-basic_object::basic_object(std::initializer_list<std::pair<std::string, basic_jsonc>> val) JSONC_EXCEPTION_TYPE : storage_(val) {}
+inline basic_object::basic_object(std::initializer_list<std::pair<std::string, basic_jsonc>> val) JSONC_EXCEPTION_TYPE : storage_(val) {}
 
-basic_jsonc& basic_object::operator[](std::string_view index) JSONC_EXCEPTION_TYPE {
+inline basic_jsonc& basic_object::operator[](std::string_view index) JSONC_EXCEPTION_TYPE {
     auto res = storage_.find(index);
     if (res != storage_.end()) { return res->second; }
     return storage_.try_emplace(index).first->second;
 }
-JSONC_RESULT(const basic_jsonc&) basic_object::operator[](std::string_view index) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(const basic_jsonc&) basic_object::operator[](std::string_view index) const JSONC_EXCEPTION_TYPE {
     auto res = storage_.find(index);
     if (res != storage_.end()) { return _JSONC_MAKE_RESULT(res->second); }
     _JSONC_KEY_ERROR(std::format("Invalid key: {}", index));
 }
 
-JSONC_RESULT(basic_jsonc&) basic_object::at(std::string_view index) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(basic_jsonc&) basic_object::at(std::string_view index) JSONC_EXCEPTION_TYPE {
     auto res = storage_.find(index);
     if (res != storage_.end()) { return _JSONC_MAKE_RESULT(res->second); }
     _JSONC_KEY_ERROR(std::format("Invalid key: {}", index));
 }
-JSONC_RESULT(const basic_jsonc&) basic_object::at(std::string_view index) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(const basic_jsonc&) basic_object::at(std::string_view index) const JSONC_EXCEPTION_TYPE {
     auto res = storage_.find(index);
     if (res != storage_.end()) { return _JSONC_MAKE_RESULT(res->second); }
     _JSONC_KEY_ERROR(std::format("Invalid key: {}", index));
 }
 
-basic_jsonc& basic_object::at(std::string_view index, const basic_jsonc& default_value) JSONC_EXCEPTION_TYPE {
+inline basic_jsonc& basic_object::at(std::string_view index, const basic_jsonc& default_value) JSONC_EXCEPTION_TYPE {
     auto res = storage_.find(index);
     if (res != storage_.end()) { return res->second; }
     return storage_.try_emplace(index, default_value).first->second;
 }
 
-bool basic_object::contains(std::string_view index) const noexcept { return storage_.contains(index); }
-bool basic_object::contains(std::string_view index, value_type type) const noexcept {
+inline bool basic_object::contains(std::string_view index) const noexcept { return storage_.contains(index); }
+inline bool basic_object::contains(std::string_view index, value_type type) const noexcept {
     auto result = storage_.find(index);
     if (result != storage_.end()) { return result->second.type() == type; }
     return false;
 }
 
-std::size_t basic_object::size() const noexcept { return storage_.size(); }
+inline std::size_t basic_object::size() const noexcept { return storage_.size(); }
 
-bool basic_object::empty() const noexcept { return storage_.empty(); }
+inline bool basic_object::empty() const noexcept { return storage_.empty(); }
 
-bool basic_object::erase(std::string_view index) noexcept {
+inline bool basic_object::erase(std::string_view index) noexcept {
     key_comments_.erase(std::string(index));
     return storage_.erase(index);
 }
 
-void basic_object::clear() noexcept {
+inline void basic_object::clear() noexcept {
     storage_.clear();
     key_comments_.clear();
 }
 
-std::string basic_object::dump(int indent, bool ensure_ascii, bool ignore_comments, bool multi_line_comments_format) const JSONC_EXCEPTION_TYPE {
+inline std::string
+basic_object::dump(int indent, bool ensure_ascii, bool ignore_comments, bool multi_line_comments_format) const JSONC_EXCEPTION_TYPE {
     return dump_typed(*this, ensure_ascii, indent, ignore_comments, multi_line_comments_format);
 }
 
-const std::string& basic_object::key_index(std::size_t index) const noexcept { return storage_.key_index(index); }
+inline const std::string& basic_object::key_index(std::size_t index) const noexcept { return storage_.key_index(index); }
 
-bool basic_object::has_key_before_comments(std::string_view index) const noexcept {
+inline bool basic_object::has_key_before_comments(std::string_view index) const noexcept {
     auto res = key_comments_.find(index);
     if (res != key_comments_.end()) { return !res->second.before_comments_.empty(); }
     return false;
 }
-bool basic_object::has_key_after_comments(std::string_view index) const noexcept {
+inline bool basic_object::has_key_after_comments(std::string_view index) const noexcept {
     auto res = key_comments_.find(index);
     if (res != key_comments_.end()) { return !res->second.after_comments_.empty(); }
     return false;
 }
 
-std::vector<std::string>& basic_object::key_before_comments(std::string_view index) JSONC_EXCEPTION_TYPE {
+inline std::vector<std::string>& basic_object::key_before_comments(std::string_view index) JSONC_EXCEPTION_TYPE {
     auto res = key_comments_.find(index);
     if (res != key_comments_.end()) {
         return res->second.before_comments_;
@@ -100,13 +101,13 @@ std::vector<std::string>& basic_object::key_before_comments(std::string_view ind
         return key_comments_.try_emplace(std::string(index)).first->second.before_comments_;
     }
 }
-JSONC_RESULT(const std::vector<std::string>&) basic_object::key_before_comments(std::string_view index) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(const std::vector<std::string>&) basic_object::key_before_comments(std::string_view index) const JSONC_EXCEPTION_TYPE {
     auto res = key_comments_.find(index);
     if (res != key_comments_.end()) { return res->second.before_comments_; }
     _JSONC_KEY_ERROR(std::format("Invalid key: {}", index));
 }
 
-std::vector<std::string>& basic_object::key_after_comments(std::string_view index) JSONC_EXCEPTION_TYPE {
+inline std::vector<std::string>& basic_object::key_after_comments(std::string_view index) JSONC_EXCEPTION_TYPE {
     auto res = key_comments_.find(index);
     if (res != key_comments_.end()) {
         return res->second.after_comments_;
@@ -114,24 +115,24 @@ std::vector<std::string>& basic_object::key_after_comments(std::string_view inde
         return key_comments_.try_emplace(std::string(index)).first->second.after_comments_;
     }
 }
-JSONC_RESULT(const std::vector<std::string>&) basic_object::key_after_comments(std::string_view index) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(const std::vector<std::string>&) basic_object::key_after_comments(std::string_view index) const JSONC_EXCEPTION_TYPE {
     auto res = key_comments_.find(index);
     if (res != key_comments_.end()) { return res->second.after_comments_; }
     _JSONC_KEY_ERROR(std::format("Invalid key: {}", index));
 }
 
-JSONC_RESULT(std::vector<std::string>) basic_object::get_key_before_comments(std::string_view index) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(std::vector<std::string>) basic_object::get_key_before_comments(std::string_view index) const JSONC_EXCEPTION_TYPE {
     auto res = key_comments_.find(index);
     if (res != key_comments_.end()) { return res->second.before_comments_; }
     _JSONC_KEY_ERROR(std::format("Invalid key: {}", index));
 }
-JSONC_RESULT(std::vector<std::string>) basic_object::get_key_after_comments(std::string_view index) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(std::vector<std::string>) basic_object::get_key_after_comments(std::string_view index) const JSONC_EXCEPTION_TYPE {
     auto res = key_comments_.find(index);
     if (res != key_comments_.end()) { return res->second.after_comments_; }
     _JSONC_KEY_ERROR(std::format("Invalid key: {}", index));
 }
 
-JSONC_RESULT(std::string) basic_object::get_key_before_comment(std::string_view index, std::size_t comment_index) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(std::string) basic_object::get_key_before_comment(std::string_view index, std::size_t comment_index) const JSONC_EXCEPTION_TYPE {
     auto res = key_comments_.find(index);
     if (res != key_comments_.end()) {
         if (comment_index < res->second.before_comments_.size()) { return res->second.before_comments_[comment_index]; }
@@ -139,7 +140,7 @@ JSONC_RESULT(std::string) basic_object::get_key_before_comment(std::string_view 
     }
     _JSONC_KEY_ERROR(std::format("Invalid key: {}", index));
 }
-JSONC_RESULT(std::string) basic_object::get_key_after_comment(std::string_view index, std::size_t comment_index) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(std::string) basic_object::get_key_after_comment(std::string_view index, std::size_t comment_index) const JSONC_EXCEPTION_TYPE {
     auto res = key_comments_.find(index);
     if (res != key_comments_.end()) {
         if (comment_index < res->second.after_comments_.size()) { return res->second.after_comments_[comment_index]; }
@@ -148,7 +149,7 @@ JSONC_RESULT(std::string) basic_object::get_key_after_comment(std::string_view i
     _JSONC_KEY_ERROR(std::format("Invalid key: {}", index));
 }
 
-bool basic_object::set_key_before_comments(std::string_view index, const std::vector<std::string>& comments) JSONC_EXCEPTION_TYPE {
+inline bool basic_object::set_key_before_comments(std::string_view index, const std::vector<std::string>& comments) JSONC_EXCEPTION_TYPE {
     if (contains(index)) {
         auto res = key_comments_.find(index);
         if (res != key_comments_.end()) {
@@ -160,7 +161,7 @@ bool basic_object::set_key_before_comments(std::string_view index, const std::ve
     }
     return false;
 }
-bool basic_object::set_key_after_comments(std::string_view index, const std::vector<std::string>& comments) JSONC_EXCEPTION_TYPE {
+inline bool basic_object::set_key_after_comments(std::string_view index, const std::vector<std::string>& comments) JSONC_EXCEPTION_TYPE {
     if (contains(index)) {
         auto res = key_comments_.find(index);
         if (res != key_comments_.end()) {
@@ -173,7 +174,7 @@ bool basic_object::set_key_after_comments(std::string_view index, const std::vec
     return false;
 }
 
-bool basic_object::add_key_before_comment(std::string_view index, std::string_view comment) JSONC_EXCEPTION_TYPE {
+inline bool basic_object::add_key_before_comment(std::string_view index, std::string_view comment) JSONC_EXCEPTION_TYPE {
     if (contains(index)) {
         auto res = key_comments_.find(index);
         if (res != key_comments_.end()) {
@@ -185,7 +186,7 @@ bool basic_object::add_key_before_comment(std::string_view index, std::string_vi
     }
     return false;
 }
-bool basic_object::add_key_after_comment(std::string_view index, std::string_view comment) JSONC_EXCEPTION_TYPE {
+inline bool basic_object::add_key_after_comment(std::string_view index, std::string_view comment) JSONC_EXCEPTION_TYPE {
     if (contains(index)) {
         auto res = key_comments_.find(index);
         if (res != key_comments_.end()) {
@@ -198,16 +199,16 @@ bool basic_object::add_key_after_comment(std::string_view index, std::string_vie
     return false;
 }
 
-void basic_object::clear_key_before_comments(std::string_view index) JSONC_EXCEPTION_TYPE {
+inline void basic_object::clear_key_before_comments(std::string_view index) JSONC_EXCEPTION_TYPE {
     auto res = key_comments_.find(index);
     if (res != key_comments_.end()) { res->second.before_comments_.clear(); }
 }
-void basic_object::clear_key_after_comments(std::string_view index) JSONC_EXCEPTION_TYPE {
+inline void basic_object::clear_key_after_comments(std::string_view index) JSONC_EXCEPTION_TYPE {
     auto res = key_comments_.find(index);
     if (res != key_comments_.end()) { res->second.after_comments_.clear(); }
 }
 
-bool basic_object::remove_key_before_comment(std::string_view index, std::size_t comment_index) JSONC_EXCEPTION_TYPE {
+inline bool basic_object::remove_key_before_comment(std::string_view index, std::size_t comment_index) JSONC_EXCEPTION_TYPE {
     auto res = key_comments_.find(index);
     if (res != key_comments_.end()) {
         if (comment_index < res->second.before_comments_.size()) {
@@ -219,7 +220,7 @@ bool basic_object::remove_key_before_comment(std::string_view index, std::size_t
     }
     return false;
 }
-bool basic_object::remove_key_after_comment(std::string_view index, std::size_t comment_index) JSONC_EXCEPTION_TYPE {
+inline bool basic_object::remove_key_after_comment(std::string_view index, std::size_t comment_index) JSONC_EXCEPTION_TYPE {
     auto res = key_comments_.find(index);
     if (res != key_comments_.end()) {
         if (comment_index < res->second.after_comments_.size()) {
@@ -232,39 +233,39 @@ bool basic_object::remove_key_after_comment(std::string_view index, std::size_t 
     return false;
 }
 
-std::size_t basic_object::key_before_comments_size(std::string_view index) const noexcept {
+inline std::size_t basic_object::key_before_comments_size(std::string_view index) const noexcept {
     auto res = key_comments_.find(index);
     if (res != key_comments_.end()) { return res->second.before_comments_.size(); }
     return 0;
 }
-std::size_t basic_object::key_after_comments_size(std::string_view index) const noexcept {
+inline std::size_t basic_object::key_after_comments_size(std::string_view index) const noexcept {
     auto res = key_comments_.find(index);
     if (res != key_comments_.end()) { return res->second.after_comments_.size(); }
     return 0;
 }
 
-basic_object::iterator basic_object::begin() noexcept { return storage_.begin(); }
-basic_object::iterator basic_object::end() noexcept { return storage_.end(); }
+inline basic_object::iterator basic_object::begin() noexcept { return storage_.begin(); }
+inline basic_object::iterator basic_object::end() noexcept { return storage_.end(); }
 
-basic_object::const_iterator basic_object::begin() const noexcept { return storage_.begin(); }
-basic_object::const_iterator basic_object::end() const noexcept { return storage_.end(); }
+inline basic_object::const_iterator basic_object::begin() const noexcept { return storage_.begin(); }
+inline basic_object::const_iterator basic_object::end() const noexcept { return storage_.end(); }
 
-basic_object::const_iterator basic_object::cbegin() const noexcept { return storage_.cbegin(); }
-basic_object::const_iterator basic_object::cend() const noexcept { return storage_.cend(); }
+inline basic_object::const_iterator basic_object::cbegin() const noexcept { return storage_.cbegin(); }
+inline basic_object::const_iterator basic_object::cend() const noexcept { return storage_.cend(); }
 
-basic_object::reverse_iterator basic_object::rbegin() noexcept { return storage_.rbegin(); }
-basic_object::reverse_iterator basic_object::rend() noexcept { return storage_.rend(); }
+inline basic_object::reverse_iterator basic_object::rbegin() noexcept { return storage_.rbegin(); }
+inline basic_object::reverse_iterator basic_object::rend() noexcept { return storage_.rend(); }
 
-basic_object::const_reverse_iterator basic_object::rbegin() const noexcept { return storage_.rbegin(); }
-basic_object::const_reverse_iterator basic_object::rend() const noexcept { return storage_.rend(); }
+inline basic_object::const_reverse_iterator basic_object::rbegin() const noexcept { return storage_.rbegin(); }
+inline basic_object::const_reverse_iterator basic_object::rend() const noexcept { return storage_.rend(); }
 
-basic_object::const_reverse_iterator basic_object::crbegin() const noexcept { return storage_.crbegin(); }
-basic_object::const_reverse_iterator basic_object::crend() const noexcept { return storage_.crend(); }
+inline basic_object::const_reverse_iterator basic_object::crbegin() const noexcept { return storage_.crbegin(); }
+inline basic_object::const_reverse_iterator basic_object::crend() const noexcept { return storage_.crend(); }
 
-void basic_object::merge_patch(const basic_object& other, bool merge_list) JSONC_EXCEPTION_TYPE {
+inline void basic_object::merge_patch(const basic_object& other, bool merge_list) JSONC_EXCEPTION_TYPE {
     for (const auto& [key, val] : other) { operator[](key).merge_patch(val, merge_list); }
 }
-JSONC_RESULT(void) basic_object::merge_patch(const basic_jsonc& other, bool merge_list) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(void) basic_object::merge_patch(const basic_jsonc& other, bool merge_list) JSONC_EXCEPTION_TYPE {
     if (auto* rhs = std::get_if<basic_object>(&other.storage_)) {
         merge_patch(*rhs, merge_list);
         return _JSONC_MAKE_VOID_RESULT();
@@ -272,7 +273,7 @@ JSONC_RESULT(void) basic_object::merge_patch(const basic_jsonc& other, bool merg
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", other.type_name()));
 }
 
-void basic_object::merge_comments(const basic_object& other) JSONC_EXCEPTION_TYPE {
+inline void basic_object::merge_comments(const basic_object& other) JSONC_EXCEPTION_TYPE {
     for (const auto& [key, val] : other) {
         if (contains(key)) {
             operator[](key).set_before_comments(val.get_before_comments());
@@ -289,7 +290,7 @@ void basic_object::merge_comments(const basic_object& other) JSONC_EXCEPTION_TYP
     }
 }
 
-void basic_object::move_comments_to_before() JSONC_EXCEPTION_TYPE {
+inline void basic_object::move_comments_to_before() JSONC_EXCEPTION_TYPE {
     for (const auto& [key, val] : *this) {
         if (has_key_after_comments(key)) {
 #ifdef JSONC_USE_EXPECTED
@@ -307,41 +308,43 @@ void basic_object::move_comments_to_before() JSONC_EXCEPTION_TYPE {
     }
 }
 
-bool basic_object::operator==(const basic_object& other) const JSONC_EXCEPTION_TYPE { return storage_ == other.storage_; }
-bool basic_object::operator==(const basic_jsonc& other) const JSONC_EXCEPTION_TYPE {
+inline bool basic_object::operator==(const basic_object& other) const JSONC_EXCEPTION_TYPE { return storage_ == other.storage_; }
+inline bool basic_object::operator==(const basic_jsonc& other) const JSONC_EXCEPTION_TYPE {
     if (auto* rhs = std::get_if<basic_object>(&other.storage_)) { return storage_ == rhs->storage_; }
     return false;
 }
 
 
-basic_array::basic_array(std::initializer_list<basic_jsonc> val) JSONC_EXCEPTION_TYPE : storage_(val) {}
+inline basic_array::basic_array(std::initializer_list<basic_jsonc> val) JSONC_EXCEPTION_TYPE : storage_(val) {}
 
-constexpr basic_jsonc& basic_array::operator[](std::size_t index) noexcept { return storage_[index]; }
-constexpr JSONC_RESULT(const basic_jsonc&) basic_array::operator[](std::size_t index) const noexcept { return _JSONC_MAKE_RESULT(storage_[index]); }
+inline constexpr basic_jsonc& basic_array::operator[](std::size_t index) noexcept { return storage_[index]; }
+inline constexpr JSONC_RESULT(const basic_jsonc&) basic_array::operator[](std::size_t index) const noexcept {
+    return _JSONC_MAKE_RESULT(storage_[index]);
+}
 
-constexpr JSONC_RESULT(basic_jsonc&) basic_array::at(std::size_t index) JSONC_EXCEPTION_TYPE {
+inline constexpr JSONC_RESULT(basic_jsonc&) basic_array::at(std::size_t index) JSONC_EXCEPTION_TYPE {
     if (index < storage_.size()) { return _JSONC_MAKE_RESULT(storage_[index]); }
     _JSONC_OUT_OF_RANGE("Index out of range");
 }
-constexpr JSONC_RESULT(const basic_jsonc&) basic_array::at(std::size_t index) const JSONC_EXCEPTION_TYPE {
+inline constexpr JSONC_RESULT(const basic_jsonc&) basic_array::at(std::size_t index) const JSONC_EXCEPTION_TYPE {
     if (index < storage_.size()) { return _JSONC_MAKE_RESULT(storage_[index]); }
     _JSONC_OUT_OF_RANGE("Index out of range");
 }
 
-constexpr std::size_t basic_array::size() const noexcept { return storage_.size(); }
+inline constexpr std::size_t basic_array::size() const noexcept { return storage_.size(); }
 
-constexpr bool basic_array::empty() const noexcept { return storage_.empty(); }
+inline constexpr bool basic_array::empty() const noexcept { return storage_.empty(); }
 
-void basic_array::clear() noexcept { storage_.clear(); }
+inline void basic_array::clear() noexcept { storage_.clear(); }
 
-bool basic_array::erase(std::size_t where) {
+inline bool basic_array::erase(std::size_t where) {
     if (where < storage_.size()) {
         storage_.erase(storage_.begin() + static_cast<decltype(storage_)::difference_type>(where));
         return true;
     }
     return false;
 }
-bool basic_array::erase(std::size_t first, std::size_t last) {
+inline bool basic_array::erase(std::size_t first, std::size_t last) {
     if (first < last && last < storage_.size()) {
         storage_.erase(
             storage_.begin() + static_cast<decltype(storage_)::difference_type>(first),
@@ -352,41 +355,44 @@ bool basic_array::erase(std::size_t first, std::size_t last) {
     return false;
 }
 
-basic_array::iterator basic_array::erase(const_iterator where) JSONC_EXCEPTION_TYPE { return storage_.erase(where); }
-basic_array::iterator basic_array::erase(const_iterator first, const_iterator last) JSONC_EXCEPTION_TYPE { return storage_.erase(first, last); }
+inline basic_array::iterator basic_array::erase(const_iterator where) JSONC_EXCEPTION_TYPE { return storage_.erase(where); }
+inline basic_array::iterator basic_array::erase(const_iterator first, const_iterator last) JSONC_EXCEPTION_TYPE {
+    return storage_.erase(first, last);
+}
 
-void basic_array::push_back(const basic_jsonc& val) JSONC_EXCEPTION_TYPE { storage_.push_back(val); }
-void basic_array::push_back(basic_jsonc&& val) JSONC_EXCEPTION_TYPE { storage_.push_back(std::move(val)); }
+inline void basic_array::push_back(const basic_jsonc& val) JSONC_EXCEPTION_TYPE { storage_.push_back(val); }
+inline void basic_array::push_back(basic_jsonc&& val) JSONC_EXCEPTION_TYPE { storage_.push_back(std::move(val)); }
 
-const basic_jsonc& basic_array::front() const noexcept { return storage_.front(); }
-basic_jsonc&       basic_array::front() noexcept { return storage_.front(); }
+inline const basic_jsonc& basic_array::front() const noexcept { return storage_.front(); }
+inline basic_jsonc&       basic_array::front() noexcept { return storage_.front(); }
 
-const basic_jsonc& basic_array::back() const noexcept { return storage_.back(); }
-basic_jsonc&       basic_array::back() noexcept { return storage_.back(); }
+inline const basic_jsonc& basic_array::back() const noexcept { return storage_.back(); }
+inline basic_jsonc&       basic_array::back() noexcept { return storage_.back(); }
 
-std::string basic_array::dump(int indent, bool ensure_ascii, bool ignore_comments, bool multi_line_comments_format) const JSONC_EXCEPTION_TYPE {
+inline std::string
+basic_array::dump(int indent, bool ensure_ascii, bool ignore_comments, bool multi_line_comments_format) const JSONC_EXCEPTION_TYPE {
     return dump_typed(*this, ensure_ascii, indent, ignore_comments, multi_line_comments_format);
 }
 
-basic_array::iterator basic_array::begin() noexcept { return storage_.begin(); }
-basic_array::iterator basic_array::end() noexcept { return storage_.end(); }
+inline basic_array::iterator basic_array::begin() noexcept { return storage_.begin(); }
+inline basic_array::iterator basic_array::end() noexcept { return storage_.end(); }
 
-basic_array::const_iterator basic_array::begin() const noexcept { return storage_.begin(); }
-basic_array::const_iterator basic_array::end() const noexcept { return storage_.end(); }
+inline basic_array::const_iterator basic_array::begin() const noexcept { return storage_.begin(); }
+inline basic_array::const_iterator basic_array::end() const noexcept { return storage_.end(); }
 
-basic_array::const_iterator basic_array::cbegin() const noexcept { return storage_.cbegin(); }
-basic_array::const_iterator basic_array::cend() const noexcept { return storage_.cend(); }
+inline basic_array::const_iterator basic_array::cbegin() const noexcept { return storage_.cbegin(); }
+inline basic_array::const_iterator basic_array::cend() const noexcept { return storage_.cend(); }
 
-basic_array::reverse_iterator basic_array::rbegin() noexcept { return storage_.rbegin(); }
-basic_array::reverse_iterator basic_array::rend() noexcept { return storage_.rend(); }
+inline basic_array::reverse_iterator basic_array::rbegin() noexcept { return storage_.rbegin(); }
+inline basic_array::reverse_iterator basic_array::rend() noexcept { return storage_.rend(); }
 
-basic_array::const_reverse_iterator basic_array::rbegin() const noexcept { return storage_.rbegin(); }
-basic_array::const_reverse_iterator basic_array::rend() const noexcept { return storage_.rend(); }
+inline basic_array::const_reverse_iterator basic_array::rbegin() const noexcept { return storage_.rbegin(); }
+inline basic_array::const_reverse_iterator basic_array::rend() const noexcept { return storage_.rend(); }
 
-basic_array::const_reverse_iterator basic_array::crbegin() const noexcept { return storage_.crbegin(); }
-basic_array::const_reverse_iterator basic_array::crend() const noexcept { return storage_.crend(); }
+inline basic_array::const_reverse_iterator basic_array::crbegin() const noexcept { return storage_.crbegin(); }
+inline basic_array::const_reverse_iterator basic_array::crend() const noexcept { return storage_.crend(); }
 
-void basic_array::merge_patch(const basic_array& other) JSONC_EXCEPTION_TYPE {
+inline void basic_array::merge_patch(const basic_array& other) JSONC_EXCEPTION_TYPE {
     if (other.empty()) { return; }
     for (const auto& val : other.storage_) {
         bool exist = false;
@@ -399,7 +405,7 @@ void basic_array::merge_patch(const basic_array& other) JSONC_EXCEPTION_TYPE {
         if (!exist) { storage_.push_back(val); }
     }
 }
-JSONC_RESULT(void) basic_array::merge_patch(const basic_jsonc& other) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(void) basic_array::merge_patch(const basic_jsonc& other) JSONC_EXCEPTION_TYPE {
     if (auto* rhs = std::get_if<basic_array>(&other.storage_)) {
         merge_patch(*rhs);
         return _JSONC_MAKE_VOID_RESULT();
@@ -407,7 +413,7 @@ JSONC_RESULT(void) basic_array::merge_patch(const basic_jsonc& other) JSONC_EXCE
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", other.type_name()));
 }
 
-void basic_array::merge_comments(const basic_array& other) JSONC_EXCEPTION_TYPE {
+inline void basic_array::merge_comments(const basic_array& other) JSONC_EXCEPTION_TYPE {
     if (other.empty()) { return; }
     for (const auto& val : other.storage_) {
         for (auto& tag : storage_) {
@@ -420,22 +426,22 @@ void basic_array::merge_comments(const basic_array& other) JSONC_EXCEPTION_TYPE 
     }
 }
 
-void basic_array::move_comments_to_before() JSONC_EXCEPTION_TYPE {
+inline void basic_array::move_comments_to_before() JSONC_EXCEPTION_TYPE {
     for (auto& val : *this) {
         val.before_comments_.append_range(val.after_comments_);
         val.after_comments_.clear();
     }
 }
 
-bool basic_array::operator==(const basic_array& other) const JSONC_EXCEPTION_TYPE { return storage_ == other.storage_; }
-bool basic_array::operator==(const basic_jsonc& other) const JSONC_EXCEPTION_TYPE {
+inline bool basic_array::operator==(const basic_array& other) const JSONC_EXCEPTION_TYPE { return storage_ == other.storage_; }
+inline bool basic_array::operator==(const basic_jsonc& other) const JSONC_EXCEPTION_TYPE {
     if (auto* rhs = std::get_if<basic_array>(&other.storage_)) { return storage_ == rhs->storage_; }
     return false;
 }
 
 
-constexpr value_type       basic_jsonc::type() const noexcept { return static_cast<value_type>(storage_.index()); }
-constexpr std::string_view basic_jsonc::type_name() const noexcept {
+inline constexpr value_type       basic_jsonc::type() const noexcept { return static_cast<value_type>(storage_.index()); }
+inline constexpr std::string_view basic_jsonc::type_name() const noexcept {
     switch (type()) {
     case value_type::null:
         return "null";
@@ -460,24 +466,24 @@ constexpr std::string_view basic_jsonc::type_name() const noexcept {
     }
 }
 
-constexpr bool basic_jsonc::hold(value_type value_type) const noexcept { return type() == value_type; }
+inline constexpr bool basic_jsonc::hold(value_type value_type) const noexcept { return type() == value_type; }
 
-constexpr bool basic_jsonc::is_null() const noexcept { return hold(value_type::null); }
-constexpr bool basic_jsonc::is_boolean() const noexcept { return hold(value_type::boolean); }
-constexpr bool basic_jsonc::is_number_signed() const noexcept { return hold(value_type::number_integer_signed); }
-constexpr bool basic_jsonc::is_number_unsigned() const noexcept { return hold(value_type::number_integer_unsigned); }
-constexpr bool basic_jsonc::is_number_integer() const noexcept { return is_number_signed() || is_number_unsigned(); }
-constexpr bool basic_jsonc::is_number_big_inteager() const noexcept { return hold(value_type::number_big_integer); }
-constexpr bool basic_jsonc::is_number_any_inteager() const noexcept { return is_number_integer() || is_number_big_inteager(); }
-constexpr bool basic_jsonc::is_number_float() const noexcept { return hold(value_type::number_floating_point); }
-constexpr bool basic_jsonc::is_number() const noexcept { return is_number_float() || is_number_any_inteager(); }
-constexpr bool basic_jsonc::is_string() const noexcept { return hold(value_type::string); }
-constexpr bool basic_jsonc::is_object() const noexcept { return hold(value_type::object); }
-constexpr bool basic_jsonc::is_array() const noexcept { return hold(value_type::array); }
-constexpr bool basic_jsonc::is_primitive() const noexcept { return is_null() || is_string() || is_number(); }
-constexpr bool basic_jsonc::is_structured() const noexcept { return is_array() || is_object(); }
+inline constexpr bool basic_jsonc::is_null() const noexcept { return hold(value_type::null); }
+inline constexpr bool basic_jsonc::is_boolean() const noexcept { return hold(value_type::boolean); }
+inline constexpr bool basic_jsonc::is_number_signed() const noexcept { return hold(value_type::number_integer_signed); }
+inline constexpr bool basic_jsonc::is_number_unsigned() const noexcept { return hold(value_type::number_integer_unsigned); }
+inline constexpr bool basic_jsonc::is_number_integer() const noexcept { return is_number_signed() || is_number_unsigned(); }
+inline constexpr bool basic_jsonc::is_number_big_inteager() const noexcept { return hold(value_type::number_big_integer); }
+inline constexpr bool basic_jsonc::is_number_any_inteager() const noexcept { return is_number_integer() || is_number_big_inteager(); }
+inline constexpr bool basic_jsonc::is_number_float() const noexcept { return hold(value_type::number_floating_point); }
+inline constexpr bool basic_jsonc::is_number() const noexcept { return is_number_float() || is_number_any_inteager(); }
+inline constexpr bool basic_jsonc::is_string() const noexcept { return hold(value_type::string); }
+inline constexpr bool basic_jsonc::is_object() const noexcept { return hold(value_type::object); }
+inline constexpr bool basic_jsonc::is_array() const noexcept { return hold(value_type::array); }
+inline constexpr bool basic_jsonc::is_primitive() const noexcept { return is_null() || is_string() || is_number(); }
+inline constexpr bool basic_jsonc::is_structured() const noexcept { return is_array() || is_object(); }
 
-constexpr std::size_t basic_jsonc::size() const noexcept {
+inline constexpr std::size_t basic_jsonc::size() const noexcept {
     return std::visit(
         [](const auto& val) -> std::size_t {
             using T = std::decay_t<decltype(val)>;
@@ -493,17 +499,17 @@ constexpr std::size_t basic_jsonc::size() const noexcept {
     );
 }
 
-JSONC_RESULT(bool) basic_jsonc::contains(std::string_view index) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(bool) basic_jsonc::contains(std::string_view index) const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->contains(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 
-JSONC_RESULT(bool) basic_jsonc::contains(std::string_view index, value_type type) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(bool) basic_jsonc::contains(std::string_view index, value_type type) const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->contains(index, type); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 
-JSONC_RESULT(bool) basic_jsonc::empty() const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(bool) basic_jsonc::empty() const JSONC_EXCEPTION_TYPE {
     return std::visit(
         [&](const auto& val) -> JSONC_RESULT(bool) {
             using T = std::decay_t<decltype(val)>;
@@ -517,24 +523,24 @@ JSONC_RESULT(bool) basic_jsonc::empty() const JSONC_EXCEPTION_TYPE {
     );
 }
 
-JSONC_RESULT(bool) basic_jsonc::erase(std::string_view index) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(bool) basic_jsonc::erase(std::string_view index) JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->erase(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 
-JSONC_RESULT(bool) basic_jsonc::erase(std::size_t where) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(bool) basic_jsonc::erase(std::size_t where) JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_array>(&storage_)) { return storage->erase(where); }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
 
-JSONC_RESULT(bool) basic_jsonc::erase(std::size_t first, std::size_t last) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(bool) basic_jsonc::erase(std::size_t first, std::size_t last) JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_array>(&storage_)) { return storage->erase(first, last); }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
 
 template <typename T>
     requires std::is_arithmetic_v<T>
-basic_jsonc::operator T() const JSONC_EXCEPTION_TYPE {
+inline basic_jsonc::operator T() const JSONC_EXCEPTION_TYPE {
     return std::visit(
         [](const auto& val) -> T {
             using Type = std::decay_t<decltype(val)>;
@@ -554,7 +560,7 @@ basic_jsonc::operator T() const JSONC_EXCEPTION_TYPE {
 
 template <typename T>
     requires std::is_convertible_v<T, std::string>
-basic_jsonc::operator T() const JSONC_EXCEPTION_TYPE {
+inline basic_jsonc::operator T() const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<std::string>(&storage_)) { return *storage; }
 #ifdef JSONC_NO_EXCEPTION
     std::unreachable();
@@ -564,7 +570,7 @@ basic_jsonc::operator T() const JSONC_EXCEPTION_TYPE {
 }
 
 template <is_array_like T>
-basic_jsonc::operator T() const JSONC_EXCEPTION_TYPE {
+inline basic_jsonc::operator T() const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_array>(&storage_)) { return T(storage->begin(), storage->end()); }
 #ifdef JSONC_NO_EXCEPTION
     std::unreachable();
@@ -574,7 +580,7 @@ basic_jsonc::operator T() const JSONC_EXCEPTION_TYPE {
 }
 
 template <is_object_like T>
-basic_jsonc::operator T() const JSONC_EXCEPTION_TYPE {
+inline basic_jsonc::operator T() const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return T(storage->begin(), storage->end()); }
 #ifdef JSONC_NO_EXCEPTION
     std::unreachable();
@@ -583,7 +589,7 @@ basic_jsonc::operator T() const JSONC_EXCEPTION_TYPE {
 #endif
 }
 
-std::string basic_jsonc::dump(
+inline std::string basic_jsonc::dump(
     int  indent,
     bool ensure_ascii,
     bool ignore_comments,
@@ -606,7 +612,7 @@ std::string basic_jsonc::dump(
 }
 
 template <is_jsonc_type_convertible T>
-JSONC_RESULT(T&) basic_jsonc::as() JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(T&) basic_jsonc::as() JSONC_EXCEPTION_TYPE {
     return std::visit(
         [](auto& val) -> JSONC_RESULT(T&) {
             using Type = std::decay_t<decltype(val)>;
@@ -621,7 +627,7 @@ JSONC_RESULT(T&) basic_jsonc::as() JSONC_EXCEPTION_TYPE {
 }
 
 template <is_jsonc_type_convertible T>
-JSONC_RESULT(const T&) basic_jsonc::as() const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(const T&) basic_jsonc::as() const JSONC_EXCEPTION_TYPE {
     return std::visit(
         [](const auto& val) -> JSONC_RESULT(const T&) {
             using Type = std::decay_t<decltype(val)>;
@@ -637,7 +643,7 @@ JSONC_RESULT(const T&) basic_jsonc::as() const JSONC_EXCEPTION_TYPE {
 
 template <typename T>
     requires std::is_arithmetic_v<T>
-JSONC_RESULT(T) basic_jsonc::get() const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(T) basic_jsonc::get() const JSONC_EXCEPTION_TYPE {
     return std::visit(
         [](const auto& val) -> JSONC_RESULT(T) {
             using Type = std::decay_t<decltype(val)>;
@@ -653,29 +659,29 @@ JSONC_RESULT(T) basic_jsonc::get() const JSONC_EXCEPTION_TYPE {
 
 template <typename T>
     requires std::is_convertible_v<T, std::string>
-JSONC_RESULT(T) basic_jsonc::get() const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(T) basic_jsonc::get() const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<std::string>(&storage_)) { return *storage; }
     _JSONC_TYPE_ERROR("bad type cast");
 }
 
 template <is_array_like T>
-JSONC_RESULT(T) basic_jsonc::get() const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(T) basic_jsonc::get() const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_array>(&storage_)) { return T(storage->begin(), storage->end()); }
     _JSONC_TYPE_ERROR("bad type cast");
 }
 
 template <is_object_like T>
-JSONC_RESULT(T) basic_jsonc::get() const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(T) basic_jsonc::get() const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return T(storage->begin(), storage->end()); }
     _JSONC_TYPE_ERROR("bad type cast");
 }
 
-JSONC_RESULT(std::string) basic_jsonc::get_big_int_view() const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(std::string) basic_jsonc::get_big_int_view() const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_big_int>(&storage_)) { return storage->view_; }
     _JSONC_TYPE_ERROR(std::format("Type must be a big integer, but is {}", type_name()));
 }
 
-JSONC_RESULT(std::string) basic_jsonc::get_any_int_view() const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(std::string) basic_jsonc::get_any_int_view() const JSONC_EXCEPTION_TYPE {
     return std::visit(
         [&](const auto& val) -> JSONC_RESULT(std::string) {
             using Type = std::decay_t<decltype(val)>;
@@ -691,12 +697,12 @@ JSONC_RESULT(std::string) basic_jsonc::get_any_int_view() const JSONC_EXCEPTION_
     );
 }
 
-JSONC_RESULT(basic_jsonc&) basic_jsonc::operator[](std::string_view index) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(basic_jsonc&) basic_jsonc::operator[](std::string_view index) JSONC_EXCEPTION_TYPE {
     if (hold(value_type::null)) { storage_.emplace<6>(); }
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return (*storage)[index]; }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
-JSONC_RESULT(const basic_jsonc&) basic_jsonc::operator[](std::string_view index) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(const basic_jsonc&) basic_jsonc::operator[](std::string_view index) const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) {
         auto res = storage->storage_.find(index);
         if (res != storage->storage_.end()) { return _JSONC_MAKE_RESULT(res->second); }
@@ -705,38 +711,38 @@ JSONC_RESULT(const basic_jsonc&) basic_jsonc::operator[](std::string_view index)
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 
-JSONC_RESULT(basic_jsonc&) basic_jsonc::operator[](std::size_t index) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(basic_jsonc&) basic_jsonc::operator[](std::size_t index) JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_array>(&storage_)) { return (*storage)[index]; }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
-JSONC_RESULT(const basic_jsonc&) basic_jsonc::operator[](std::size_t index) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(const basic_jsonc&) basic_jsonc::operator[](std::size_t index) const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_array>(&storage_)) { return (*storage)[index]; }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
 
-JSONC_RESULT(basic_jsonc&) basic_jsonc::at(std::string_view index) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(basic_jsonc&) basic_jsonc::at(std::string_view index) JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->at(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
-JSONC_RESULT(basic_jsonc&) basic_jsonc::at(std::string_view index, const basic_jsonc& default_value) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(basic_jsonc&) basic_jsonc::at(std::string_view index, const basic_jsonc& default_value) JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->at(index, default_value); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
-JSONC_RESULT(const basic_jsonc&) basic_jsonc::at(std::string_view index) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(const basic_jsonc&) basic_jsonc::at(std::string_view index) const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->at(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 
-JSONC_RESULT(basic_jsonc&) basic_jsonc::at(std::size_t index) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(basic_jsonc&) basic_jsonc::at(std::size_t index) JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_array>(&storage_)) { return storage->at(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
-JSONC_RESULT(const basic_jsonc&) basic_jsonc::at(std::size_t index) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(const basic_jsonc&) basic_jsonc::at(std::size_t index) const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_array>(&storage_)) { return storage->at(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
 
-JSONC_RESULT(void) basic_jsonc::push_back(const basic_jsonc& val) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(void) basic_jsonc::push_back(const basic_jsonc& val) JSONC_EXCEPTION_TYPE {
     if (hold(value_type::null)) { storage_.emplace<7>(); }
     if (auto* storage = std::get_if<basic_array>(&storage_)) {
         storage->push_back(std::move(val));
@@ -744,7 +750,7 @@ JSONC_RESULT(void) basic_jsonc::push_back(const basic_jsonc& val) JSONC_EXCEPTIO
     }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
-JSONC_RESULT(void) basic_jsonc::push_back(basic_jsonc&& val) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(void) basic_jsonc::push_back(basic_jsonc&& val) JSONC_EXCEPTION_TYPE {
     if (hold(value_type::null)) { storage_.emplace<7>(); }
     if (auto* storage = std::get_if<basic_array>(&storage_)) {
         storage->push_back(std::move(val));
@@ -753,34 +759,34 @@ JSONC_RESULT(void) basic_jsonc::push_back(basic_jsonc&& val) JSONC_EXCEPTION_TYP
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
 
-JSONC_RESULT(const basic_jsonc&) basic_jsonc::front() const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(const basic_jsonc&) basic_jsonc::front() const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_array>(&storage_)) { return storage->front(); }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
-JSONC_RESULT(basic_jsonc&) basic_jsonc::front() JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(basic_jsonc&) basic_jsonc::front() JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_array>(&storage_)) { return storage->front(); }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
 
-JSONC_RESULT(const basic_jsonc&) basic_jsonc::back() const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(const basic_jsonc&) basic_jsonc::back() const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_array>(&storage_)) { return storage->back(); }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
-JSONC_RESULT(basic_jsonc&) basic_jsonc::back() JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(basic_jsonc&) basic_jsonc::back() JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_array>(&storage_)) { return storage->back(); }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
 
-JSONC_RESULT(basic_jsonc::iterator_proxy) basic_jsonc::items() JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(basic_jsonc::iterator_proxy) basic_jsonc::items() JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return iterator_proxy(*storage); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
-JSONC_RESULT(basic_jsonc::const_iterator_proxy) basic_jsonc::items() const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(basic_jsonc::const_iterator_proxy) basic_jsonc::items() const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return const_iterator_proxy(*storage); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 
-JSONC_RESULT(void) basic_jsonc::clear() JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(void) basic_jsonc::clear() JSONC_EXCEPTION_TYPE {
     return std::visit(
         [&](auto& val) -> JSONC_RESULT(void) {
             using T = std::decay_t<decltype(val)>;
@@ -795,25 +801,25 @@ JSONC_RESULT(void) basic_jsonc::clear() JSONC_EXCEPTION_TYPE {
     );
 }
 
-basic_jsonc::iterator basic_jsonc::begin() noexcept { return iterator::make_begin<false>(*this); }
-basic_jsonc::iterator basic_jsonc::end() noexcept { return iterator::make_end<false>(*this); }
+inline basic_jsonc::iterator basic_jsonc::begin() noexcept { return iterator::make_begin<false>(*this); }
+inline basic_jsonc::iterator basic_jsonc::end() noexcept { return iterator::make_end<false>(*this); }
 
-basic_jsonc::const_iterator basic_jsonc::begin() const noexcept { return const_iterator::make_begin<false>(*this); }
-basic_jsonc::const_iterator basic_jsonc::end() const noexcept { return const_iterator::make_end<false>(*this); }
+inline basic_jsonc::const_iterator basic_jsonc::begin() const noexcept { return const_iterator::make_begin<false>(*this); }
+inline basic_jsonc::const_iterator basic_jsonc::end() const noexcept { return const_iterator::make_end<false>(*this); }
 
-basic_jsonc::const_iterator basic_jsonc::cbegin() const noexcept { return const_iterator::make_begin<false>(*this); }
-basic_jsonc::const_iterator basic_jsonc::cend() const noexcept { return const_iterator::make_end<false>(*this); }
+inline basic_jsonc::const_iterator basic_jsonc::cbegin() const noexcept { return const_iterator::make_begin<false>(*this); }
+inline basic_jsonc::const_iterator basic_jsonc::cend() const noexcept { return const_iterator::make_end<false>(*this); }
 
-basic_jsonc::reverse_iterator basic_jsonc::rbegin() noexcept { return reverse_iterator::make_begin<true>(*this); }
-basic_jsonc::reverse_iterator basic_jsonc::rend() noexcept { return reverse_iterator::make_end<true>(*this); }
+inline basic_jsonc::reverse_iterator basic_jsonc::rbegin() noexcept { return reverse_iterator::make_begin<true>(*this); }
+inline basic_jsonc::reverse_iterator basic_jsonc::rend() noexcept { return reverse_iterator::make_end<true>(*this); }
 
-basic_jsonc::const_reverse_iterator basic_jsonc::rbegin() const noexcept { return const_reverse_iterator::make_begin<true>(*this); }
-basic_jsonc::const_reverse_iterator basic_jsonc::rend() const noexcept { return const_reverse_iterator::make_end<true>(*this); }
+inline basic_jsonc::const_reverse_iterator basic_jsonc::rbegin() const noexcept { return const_reverse_iterator::make_begin<true>(*this); }
+inline basic_jsonc::const_reverse_iterator basic_jsonc::rend() const noexcept { return const_reverse_iterator::make_end<true>(*this); }
 
-basic_jsonc::const_reverse_iterator basic_jsonc::crbegin() const noexcept { return const_reverse_iterator::make_begin<true>(*this); }
-basic_jsonc::const_reverse_iterator basic_jsonc::crend() const noexcept { return const_reverse_iterator::make_end<true>(*this); }
+inline basic_jsonc::const_reverse_iterator basic_jsonc::crbegin() const noexcept { return const_reverse_iterator::make_begin<true>(*this); }
+inline basic_jsonc::const_reverse_iterator basic_jsonc::crend() const noexcept { return const_reverse_iterator::make_end<true>(*this); }
 
-void basic_jsonc::merge_patch(const basic_jsonc& other, bool merge_list) JSONC_EXCEPTION_TYPE {
+inline void basic_jsonc::merge_patch(const basic_jsonc& other, bool merge_list) JSONC_EXCEPTION_TYPE {
     if (is_object() && other.is_object()) {
 #ifdef JSONC_USE_EXPECTED
         as<basic_object>()->get().merge_patch(other.as<basic_object>()->get(), merge_list);
@@ -831,7 +837,7 @@ void basic_jsonc::merge_patch(const basic_jsonc& other, bool merge_list) JSONC_E
     }
 }
 
-void basic_jsonc::merge_comments(const basic_jsonc& other) JSONC_EXCEPTION_TYPE {
+inline void basic_jsonc::merge_comments(const basic_jsonc& other) JSONC_EXCEPTION_TYPE {
     if (is_object() && other.is_object()) {
 #ifdef JSONC_USE_EXPECTED
         as<basic_object>()->get().merge_comments(other.as<basic_object>()->get());
@@ -849,7 +855,7 @@ void basic_jsonc::merge_comments(const basic_jsonc& other) JSONC_EXCEPTION_TYPE 
     set_after_comments(other.get_after_comments());
 }
 
-void basic_jsonc::move_comments_to_before() JSONC_EXCEPTION_TYPE {
+inline void basic_jsonc::move_comments_to_before() JSONC_EXCEPTION_TYPE {
     if (is_object()) {
 #ifdef JSONC_USE_EXPECTED
         as<basic_object>()->get().move_comments_to_before();
@@ -867,37 +873,37 @@ void basic_jsonc::move_comments_to_before() JSONC_EXCEPTION_TYPE {
     after_comments_.clear();
 }
 
-bool basic_jsonc::operator==(const basic_jsonc& other) const JSONC_EXCEPTION_TYPE { return storage_ == other.storage_; }
+inline bool basic_jsonc::operator==(const basic_jsonc& other) const JSONC_EXCEPTION_TYPE { return storage_ == other.storage_; }
 
-constexpr bool basic_jsonc::has_before_comments() const noexcept { return before_comments_.size() != 0; }
-constexpr bool basic_jsonc::has_after_comments() const noexcept { return after_comments_.size() != 0; }
+inline constexpr bool basic_jsonc::has_before_comments() const noexcept { return before_comments_.size() != 0; }
+inline constexpr bool basic_jsonc::has_after_comments() const noexcept { return after_comments_.size() != 0; }
 
-std::vector<std::string>&       basic_jsonc::before_comments() noexcept { return before_comments_; }
-const std::vector<std::string>& basic_jsonc::before_comments() const noexcept { return before_comments_; }
+inline std::vector<std::string>&       basic_jsonc::before_comments() noexcept { return before_comments_; }
+inline const std::vector<std::string>& basic_jsonc::before_comments() const noexcept { return before_comments_; }
 
-std::vector<std::string>&       basic_jsonc::after_comments() noexcept { return after_comments_; }
-const std::vector<std::string>& basic_jsonc::after_comments() const noexcept { return after_comments_; }
+inline std::vector<std::string>&       basic_jsonc::after_comments() noexcept { return after_comments_; }
+inline const std::vector<std::string>& basic_jsonc::after_comments() const noexcept { return after_comments_; }
 
-std::vector<std::string> basic_jsonc::get_before_comments() const JSONC_EXCEPTION_TYPE { return before_comments_; }
-std::vector<std::string> basic_jsonc::get_after_comments() const JSONC_EXCEPTION_TYPE { return after_comments_; }
+inline std::vector<std::string> basic_jsonc::get_before_comments() const JSONC_EXCEPTION_TYPE { return before_comments_; }
+inline std::vector<std::string> basic_jsonc::get_after_comments() const JSONC_EXCEPTION_TYPE { return after_comments_; }
 
-void basic_jsonc::set_before_comments(const std::vector<std::string>& comments) JSONC_EXCEPTION_TYPE { before_comments_ = comments; }
-void basic_jsonc::set_after_comments(const std::vector<std::string>& comments) JSONC_EXCEPTION_TYPE { after_comments_ = comments; }
+inline void basic_jsonc::set_before_comments(const std::vector<std::string>& comments) JSONC_EXCEPTION_TYPE { before_comments_ = comments; }
+inline void basic_jsonc::set_after_comments(const std::vector<std::string>& comments) JSONC_EXCEPTION_TYPE { after_comments_ = comments; }
 
-void basic_jsonc::add_before_comment(std::string_view comment) JSONC_EXCEPTION_TYPE { before_comments_.append_range(split_comments(comment)); }
-void basic_jsonc::add_after_comment(std::string_view comment) JSONC_EXCEPTION_TYPE { after_comments_.append_range(split_comments(comment)); }
+inline void basic_jsonc::add_before_comment(std::string_view comment) JSONC_EXCEPTION_TYPE { before_comments_.append_range(split_comments(comment)); }
+inline void basic_jsonc::add_after_comment(std::string_view comment) JSONC_EXCEPTION_TYPE { after_comments_.append_range(split_comments(comment)); }
 
-void basic_jsonc::clear_before_comments() JSONC_EXCEPTION_TYPE { before_comments_.clear(); }
-void basic_jsonc::clear_after_comments() JSONC_EXCEPTION_TYPE { after_comments_.clear(); }
+inline void basic_jsonc::clear_before_comments() JSONC_EXCEPTION_TYPE { before_comments_.clear(); }
+inline void basic_jsonc::clear_after_comments() JSONC_EXCEPTION_TYPE { after_comments_.clear(); }
 
-bool basic_jsonc::remove_before_comment(std::size_t comment_index) JSONC_EXCEPTION_TYPE {
+inline bool basic_jsonc::remove_before_comment(std::size_t comment_index) JSONC_EXCEPTION_TYPE {
     if (comment_index < before_comments_.size()) {
         before_comments_.erase(before_comments_.begin() + static_cast<decltype(before_comments_)::difference_type>(comment_index));
         return true;
     }
     return false;
 }
-bool basic_jsonc::remove_after_comment(std::size_t comment_index) JSONC_EXCEPTION_TYPE {
+inline bool basic_jsonc::remove_after_comment(std::size_t comment_index) JSONC_EXCEPTION_TYPE {
     if (comment_index < after_comments_.size()) {
         after_comments_.erase(after_comments_.begin() + static_cast<decltype(after_comments_)::difference_type>(comment_index));
         return true;
@@ -905,80 +911,82 @@ bool basic_jsonc::remove_after_comment(std::size_t comment_index) JSONC_EXCEPTIO
     return false;
 }
 
-constexpr std::size_t basic_jsonc::before_comments_size() const noexcept { return before_comments_.size(); }
-constexpr std::size_t basic_jsonc::after_comments_size() const noexcept { return after_comments_.size(); }
+inline constexpr std::size_t basic_jsonc::before_comments_size() const noexcept { return before_comments_.size(); }
+inline constexpr std::size_t basic_jsonc::after_comments_size() const noexcept { return after_comments_.size(); }
 
-JSONC_RESULT(bool) basic_jsonc::has_key_before_comments(std::string_view index) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(bool) basic_jsonc::has_key_before_comments(std::string_view index) const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->has_key_before_comments(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
-JSONC_RESULT(bool) basic_jsonc::has_key_after_comments(std::string_view index) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(bool) basic_jsonc::has_key_after_comments(std::string_view index) const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->has_key_after_comments(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 
-JSONC_RESULT(std::vector<std::string>&) basic_jsonc::key_before_comments(std::string_view index) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(std::vector<std::string>&) basic_jsonc::key_before_comments(std::string_view index) JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->key_before_comments(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
-JSONC_RESULT(const std::vector<std::string>&) basic_jsonc::key_before_comments(std::string_view index) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(const std::vector<std::string>&) basic_jsonc::key_before_comments(std::string_view index) const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->key_before_comments(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 
-JSONC_RESULT(std::vector<std::string>&) basic_jsonc::key_after_comments(std::string_view index) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(std::vector<std::string>&) basic_jsonc::key_after_comments(std::string_view index) JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->key_after_comments(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
-JSONC_RESULT(const std::vector<std::string>&) basic_jsonc::key_after_comments(std::string_view index) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(const std::vector<std::string>&) basic_jsonc::key_after_comments(std::string_view index) const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->key_after_comments(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 
-JSONC_RESULT(std::vector<std::string>) basic_jsonc::get_key_before_comments(std::string_view index) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(std::vector<std::string>) basic_jsonc::get_key_before_comments(std::string_view index) const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->get_key_before_comments(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
-JSONC_RESULT(std::vector<std::string>) basic_jsonc::get_key_after_comments(std::string_view index) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(std::vector<std::string>) basic_jsonc::get_key_after_comments(std::string_view index) const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->get_key_after_comments(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 
-JSONC_RESULT(std::string) basic_jsonc::get_key_before_comment(std::string_view index, std::size_t comment_index) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(std::string) basic_jsonc::get_key_before_comment(std::string_view index, std::size_t comment_index) const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->get_key_before_comment(index, comment_index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
-JSONC_RESULT(std::string) basic_jsonc::get_key_after_comment(std::string_view index, std::size_t comment_index) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(std::string) basic_jsonc::get_key_after_comment(std::string_view index, std::size_t comment_index) const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->get_key_after_comment(index, comment_index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 
-JSONC_RESULT(bool) basic_jsonc::set_key_before_comments(std::string_view index, const std::vector<std::string>& comments) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(
+    bool
+) basic_jsonc::set_key_before_comments(std::string_view index, const std::vector<std::string>& comments) JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->set_key_before_comments(index, comments); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
-JSONC_RESULT(bool) basic_jsonc::set_key_after_comments(std::string_view index, const std::vector<std::string>& comments) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(bool) basic_jsonc::set_key_after_comments(std::string_view index, const std::vector<std::string>& comments) JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->set_key_after_comments(index, comments); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 
-JSONC_RESULT(bool) basic_jsonc::add_key_before_comment(std::string_view index, std::string_view comment) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(bool) basic_jsonc::add_key_before_comment(std::string_view index, std::string_view comment) JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->add_key_before_comment(index, comment); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
-JSONC_RESULT(bool) basic_jsonc::add_key_after_comment(std::string_view index, std::string_view comment) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(bool) basic_jsonc::add_key_after_comment(std::string_view index, std::string_view comment) JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->add_key_after_comment(index, comment); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 
-JSONC_RESULT(void) basic_jsonc::clear_key_before_comments(std::string_view index) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(void) basic_jsonc::clear_key_before_comments(std::string_view index) JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) {
         storage->clear_key_before_comments(index);
         return _JSONC_MAKE_VOID_RESULT();
     }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
-JSONC_RESULT(void) basic_jsonc::clear_key_after_comments(std::string_view index) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(void) basic_jsonc::clear_key_after_comments(std::string_view index) JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) {
         storage->clear_key_after_comments(index);
         return _JSONC_MAKE_VOID_RESULT();
@@ -986,20 +994,20 @@ JSONC_RESULT(void) basic_jsonc::clear_key_after_comments(std::string_view index)
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 
-JSONC_RESULT(bool) basic_jsonc::remove_key_before_comment(std::string_view index, std::size_t comment_index) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(bool) basic_jsonc::remove_key_before_comment(std::string_view index, std::size_t comment_index) JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->remove_key_before_comment(index, comment_index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
-JSONC_RESULT(bool) basic_jsonc::remove_key_after_comment(std::string_view index, std::size_t comment_index) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(bool) basic_jsonc::remove_key_after_comment(std::string_view index, std::size_t comment_index) JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->remove_key_after_comment(index, comment_index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 
-JSONC_RESULT(std::size_t) basic_jsonc::key_before_comments_size(std::string_view index) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(std::size_t) basic_jsonc::key_before_comments_size(std::string_view index) const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->key_before_comments_size(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
-JSONC_RESULT(std::size_t) basic_jsonc::key_after_comments_size(std::string_view index) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(std::size_t) basic_jsonc::key_after_comments_size(std::string_view index) const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->key_after_comments_size(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
@@ -1009,7 +1017,7 @@ inline bool is_int(std::string_view view) {
     return std::ranges::all_of(view, [](unsigned char c) { return std::isdigit(c); });
 }
 
-std::optional<basic_jsonc> basic_jsonc::from_big_int(std::string_view view) noexcept {
+inline std::optional<basic_jsonc> basic_jsonc::from_big_int(std::string_view view) noexcept {
     if (view.empty()) { return std::nullopt; }
     if (view.starts_with('-')) {
         std::int64_t res{};
