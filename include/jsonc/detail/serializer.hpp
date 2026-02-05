@@ -169,8 +169,13 @@ inline std::string dump_typed(const std::string& str, bool ensure_ascii, int, bo
     return "\"" + result + "\"";
 }
 
-inline std::string
-dump_typed(const basic_array& val, bool ensure_ascii, int indent, bool ignore_comments, bool multi_line_comments_format) JSONC_EXCEPTION_TYPE {
+inline std::string dump_typed(
+    const basic_jsonc::array_type& val,
+    bool                           ensure_ascii,
+    int                            indent,
+    bool                           ignore_comments,
+    bool                           multi_line_comments_format
+) JSONC_EXCEPTION_TYPE {
     std::string result{"["};
 
     std::size_t i = val.size();
@@ -207,8 +212,13 @@ dump_typed(const basic_array& val, bool ensure_ascii, int indent, bool ignore_co
     return result;
 }
 
-inline std::string
-dump_typed(const basic_object& val, bool ensure_ascii, int indent, bool ignore_comments, bool multi_line_comments_format) JSONC_EXCEPTION_TYPE {
+inline std::string dump_typed(
+    const basic_jsonc::object_type& val,
+    bool                            ensure_ascii,
+    int                             indent,
+    bool                            ignore_comments,
+    bool                            multi_line_comments_format
+) JSONC_EXCEPTION_TYPE {
     std::string result{"{"};
 
     std::size_t i = val.size();
@@ -281,6 +291,6 @@ inline std::string dump_typed(T val, bool, int, bool, bool) JSONC_EXCEPTION_TYPE
     return std::format("{}", val);
 }
 
-inline std::string dump_typed(basic_big_int val, bool, int, bool, bool) JSONC_EXCEPTION_TYPE { return val.view_; }
+inline std::string dump_typed(basic_jsonc::basic_big_int val, bool, int, bool, bool) JSONC_EXCEPTION_TYPE { return val.view_; }
 
 } // namespace jsonc::inline abi_v1_1_1::detail

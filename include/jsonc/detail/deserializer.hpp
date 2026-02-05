@@ -225,7 +225,7 @@ inline JSONC_PARSE_RESULT(
             std::int64_t res{};
             auto [ptr, ec] = std::from_chars(number.data(), number.data() + number.size(), res);
             if (ec != std::errc()) {
-                result = basic_big_int(number);
+                result = basic_jsonc::basic_big_int(number);
             } else {
                 result = res;
             }
@@ -233,7 +233,7 @@ inline JSONC_PARSE_RESULT(
             std::uint64_t res{};
             auto [ptr, ec] = std::from_chars(number.data(), number.data() + number.size(), res);
             if (ec != std::errc()) {
-                result = basic_big_int(number);
+                result = basic_jsonc::basic_big_int(number);
             } else {
                 result = res;
             }
@@ -405,8 +405,8 @@ inline JSONC_PARSE_RESULT(basic_jsonc) parse_list(
     bool                       ignore_comments
 ) JSONC_EXCEPTION_TYPE {
     str.remove_prefix(1);
-    basic_array res{};
-    bool        requre_value = false;
+    basic_jsonc::array_type res{};
+    bool                    requre_value = false;
     while (!str.empty()) {
         std::vector<std::string> element_comment_before;
         if (!extract_comments(str, element_comment_before, ignore_comments)) { _JSONC_PARSE_ERROR("invalid comments format"); }
@@ -469,8 +469,8 @@ inline JSONC_PARSE_RESULT(basic_jsonc) parse_object(
     bool                       ignore_comments
 ) JSONC_EXCEPTION_TYPE {
     str.remove_prefix(1);
-    basic_object res{};
-    bool         requre_value = false;
+    basic_jsonc::object_type res{};
+    bool                     requre_value = false;
     while (!str.empty()) {
 
         std::vector<std::string> pair_comment_before;

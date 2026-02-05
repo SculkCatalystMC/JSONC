@@ -5,9 +5,6 @@
 
 namespace jsonc {
 
-using object_type = detail::basic_object;
-using array_type  = detail::basic_array;
-
 using jsonc = detail::basic_jsonc;
 
 inline JSONC_PARSE_RESULT(jsonc) parse(std::string_view content, bool allow_trailing_comma = false, bool ignore_comments = false) {

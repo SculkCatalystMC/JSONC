@@ -43,11 +43,15 @@ double   jsonc_variant_to_float(jsonc_variant_t handle) { return static_cast<jso
 
 const char* jsonc_variant_as_string(jsonc_variant_t handle) { return static_cast<jsonc::jsonc*>(handle)->as<std::string>().c_str(); }
 const char* jsonc_variant_as_big_int(jsonc_variant_t handle) {
-    return static_cast<jsonc::jsonc*>(handle)->as<jsonc::detail::basic_big_int>().view_.c_str();
+    return static_cast<jsonc::jsonc*>(handle)->as<jsonc::detail::basic_jsonc::basic_big_int>().view_.c_str();
 }
 
-jsonc_object_t jsonc_variant_as_object(jsonc_variant_t handle) { return &static_cast<jsonc::jsonc*>(handle)->as<jsonc::object_type>(); }
-jsonc_array_t  jsonc_variant_as_array(jsonc_variant_t handle) { return &static_cast<jsonc::jsonc*>(handle)->as<jsonc::array_type>(); }
+jsonc_object_t jsonc_variant_as_object(jsonc_variant_t handle) {
+    return &static_cast<jsonc::jsonc*>(handle)->as<jsonc::detail::basic_jsonc::basic_jsonc::object_type>();
+}
+jsonc_array_t jsonc_variant_as_array(jsonc_variant_t handle) {
+    return &static_cast<jsonc::jsonc*>(handle)->as<jsonc::detail::basic_jsonc::basic_jsonc::array_type>();
+}
 
 const char* jsonc_variant_get_comments_before(jsonc_variant_t handle) {
     if (static_cast<jsonc::jsonc*>(handle)->has_before_comments()) {
@@ -89,82 +93,90 @@ const char* jsonc_variant_dump(jsonc_variant_t handle, int indent, bool ensure_a
     return make_cstr(static_cast<jsonc::jsonc*>(handle)->dump(indent, ensure_ascii, ignore_comments, multi_line_comments_format, true));
 }
 
-bool jsonc_object_contains(jsonc_object_t handle, const char* key) { return static_cast<jsonc::object_type*>(handle)->contains(key); }
+bool jsonc_object_contains(jsonc_object_t handle, const char* key) {
+    return static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->contains(key);
+}
 
 bool jsonc_object_value_is_any_int_type(jsonc_object_t handle, const char* key) {
-    return static_cast<jsonc::object_type*>(handle)->operator[](key).is_number_any_inteager();
+    return static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->operator[](key).is_number_any_inteager();
 }
 
 int jsonc_object_get_type(jsonc_object_t handle, const char* key) {
-    return static_cast<int>(static_cast<jsonc::object_type*>(handle)->operator[](key).type());
+    return static_cast<int>(static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->operator[](key).type());
 }
 
-bool jsonc_object_get_bool(jsonc_object_t handle, const char* key) { return static_cast<jsonc::object_type*>(handle)->operator[](key).get<bool>(); }
-void jsonc_object_set_bool(jsonc_object_t handle, const char* key, bool value) { static_cast<jsonc::object_type*>(handle)->operator[](key) = value; }
+bool jsonc_object_get_bool(jsonc_object_t handle, const char* key) {
+    return static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->operator[](key).get<bool>();
+}
+void jsonc_object_set_bool(jsonc_object_t handle, const char* key, bool value) {
+    static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->operator[](key) = value;
+}
 
 const char* jsonc_object_get_any_int(jsonc_object_t handle, const char* key) {
-    return make_cstr(static_cast<jsonc::object_type*>(handle)->operator[](key).get_any_int_view());
+    return make_cstr(static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->operator[](key).get_any_int_view());
 }
 bool jsonc_object_set_any_int(jsonc_object_t handle, const char* key, const char* value) {
     auto val = jsonc::jsonc::from_big_int(value);
-    if (val) { static_cast<jsonc::object_type*>(handle)->operator[](key) = *val; }
+    if (val) { static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->operator[](key) = *val; }
     return val.has_value();
 }
 
 double jsonc_object_get_float(jsonc_object_t handle, const char* key) {
-    return static_cast<jsonc::object_type*>(handle)->operator[](key).get<double>();
+    return static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->operator[](key).get<double>();
 }
 void jsonc_object_set_float(jsonc_object_t handle, const char* key, double value) {
-    static_cast<jsonc::object_type*>(handle)->operator[](key) = value;
+    static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->operator[](key) = value;
 }
 
 const char* jsonc_object_get_string(jsonc_object_t handle, const char* key) {
-    return static_cast<jsonc::object_type*>(handle)->operator[](key).as<std::string>().c_str();
+    return static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->operator[](key).as<std::string>().c_str();
 }
 void jsonc_object_set_string(jsonc_object_t handle, const char* key, const char* value) {
-    static_cast<jsonc::object_type*>(handle)->operator[](key) = std::string_view(value);
+    static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->operator[](key) = std::string_view(value);
 }
 
 jsonc_object_t jsonc_object_get_object(jsonc_object_t handle, const char* key) {
-    return &static_cast<jsonc::object_type*>(handle)->operator[](key).as<jsonc::object_type>();
+    return &static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->operator[](key).as<jsonc::detail::basic_jsonc::object_type>();
 }
 jsonc_object_t jsonc_object_add_new_object(jsonc_object_t handle, const char* key) {
-    auto& res = static_cast<jsonc::object_type*>(handle)->operator[](key) = jsonc::object_type();
-    return &res.as<jsonc::object_type>();
+    auto& res = static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->operator[](key) = jsonc::detail::basic_jsonc::object_type();
+    return &res.as<jsonc::detail::basic_jsonc::object_type>();
 }
 void jsonc_object_set_object(jsonc_object_t handle, const char* key, jsonc_object_t value) {
-    static_cast<jsonc::object_type*>(handle)->operator[](key) = *static_cast<jsonc::object_type*>(value);
+    static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->operator[](key) = *static_cast<jsonc::detail::basic_jsonc::object_type*>(value);
 }
 
 jsonc_array_t jsonc_object_get_array(jsonc_object_t handle, const char* key) {
-    return &static_cast<jsonc::object_type*>(handle)->operator[](key).as<jsonc::array_type>();
+    return &static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->operator[](key).as<jsonc::detail::basic_jsonc::array_type>();
 }
 jsonc_array_t jsonc_object_add_new_array(jsonc_object_t handle, const char* key) {
-    auto& res = static_cast<jsonc::object_type*>(handle)->operator[](key) = jsonc::array_type();
-    return &res.as<jsonc::array_type>();
+    auto& res = static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->operator[](key) = jsonc::detail::basic_jsonc::array_type();
+    return &res.as<jsonc::detail::basic_jsonc::array_type>();
 }
 void jsonc_object_set_array(jsonc_object_t handle, const char* key, jsonc_array_t value) {
-    static_cast<jsonc::object_type*>(handle)->operator[](key) = *static_cast<jsonc::array_type*>(value);
+    static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->operator[](key) = *static_cast<jsonc::detail::basic_jsonc::array_type*>(value);
 }
 
-size_t jsonc_object_get_size(jsonc_object_t handle) { return static_cast<jsonc::object_type*>(handle)->size(); }
+size_t jsonc_object_get_size(jsonc_object_t handle) { return static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->size(); }
 
 const char* jsonc_object_get_key_at_index(jsonc_object_t handle, size_t index) {
-    return static_cast<jsonc::object_type*>(handle)->key_index(index).c_str();
+    return static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->key_index(index).c_str();
 }
 
-void jsonc_object_clear(jsonc_object_t handle) { static_cast<jsonc::object_type*>(handle)->clear(); }
+void jsonc_object_clear(jsonc_object_t handle) { static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->clear(); }
 
-bool jsonc_object_remove(jsonc_object_t handle, const char* key) { return static_cast<jsonc::object_type*>(handle)->erase(key); }
+bool jsonc_object_remove(jsonc_object_t handle, const char* key) { return static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->erase(key); }
 
 const char* jsonc_object_dump(jsonc_object_t handle, int indent, bool ensure_ascii, bool ignore_comments, bool multi_line_comments_format) {
-    return make_cstr(static_cast<jsonc::object_type*>(handle)->dump(indent, ensure_ascii, ignore_comments, multi_line_comments_format));
+    return make_cstr(
+        static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->dump(indent, ensure_ascii, ignore_comments, multi_line_comments_format)
+    );
 }
 
 const char* jsonc_object_get_key_comments_before(jsonc_object_t handle, const char* key) {
-    if (static_cast<jsonc::object_type*>(handle)->has_key_before_comments(key)) {
+    if (static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->has_key_before_comments(key)) {
         std::string result{};
-        for (auto& comment : static_cast<jsonc::object_type*>(handle)->key_before_comments(key)) {
+        for (auto& comment : static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->key_before_comments(key)) {
             result.append(comment);
             result.push_back('\n');
         }
@@ -174,9 +186,9 @@ const char* jsonc_object_get_key_comments_before(jsonc_object_t handle, const ch
     return nullptr;
 }
 const char* jsonc_object_get_key_comments_after(jsonc_object_t handle, const char* key) {
-    if (static_cast<jsonc::object_type*>(handle)->has_key_after_comments(key)) {
+    if (static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->has_key_after_comments(key)) {
         std::string result{};
-        for (auto& comment : static_cast<jsonc::object_type*>(handle)->key_after_comments(key)) {
+        for (auto& comment : static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->key_after_comments(key)) {
             result.append(comment);
             result.push_back('\n');
         }
@@ -186,9 +198,9 @@ const char* jsonc_object_get_key_comments_after(jsonc_object_t handle, const cha
     return nullptr;
 }
 const char* jsonc_object_get_value_comments_before(jsonc_object_t handle, const char* key) {
-    if (static_cast<jsonc::object_type*>(handle)->operator[](key).has_before_comments()) {
+    if (static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->operator[](key).has_before_comments()) {
         std::string result{};
-        for (auto& comment : static_cast<jsonc::object_type*>(handle)->operator[](key).before_comments()) {
+        for (auto& comment : static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->operator[](key).before_comments()) {
             result.append(comment);
             result.push_back('\n');
         }
@@ -198,9 +210,9 @@ const char* jsonc_object_get_value_comments_before(jsonc_object_t handle, const 
     return nullptr;
 }
 const char* jsonc_object_get_value_comments_after(jsonc_object_t handle, const char* key) {
-    if (static_cast<jsonc::object_type*>(handle)->operator[](key).has_after_comments()) {
+    if (static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->operator[](key).has_after_comments()) {
         std::string result{};
-        for (auto& comment : static_cast<jsonc::object_type*>(handle)->operator[](key).after_comments()) {
+        for (auto& comment : static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->operator[](key).after_comments()) {
             result.append(comment);
             result.push_back('\n');
         }
@@ -211,98 +223,110 @@ const char* jsonc_object_get_value_comments_after(jsonc_object_t handle, const c
 }
 
 void jsonc_object_set_key_comments_before(jsonc_object_t handle, const char* key, const char* comments) {
-    static_cast<jsonc::object_type*>(handle)->key_before_comments(key) = jsonc::detail::split_comments(comments);
+    static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->key_before_comments(key) = jsonc::detail::split_comments(comments);
 }
 void jsonc_object_set_key_comments_after(jsonc_object_t handle, const char* key, const char* comments) {
-    static_cast<jsonc::object_type*>(handle)->key_after_comments(key) = jsonc::detail::split_comments(comments);
+    static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->key_after_comments(key) = jsonc::detail::split_comments(comments);
 }
 void jsonc_object_set_value_comments_before(jsonc_object_t handle, const char* key, const char* comments) {
-    static_cast<jsonc::object_type*>(handle)->operator[](key).before_comments() = jsonc::detail::split_comments(comments);
+    static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->operator[](key).before_comments() = jsonc::detail::split_comments(comments);
 }
 void jsonc_object_set_value_comments_after(jsonc_object_t handle, const char* key, const char* comments) {
-    static_cast<jsonc::object_type*>(handle)->operator[](key).after_comments() = jsonc::detail::split_comments(comments);
+    static_cast<jsonc::detail::basic_jsonc::object_type*>(handle)->operator[](key).after_comments() = jsonc::detail::split_comments(comments);
 }
 
 bool jsonc_object_equals(jsonc_object_t lhs, jsonc_object_t rhs) {
-    return (*static_cast<jsonc::object_type*>(lhs)) == (*static_cast<jsonc::object_type*>(rhs));
+    return (*static_cast<jsonc::detail::basic_jsonc::object_type*>(lhs)) == (*static_cast<jsonc::detail::basic_jsonc::object_type*>(rhs));
 }
 
 int jsonc_array_get_type(jsonc_array_t handle, size_t index) {
-    return static_cast<int>(static_cast<jsonc::array_type*>(handle)->operator[](index).type());
+    return static_cast<int>(static_cast<jsonc::detail::basic_jsonc::array_type*>(handle)->operator[](index).type());
 }
 
 bool jsonc_array_value_is_any_int_type(jsonc_array_t handle, size_t index) {
-    return static_cast<jsonc::array_type*>(handle)->operator[](index).is_number_any_inteager();
+    return static_cast<jsonc::detail::basic_jsonc::array_type*>(handle)->operator[](index).is_number_any_inteager();
 }
 
-bool jsonc_array_get_bool(jsonc_array_t handle, size_t index) { return static_cast<jsonc::array_type*>(handle)->operator[](index).get<bool>(); }
-void jsonc_array_set_bool(jsonc_array_t handle, size_t index, bool value) { static_cast<jsonc::array_type*>(handle)->operator[](index) = value; }
-void jsonc_array_add_bool(jsonc_array_t handle, bool value) { static_cast<jsonc::array_type*>(handle)->push_back(value); }
+bool jsonc_array_get_bool(jsonc_array_t handle, size_t index) {
+    return static_cast<jsonc::detail::basic_jsonc::array_type*>(handle)->operator[](index).get<bool>();
+}
+void jsonc_array_set_bool(jsonc_array_t handle, size_t index, bool value) {
+    static_cast<jsonc::detail::basic_jsonc::array_type*>(handle)->operator[](index) = value;
+}
+void jsonc_array_add_bool(jsonc_array_t handle, bool value) { static_cast<jsonc::detail::basic_jsonc::array_type*>(handle)->push_back(value); }
 
 const char* jsonc_array_get_any_int(jsonc_array_t handle, size_t index) {
-    return make_cstr(static_cast<jsonc::array_type*>(handle)->operator[](index).get_any_int_view());
+    return make_cstr(static_cast<jsonc::detail::basic_jsonc::array_type*>(handle)->operator[](index).get_any_int_view());
 }
 bool jsonc_array_set_any_int(jsonc_array_t handle, size_t index, const char* value) {
     auto val = jsonc::jsonc::from_big_int(value);
-    if (val) { static_cast<jsonc::array_type*>(handle)->operator[](index) = *val; }
+    if (val) { static_cast<jsonc::detail::basic_jsonc::array_type*>(handle)->operator[](index) = *val; }
     return val.has_value();
 }
 bool jsonc_array_add_any_int(jsonc_array_t handle, const char* value) {
     auto val = jsonc::jsonc::from_big_int(value);
-    if (val) { static_cast<jsonc::array_type*>(handle)->push_back(*val); }
+    if (val) { static_cast<jsonc::detail::basic_jsonc::array_type*>(handle)->push_back(*val); }
     return val.has_value();
 }
 
-double jsonc_array_get_float(jsonc_array_t handle, size_t index) { return static_cast<jsonc::array_type*>(handle)->operator[](index).get<double>(); }
-void   jsonc_array_set_float(jsonc_array_t handle, size_t index, double value) { static_cast<jsonc::array_type*>(handle)->operator[](index) = value; }
-void   jsonc_array_add_float(jsonc_array_t handle, double value) { static_cast<jsonc::array_type*>(handle)->push_back(value); }
+double jsonc_array_get_float(jsonc_array_t handle, size_t index) {
+    return static_cast<jsonc::detail::basic_jsonc::array_type*>(handle)->operator[](index).get<double>();
+}
+void jsonc_array_set_float(jsonc_array_t handle, size_t index, double value) {
+    static_cast<jsonc::detail::basic_jsonc::array_type*>(handle)->operator[](index) = value;
+}
+void jsonc_array_add_float(jsonc_array_t handle, double value) { static_cast<jsonc::detail::basic_jsonc::array_type*>(handle)->push_back(value); }
 
 const char* jsonc_array_get_string(jsonc_array_t handle, size_t index) {
-    return static_cast<jsonc::array_type*>(handle)->operator[](index).as<std::string>().c_str();
+    return static_cast<jsonc::detail::basic_jsonc::array_type*>(handle)->operator[](index).as<std::string>().c_str();
 }
 void jsonc_array_set_string(jsonc_array_t handle, size_t index, const char* value) {
-    static_cast<jsonc::array_type*>(handle)->operator[](index) = std::string_view(value);
+    static_cast<jsonc::detail::basic_jsonc::array_type*>(handle)->operator[](index) = std::string_view(value);
 }
-void jsonc_array_add_string(jsonc_array_t handle, const char* value) { static_cast<jsonc::array_type*>(handle)->push_back(std::string_view(value)); }
+void jsonc_array_add_string(jsonc_array_t handle, const char* value) {
+    static_cast<jsonc::detail::basic_jsonc::array_type*>(handle)->push_back(std::string_view(value));
+}
 
 jsonc_object_t jsonc_array_get_object(jsonc_array_t handle, size_t index) {
-    return &static_cast<jsonc::array_type*>(handle)->operator[](index).as<jsonc::object_type>();
+    return &static_cast<jsonc::detail::basic_jsonc::array_type*>(handle)->operator[](index).as<jsonc::detail::basic_jsonc::object_type>();
 }
 jsonc_object_t jsonc_array_add_new_object(jsonc_array_t handle) {
-    auto& arr = *static_cast<jsonc::array_type*>(handle);
-    arr.push_back(jsonc::object_type());
-    return &arr.back().as<jsonc::object_type>();
+    auto& arr = *static_cast<jsonc::detail::basic_jsonc::array_type*>(handle);
+    arr.push_back(jsonc::detail::basic_jsonc::object_type());
+    return &arr.back().as<jsonc::detail::basic_jsonc::object_type>();
 }
 void jsonc_array_set_object(jsonc_array_t handle, size_t index, jsonc_object_t value) {
-    static_cast<jsonc::array_type*>(handle)->operator[](index) = *static_cast<jsonc::object_type*>(value);
+    static_cast<jsonc::detail::basic_jsonc::array_type*>(handle)->operator[](index) = *static_cast<jsonc::detail::basic_jsonc::object_type*>(value);
 }
 
 jsonc_array_t jsonc_array_get_array(jsonc_array_t handle, size_t index) {
-    return &static_cast<jsonc::array_type*>(handle)->operator[](index).as<jsonc::array_type>();
+    return &static_cast<jsonc::detail::basic_jsonc::array_type*>(handle)->operator[](index).as<jsonc::detail::basic_jsonc::array_type>();
 }
 jsonc_array_t jsonc_array_add_new_array(jsonc_array_t handle) {
-    auto& arr = *static_cast<jsonc::array_type*>(handle);
-    arr.push_back(jsonc::array_type());
-    return &arr.back().as<jsonc::array_type>();
+    auto& arr = *static_cast<jsonc::detail::basic_jsonc::array_type*>(handle);
+    arr.push_back(jsonc::detail::basic_jsonc::array_type());
+    return &arr.back().as<jsonc::detail::basic_jsonc::array_type>();
 }
 void jsonc_array_set_array(jsonc_array_t handle, size_t index, jsonc_array_t value) {
-    static_cast<jsonc::array_type*>(handle)->operator[](index) = *static_cast<jsonc::array_type*>(value);
+    static_cast<jsonc::detail::basic_jsonc::array_type*>(handle)->operator[](index) = *static_cast<jsonc::detail::basic_jsonc::array_type*>(value);
 }
 
-size_t jsonc_array_get_size(jsonc_array_t handle) { return static_cast<jsonc::array_type*>(handle)->size(); }
+size_t jsonc_array_get_size(jsonc_array_t handle) { return static_cast<jsonc::detail::basic_jsonc::array_type*>(handle)->size(); }
 
-void jsonc_array_clear(jsonc_array_t handle) { return static_cast<jsonc::array_type*>(handle)->clear(); }
+void jsonc_array_clear(jsonc_array_t handle) { return static_cast<jsonc::detail::basic_jsonc::array_type*>(handle)->clear(); }
 
-bool jsonc_array_remove(jsonc_array_t handle, size_t index) { return static_cast<jsonc::array_type*>(handle)->erase(index); }
+bool jsonc_array_remove(jsonc_array_t handle, size_t index) { return static_cast<jsonc::detail::basic_jsonc::array_type*>(handle)->erase(index); }
 
 const char* jsonc_array_dump(jsonc_array_t handle, int indent, bool ensure_ascii, bool ignore_comments, bool multi_line_comments_format) {
-    return make_cstr(static_cast<jsonc::array_type*>(handle)->dump(indent, ensure_ascii, ignore_comments, multi_line_comments_format));
+    return make_cstr(
+        static_cast<jsonc::detail::basic_jsonc::array_type*>(handle)->dump(indent, ensure_ascii, ignore_comments, multi_line_comments_format)
+    );
 }
 
 const char* jsonc_array_get_comments_before(jsonc_object_t handle, size_t index) {
-    if (static_cast<jsonc::array_type*>(handle)->operator[](index).has_before_comments()) {
+    if (static_cast<jsonc::detail::basic_jsonc::array_type*>(handle)->operator[](index).has_before_comments()) {
         std::string result{};
-        for (auto& comment : static_cast<jsonc::array_type*>(handle)->operator[](index).before_comments()) {
+        for (auto& comment : static_cast<jsonc::detail::basic_jsonc::array_type*>(handle)->operator[](index).before_comments()) {
             result.append(comment);
             result.push_back('\n');
         }
@@ -312,9 +336,9 @@ const char* jsonc_array_get_comments_before(jsonc_object_t handle, size_t index)
     return nullptr;
 }
 const char* jsonc_array_get_comments_after(jsonc_object_t handle, size_t index) {
-    if (static_cast<jsonc::array_type*>(handle)->operator[](index).has_after_comments()) {
+    if (static_cast<jsonc::detail::basic_jsonc::array_type*>(handle)->operator[](index).has_after_comments()) {
         std::string result{};
-        for (auto& comment : static_cast<jsonc::array_type*>(handle)->operator[](index).after_comments()) {
+        for (auto& comment : static_cast<jsonc::detail::basic_jsonc::array_type*>(handle)->operator[](index).after_comments()) {
             result.append(comment);
             result.push_back('\n');
         }
@@ -325,21 +349,21 @@ const char* jsonc_array_get_comments_after(jsonc_object_t handle, size_t index) 
 }
 
 void jsonc_array_set_comments_before(jsonc_object_t handle, size_t index, const char* comments) {
-    static_cast<jsonc::array_type*>(handle)->operator[](index).before_comments() = jsonc::detail::split_comments(comments);
+    static_cast<jsonc::detail::basic_jsonc::array_type*>(handle)->operator[](index).before_comments() = jsonc::detail::split_comments(comments);
 }
 void jsonc_array_set_comments_after(jsonc_object_t handle, size_t index, const char* comments) {
-    static_cast<jsonc::array_type*>(handle)->operator[](index).after_comments() = jsonc::detail::split_comments(comments);
+    static_cast<jsonc::detail::basic_jsonc::array_type*>(handle)->operator[](index).after_comments() = jsonc::detail::split_comments(comments);
 }
 
 bool jsonc_array_equals(jsonc_array_t lhs, jsonc_array_t rhs) {
-    return (*static_cast<jsonc::array_type*>(lhs)) == (*static_cast<jsonc::array_type*>(rhs));
+    return (*static_cast<jsonc::detail::basic_jsonc::array_type*>(lhs)) == (*static_cast<jsonc::detail::basic_jsonc::array_type*>(rhs));
 }
 
-jsonc_object_t jsonc_create_object() { return new jsonc::object_type(); }
-jsonc_array_t  jsonc_create_array() { return new jsonc::array_type(); }
+jsonc_object_t jsonc_create_object() { return new jsonc::detail::basic_jsonc::object_type(); }
+jsonc_array_t  jsonc_create_array() { return new jsonc::detail::basic_jsonc::array_type(); }
 
-void jsonc_free_object(jsonc_object_t handle) { delete static_cast<jsonc::object_type*>(handle); }
-void jsonc_free_array(jsonc_array_t handle) { delete static_cast<jsonc::array_type*>(handle); }
+void jsonc_free_object(jsonc_object_t handle) { delete static_cast<jsonc::detail::basic_jsonc::object_type*>(handle); }
+void jsonc_free_array(jsonc_array_t handle) { delete static_cast<jsonc::detail::basic_jsonc::array_type*>(handle); }
 void jsonc_free_type_variant(jsonc_variant_t handle) { delete static_cast<jsonc::jsonc*>(handle); }
 void jsonc_free_string(const char* str) { delete[] str; }
 }
