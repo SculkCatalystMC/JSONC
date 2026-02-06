@@ -13,13 +13,13 @@ struct string_hash {
     std::size_t operator()(const char* s) const noexcept { return std::hash<std::string_view>{}(s); }
 };
 
-struct string_equall {
+struct string_equal {
     using is_transparent = void;
     bool operator()(std::string_view a, std::string_view b) const noexcept { return a == b; }
 };
 
 template <typename T>
-using string_hash_map = std::unordered_map<std::string, T, string_hash, string_equall>;
+using string_hash_map = std::unordered_map<std::string, T, string_hash, string_equal>;
 
 template <typename T>
 using string_map = std::map<std::string, T, std::less<>>;
