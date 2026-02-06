@@ -74,7 +74,9 @@ inline std::string& fix_indent(std::string& str, std::string_view indent_space) 
 }
 
 template <bool B>
-inline std::string dump_typed(const std::monostate&, bool, int, bool, bool) JSONC_EXCEPTION_TYPE { return "null"; }
+inline std::string dump_typed(const std::monostate&, bool, int, bool, bool) JSONC_EXCEPTION_TYPE {
+    return "null";
+}
 
 template <bool B>
 inline std::string dump_typed(const std::string& str, bool ensure_ascii, int, bool, bool) JSONC_EXCEPTION_TYPE {
@@ -286,7 +288,7 @@ inline std::string dump_typed(
     return result;
 }
 
-template <bool B,typename T>
+template <bool B, typename T>
     requires std::is_arithmetic_v<T>
 inline std::string dump_typed(T val, bool, int, bool, bool) JSONC_EXCEPTION_TYPE {
     if constexpr (std::is_floating_point_v<T>) {
@@ -296,6 +298,8 @@ inline std::string dump_typed(T val, bool, int, bool, bool) JSONC_EXCEPTION_TYPE
 }
 
 template <bool B>
-inline std::string dump_typed(basic_big_int val, bool, int, bool, bool) JSONC_EXCEPTION_TYPE { return val.view_; }
+inline std::string dump_typed(basic_big_int val, bool, int, bool, bool) JSONC_EXCEPTION_TYPE {
+    return val.view_;
+}
 
 } // namespace jsonc::inline abi_v1_2_0::detail
