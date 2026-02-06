@@ -23,9 +23,11 @@ inline std::vector<std::string> split_comments(std::string_view comment) noexcep
     return result;
 }
 
+template <>
 inline basic_jsonc<true>::basic_object::basic_object(std::initializer_list<std::pair<std::string, basic_jsonc<true>>> val) JSONC_EXCEPTION_TYPE
 : storage_(val) {}
 
+template <>
 inline basic_jsonc<false>::basic_object::basic_object(std::initializer_list<std::pair<std::string, basic_jsonc<false>>> val) JSONC_EXCEPTION_TYPE
 : storage_() {
     for (const auto& [k, v] : val) { storage_.try_emplace(k, v); }
@@ -89,10 +91,16 @@ inline bool basic_jsonc<_Ordered>::basic_object::empty() const noexcept {
     return storage_.empty();
 }
 
-template <bool _Ordered>
-inline bool basic_jsonc<_Ordered>::basic_object::erase(std::string_view index) noexcept {
+template <>
+inline bool basic_jsonc<true>::basic_object::erase(std::string_view index) noexcept {
     key_comments_.erase(std::string(index));
     return storage_.erase(index);
+}
+
+template <>
+inline bool basic_jsonc<false>::basic_object::erase(std::string_view index) noexcept {
+    key_comments_.erase(std::string(index));
+    return storage_.erase(std::string(index));
 }
 
 template <bool _Ordered>
@@ -111,11 +119,15 @@ inline std::string basic_jsonc<_Ordered>::basic_object::dump(
     return dump_typed<_Ordered>(*this, ensure_ascii, indent, ignore_comments, multi_line_comments_format);
 }
 
-inline const std::string& basic_jsonc<true>::basic_object::key_index(std::size_t index) const noexcept { return storage_.key_index(index); }
+template <>
+inline const std::string& basic_jsonc<true>::basic_object::key_index(std::size_t index) const noexcept {
+    return storage_.key_index(index);
+}
 
+template <>
 inline const std::string& basic_jsonc<false>::basic_object::key_index(std::size_t index) const noexcept {
     auto it = std::next(storage_.begin(), static_cast<std::map<std::size_t, std::string>::difference_type>(index));
-    if (it != storage_.end()) { return it->second; }
+    if (it != storage_.end()) { return it->first; }
     std::unreachable();
 }
 
