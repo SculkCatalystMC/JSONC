@@ -5,8 +5,11 @@
 
 namespace jsonc::inline abi_v1_2_0::detail {
 
-JSONC_PARSE_RESULT(basic_jsonc) parse_jsonc_type(std::string_view& str, std::vector<std::string>&& comments_before, bool allow_trailing_comma, bool ignore_comments) JSONC_EXCEPTION_TYPE;
-JSONC_PARSE_RESULT(basic_jsonc) parse_jsonc_type(std::string_view& str, bool allow_trailing_comma, bool ignore_comments) JSONC_EXCEPTION_TYPE;
+template <bool B>
+JSONC_PARSE_RESULT(basic_jsonc<B>) parse_jsonc_type(std::string_view& str, std::vector<std::string>&& comments_before, bool allow_trailing_comma, bool ignore_comments) JSONC_EXCEPTION_TYPE;
+
+template <bool B>
+JSONC_PARSE_RESULT(basic_jsonc<B>) parse_jsonc_type(std::string_view& str, bool allow_trailing_comma, bool ignore_comments) JSONC_EXCEPTION_TYPE;
 
 namespace {
 
@@ -145,12 +148,13 @@ inline constexpr char get_current_char(std::string_view& s) JSONC_EXCEPTION_TYPE
     return c;
 }
 
+template <bool B>
 inline JSONC_PARSE_RESULT(
-    basic_jsonc
+    basic_jsonc<B>
 ) parse_null(std::string_view& str, std::vector<std::string>&& comments_before, bool ignore_comments) JSONC_EXCEPTION_TYPE {
     if (str.starts_with("null")) {
         str.remove_prefix(4);
-        basic_jsonc              result{nullptr};
+        basic_jsonc<B>           result{nullptr};
         std::vector<std::string> comments_after{};
         if (!extract_comments(str, comments_after, ignore_comments)) { _JSONC_PARSE_ERROR("invalid comments format"); }
         result.before_comments() = std::move(comments_before);
@@ -160,14 +164,14 @@ inline JSONC_PARSE_RESULT(
     _JSONC_PARSE_ERROR("invalid value");
 }
 
-template <bool Value>
+template <bool Value, bool B>
 inline JSONC_PARSE_RESULT(
-    basic_jsonc
+    basic_jsonc<B>
 ) parse_boolean(std::string_view& str, std::vector<std::string>&& comments_before, bool ignore_comments) JSONC_EXCEPTION_TYPE {
     if constexpr (Value == true) {
         if (str.starts_with("true")) {
             str.remove_prefix(4);
-            basic_jsonc              result{true};
+            basic_jsonc<B>           result{true};
             std::vector<std::string> comments_after{};
             if (!extract_comments(str, comments_after, ignore_comments)) { _JSONC_PARSE_ERROR("invalid comments format"); }
             result.before_comments() = std::move(comments_before);
@@ -177,7 +181,7 @@ inline JSONC_PARSE_RESULT(
     } else {
         if (str.starts_with("false")) {
             str.remove_prefix(5);
-            basic_jsonc              result{false};
+            basic_jsonc<B>           result{false};
             std::vector<std::string> comments_after{};
             if (!extract_comments(str, comments_after, ignore_comments)) { _JSONC_PARSE_ERROR("invalid comments format"); }
             result.before_comments() = std::move(comments_before);
@@ -188,8 +192,9 @@ inline JSONC_PARSE_RESULT(
     _JSONC_PARSE_ERROR("invalid value");
 }
 
+template <bool B>
 inline JSONC_PARSE_RESULT(
-    basic_jsonc
+    basic_jsonc<B>
 ) parse_number(std::string_view& str, std::vector<std::string>&& comments_before, bool ignore_comments) JSONC_EXCEPTION_TYPE {
     std::size_t length = 0;
     bool        is_int = true;
@@ -218,14 +223,14 @@ inline JSONC_PARSE_RESULT(
     auto number = str.substr(static_cast<std::size_t>(start - str.begin()), static_cast<std::size_t>(it - start));
     str.remove_prefix(length);
 
-    basic_jsonc result{};
+    basic_jsonc<B> result{};
 
     if (is_int) {
         if (negative) {
             std::int64_t res{};
             auto [ptr, ec] = std::from_chars(number.data(), number.data() + number.size(), res);
             if (ec != std::errc()) {
-                result = basic_jsonc::basic_big_int(number);
+                result = basic_big_int(number);
             } else {
                 result = res;
             }
@@ -233,7 +238,7 @@ inline JSONC_PARSE_RESULT(
             std::uint64_t res{};
             auto [ptr, ec] = std::from_chars(number.data(), number.data() + number.size(), res);
             if (ec != std::errc()) {
-                result = basic_jsonc::basic_big_int(number);
+                result = basic_big_int(number);
             } else {
                 result = res;
             }
@@ -268,8 +273,9 @@ inline JSONC_PARSE_RESULT(int) get_codepoint(std::string_view& s) JSONC_EXCEPTIO
     return codepoint;
 }
 
+template <bool B>
 inline JSONC_PARSE_RESULT(
-    basic_jsonc
+    basic_jsonc<B>
 ) parse_string(std::string_view& str, std::vector<std::string>&& comments_before, bool ignore_comments) JSONC_EXCEPTION_TYPE {
     str.remove_prefix(1);
     std::string              res{};
@@ -279,7 +285,7 @@ inline JSONC_PARSE_RESULT(
         switch (current) {
         case '\"': {
             if (!extract_comments(str, comments_after, ignore_comments)) { _JSONC_PARSE_ERROR("invalid comments format"); }
-            basic_jsonc result{res};
+            basic_jsonc<B> result{res};
             result.before_comments() = std::move(comments_before);
             result.after_comments()  = std::move(comments_after);
             return result;
@@ -398,15 +404,16 @@ inline JSONC_PARSE_RESULT(
     _JSONC_PARSE_ERROR("");
 }
 
-inline JSONC_PARSE_RESULT(basic_jsonc) parse_list(
+template <bool B>
+inline JSONC_PARSE_RESULT(basic_jsonc<B>) parse_list(
     std::string_view&          str,
     std::vector<std::string>&& comments_before,
     bool                       allow_trailing_comma,
     bool                       ignore_comments
 ) JSONC_EXCEPTION_TYPE {
     str.remove_prefix(1);
-    basic_jsonc::array_type res{};
-    bool                    requre_value = false;
+    typename basic_jsonc<B>::array_type res{};
+    bool                                requre_value = false;
     while (!str.empty()) {
         std::vector<std::string> element_comment_before;
         if (!extract_comments(str, element_comment_before, ignore_comments)) { _JSONC_PARSE_ERROR("invalid comments format"); }
@@ -416,13 +423,13 @@ inline JSONC_PARSE_RESULT(basic_jsonc) parse_list(
             str.remove_prefix(1);
             std::vector<std::string> comments_after{};
             if (!extract_comments(str, comments_after, ignore_comments)) { _JSONC_PARSE_ERROR("invalid comments format"); }
-            basic_jsonc result{res};
+            basic_jsonc<B> result{res};
             result.before_comments() = std::move(comments_before);
             result.after_comments()  = std::move(comments_after);
             return result;
         }
 
-        auto value = parse_jsonc_type(str, std::move(element_comment_before), allow_trailing_comma, ignore_comments);
+        auto value = parse_jsonc_type<B>(str, std::move(element_comment_before), allow_trailing_comma, ignore_comments);
 
         switch (str.front()) {
         case ']': {
@@ -435,7 +442,7 @@ inline JSONC_PARSE_RESULT(basic_jsonc) parse_list(
             str.remove_prefix(1);
             std::vector<std::string> comments_after{};
             if (!extract_comments(str, comments_after, ignore_comments)) { _JSONC_PARSE_ERROR("invalid comments format"); }
-            basic_jsonc result{res};
+            basic_jsonc<B> result{res};
             result.before_comments() = std::move(comments_before);
             result.after_comments()  = std::move(comments_after);
             return result;
@@ -462,15 +469,16 @@ inline JSONC_PARSE_RESULT(basic_jsonc) parse_list(
     _JSONC_PARSE_ERROR("");
 }
 
-inline JSONC_PARSE_RESULT(basic_jsonc) parse_object(
+template <bool B>
+inline JSONC_PARSE_RESULT(basic_jsonc<B>) parse_object(
     std::string_view&          str,
     std::vector<std::string>&& comments_before,
     bool                       allow_trailing_comma,
     bool                       ignore_comments
 ) JSONC_EXCEPTION_TYPE {
     str.remove_prefix(1);
-    basic_jsonc::object_type res{};
-    bool                     requre_value = false;
+    typename basic_jsonc<B>::object_type res{};
+    bool                                 requre_value = false;
     while (!str.empty()) {
 
         std::vector<std::string> pair_comment_before;
@@ -481,7 +489,7 @@ inline JSONC_PARSE_RESULT(basic_jsonc) parse_object(
             str.remove_prefix(1);
             std::vector<std::string> comments_after{};
             if (!extract_comments(str, comments_after, ignore_comments)) { _JSONC_PARSE_ERROR("invalid comments format"); }
-            basic_jsonc result{res};
+            basic_jsonc<B> result{res};
             result.before_comments() = std::move(comments_before);
             result.after_comments()  = std::move(comments_after);
             return result;
@@ -489,19 +497,19 @@ inline JSONC_PARSE_RESULT(basic_jsonc) parse_object(
 
 
         if (str.front() != '\"') { _JSONC_PARSE_ERROR("key must be a string"); }
-        auto key = parse_string(str, std::move(pair_comment_before), ignore_comments);
+        auto key = parse_string<B>(str, std::move(pair_comment_before), ignore_comments);
 
 #ifdef JSONC_NO_EXCEPTION
         if (!key) { _JSONC_PARSE_ERROR("key must be a string"); }
 #endif
 
         if (get_current_char(str) != ':') { _JSONC_PARSE_ERROR("illegal key and value separator"); }
-        auto value = parse_jsonc_type(str, allow_trailing_comma, ignore_comments);
+        auto value = parse_jsonc_type<B>(str, allow_trailing_comma, ignore_comments);
 
 #ifdef JSONC_NO_EXCEPTION
         if (!value) { _JSONC_PARSE_ERROR("invalid object value"); }
 
-        auto key_str = key->get<std::string>();
+        auto key_str = key->template get<std::string>();
 
 #ifdef JSONC_USE_EXPECTED
         res[*key_str] = *value;
@@ -534,7 +542,7 @@ inline JSONC_PARSE_RESULT(basic_jsonc) parse_object(
             str.remove_prefix(1);
             std::vector<std::string> comments_after{};
             if (!extract_comments(str, comments_after, ignore_comments)) { _JSONC_PARSE_ERROR("invalid comments format"); }
-            basic_jsonc result{res};
+            basic_jsonc<B> result{res};
             result.before_comments() = std::move(comments_before);
             result.after_comments()  = std::move(comments_after);
             return result;
@@ -556,7 +564,8 @@ inline JSONC_PARSE_RESULT(basic_jsonc) parse_object(
 
 } // namespace
 
-inline JSONC_PARSE_RESULT(basic_jsonc) parse_jsonc_type(
+template <bool B>
+inline JSONC_PARSE_RESULT(basic_jsonc<B>) parse_jsonc_type(
     std::string_view&          str,
     std::vector<std::string>&& comments_before,
     bool                       allow_trailing_comma,
@@ -565,11 +574,11 @@ inline JSONC_PARSE_RESULT(basic_jsonc) parse_jsonc_type(
     if (str.empty()) { _JSONC_PARSE_ERROR("empty string"); }
     switch (str.front()) {
     case 't':
-        return parse_boolean<true>(str, std::move(comments_before), ignore_comments);
+        return parse_boolean<true, B>(str, std::move(comments_before), ignore_comments);
     case 'f':
-        return parse_boolean<false>(str, std::move(comments_before), ignore_comments);
+        return parse_boolean<false, B>(str, std::move(comments_before), ignore_comments);
     case 'n':
-        return parse_null(str, std::move(comments_before), ignore_comments);
+        return parse_null<B>(str, std::move(comments_before), ignore_comments);
     case ']':
     case '}':
         _JSONC_PARSE_ERROR("unclosed bracket");
@@ -586,23 +595,26 @@ inline JSONC_PARSE_RESULT(basic_jsonc) parse_jsonc_type(
     case '7':
     case '8':
     case '9':
-        return parse_number(str, std::move(comments_before), ignore_comments);
+        return parse_number<B>(str, std::move(comments_before), ignore_comments);
     case '[':
-        return parse_list(str, std::move(comments_before), allow_trailing_comma, ignore_comments);
+        return parse_list<B>(str, std::move(comments_before), allow_trailing_comma, ignore_comments);
     case '{':
-        return parse_object(str, std::move(comments_before), allow_trailing_comma, ignore_comments);
+        return parse_object<B>(str, std::move(comments_before), allow_trailing_comma, ignore_comments);
     case '\"':
-        return parse_string(str, std::move(comments_before), ignore_comments);
+        return parse_string<B>(str, std::move(comments_before), ignore_comments);
     default:
         break;
     }
     _JSONC_PARSE_ERROR("illegal escape");
 }
 
-inline JSONC_PARSE_RESULT(basic_jsonc) parse_jsonc_type(std::string_view& str, bool allow_trailing_comma, bool ignore_comments) JSONC_EXCEPTION_TYPE {
+template <bool B>
+inline JSONC_PARSE_RESULT(
+    basic_jsonc<B>
+) parse_jsonc_type(std::string_view& str, bool allow_trailing_comma, bool ignore_comments) JSONC_EXCEPTION_TYPE {
     std::vector<std::string> comments_before{};
     if (!extract_comments(str, comments_before, ignore_comments)) { _JSONC_PARSE_ERROR("invalid comments format"); }
-    return parse_jsonc_type(str, std::move(comments_before), allow_trailing_comma, ignore_comments);
+    return parse_jsonc_type<B>(str, std::move(comments_before), allow_trailing_comma, ignore_comments);
 }
 
 } // namespace jsonc::inline abi_v1_2_0::detail

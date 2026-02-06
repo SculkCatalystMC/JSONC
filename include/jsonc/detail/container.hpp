@@ -22,6 +22,9 @@ template <typename T>
 using string_hash_map = std::unordered_map<std::string, T, string_hash, string_equall>;
 
 template <typename T>
+using string_map = std::map<std::string, T, std::less<>>;
+
+template <typename T>
 class ordered_string_hash_map {
 public:
     template <bool _Const, bool _Reverse>

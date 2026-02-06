@@ -44,10 +44,9 @@ target("jsonc")
             "UNICODE"
         )
         add_cxflags(
-            "/EHsc",
+            "/EHs-c-",
             "/utf-8",
             "/W4",
-            "/EHs-c-",
             "/GR-"
         )
         set_exceptions("none")

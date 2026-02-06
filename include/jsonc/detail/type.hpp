@@ -1,6 +1,7 @@
 #pragma once
 #include "container.hpp"
 #include <cstdint>
+#include <format>
 #include <optional>
 #include <variant>
 #include <vector>
@@ -48,21 +49,23 @@ constexpr bool emplace_variant(Var& v, std::size_t idx) noexcept {
     return emplace_variant_impl(v, idx, std::make_index_sequence<N>{});
 }
 
+struct basic_big_int {
+    basic_big_int() noexcept = default;
+    basic_big_int(std::string_view val) noexcept : view_(val) {}
+    bool        operator==(const basic_big_int& other) const noexcept { return view_ == other.view_; }
+    std::string view_;
+};
+
+template <bool _Ordered>
 class basic_jsonc {
 public:
-    struct basic_big_int {
-        basic_big_int() noexcept = default;
-        basic_big_int(std::string_view val) noexcept : view_(val) {}
-        bool        operator==(const basic_big_int& other) const noexcept { return view_ == other.view_; }
-        std::string view_;
-    };
-
     class basic_object {
     public:
-        using iterator               = ordered_string_hash_map<basic_jsonc>::iterator;
-        using const_iterator         = ordered_string_hash_map<basic_jsonc>::const_iterator;
-        using reverse_iterator       = ordered_string_hash_map<basic_jsonc>::reverse_iterator;
-        using const_reverse_iterator = ordered_string_hash_map<basic_jsonc>::const_reverse_iterator;
+        using map_type               = std::conditional_t<_Ordered, ordered_string_hash_map<basic_jsonc>, string_map<basic_jsonc>>;
+        using iterator               = map_type::iterator;
+        using const_iterator         = map_type::const_iterator;
+        using reverse_iterator       = map_type::reverse_iterator;
+        using const_reverse_iterator = map_type::const_reverse_iterator;
 
     public:
         basic_object() JSONC_EXCEPTION_TYPE = default;
@@ -158,8 +161,8 @@ public:
             std::vector<std::string> after_comments_{};
         };
         friend class basic_jsonc;
-        ordered_string_hash_map<basic_jsonc> storage_{};
-        string_hash_map<key_comments>        key_comments_{};
+        map_type                      storage_{};
+        string_hash_map<key_comments> key_comments_{};
     };
 
     class basic_array {
@@ -259,12 +262,12 @@ public:
             _Const,
             std::variant<
                 const basic_jsonc*,
-                std::conditional_t<_Reserve, basic_object::const_reverse_iterator, basic_object::const_iterator>,
-                std::conditional_t<_Reserve, basic_array::const_reverse_iterator, basic_array::const_iterator>>,
+                std::conditional_t<_Reserve, typename basic_object::const_reverse_iterator, typename basic_object::const_iterator>,
+                std::conditional_t<_Reserve, typename basic_array::const_reverse_iterator, typename basic_array::const_iterator>>,
             std::variant<
                 basic_jsonc*,
-                std::conditional_t<_Reserve, basic_object::reverse_iterator, basic_object::iterator>,
-                std::conditional_t<_Reserve, basic_array::reverse_iterator, basic_array::iterator>>>;
+                std::conditional_t<_Reserve, typename basic_object::reverse_iterator, typename basic_object::iterator>,
+                std::conditional_t<_Reserve, typename basic_array::reverse_iterator, typename basic_array::iterator>>>;
         IteratorType iterator_;
 
         template <bool Reserve>
@@ -330,8 +333,8 @@ public:
                     using T          = std::decay_t<decltype(val)>;
                     using ObjectType = std::conditional_t<
                         _Const,
-                        std::conditional_t<_Reserve, basic_object::const_reverse_iterator, basic_object::const_iterator>,
-                        std::conditional_t<_Reserve, basic_object::reverse_iterator, basic_object::iterator>>;
+                        std::conditional_t<_Reserve, typename basic_object::const_reverse_iterator, typename basic_object::const_iterator>,
+                        std::conditional_t<_Reserve, typename basic_object::reverse_iterator, typename basic_object::iterator>>;
                     if constexpr (std::is_same_v<T, ObjectType>) {
                         return val->second;
                     } else {
@@ -526,8 +529,15 @@ public:
     [[nodiscard]] JSONC_RESULT(const basic_jsonc&) back() const JSONC_EXCEPTION_TYPE;
     [[nodiscard]] JSONC_RESULT(basic_jsonc&) back() JSONC_EXCEPTION_TYPE;
 
-    JSONC_RESULT(iterator_proxy) items() JSONC_EXCEPTION_TYPE;
-    JSONC_RESULT(const_iterator_proxy) items() const JSONC_EXCEPTION_TYPE;
+    JSONC_RESULT(iterator_proxy) items() JSONC_EXCEPTION_TYPE {
+        if (auto* storage = std::get_if<basic_object>(&storage_)) { return iterator_proxy(*storage); }
+        _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
+    }
+
+    JSONC_RESULT(const_iterator_proxy) items() const JSONC_EXCEPTION_TYPE {
+        if (auto* storage = std::get_if<basic_object>(&storage_)) { return const_iterator_proxy(*storage); }
+        _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
+    }
 
     [[nodiscard]] iterator begin() noexcept;
     [[nodiscard]] iterator end() noexcept;
@@ -624,6 +634,10 @@ public:
     [[nodiscard]] JSONC_RESULT(std::size_t) key_after_comments_size(std::string_view index) const JSONC_EXCEPTION_TYPE;
 
 public:
+    static JSONC_PARSE_RESULT(
+        basic_jsonc
+    ) parse(std::string_view content, bool allow_trailing_comma = false, bool ignore_comments = false) JSONC_EXCEPTION_TYPE;
+
     static basic_jsonc object() JSONC_EXCEPTION_TYPE { return basic_object(); }
     static basic_jsonc object(std::initializer_list<std::pair<std::string, basic_jsonc>> val) JSONC_EXCEPTION_TYPE { return basic_object(val); }
     static basic_jsonc array() JSONC_EXCEPTION_TYPE { return basic_array(); }
