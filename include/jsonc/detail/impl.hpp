@@ -126,7 +126,7 @@ inline const std::string& basic_jsonc<true>::basic_object::key_index(std::size_t
 
 template <>
 inline const std::string& basic_jsonc<false>::basic_object::key_index(std::size_t index) const noexcept {
-    auto it = std::next(storage_.begin(), static_cast<std::map<std::size_t, std::string>::difference_type>(index));
+    auto it = std::next(storage_.begin(), static_cast<std::map<std::string, basic_jsonc<false>>::difference_type>(index));
     if (it != storage_.end()) { return it->first; }
     std::unreachable();
 }
