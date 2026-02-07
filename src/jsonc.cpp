@@ -117,6 +117,20 @@ void jsonc_object_set_bool(jsonc_object_t handle, const char* key, bool value) {
     static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key) = value;
 }
 
+int64_t jsonc_object_get_signed(jsonc_object_t handle, const char* key) {
+    return static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key).get<int64_t>();
+}
+void jsonc_object_set_signed(jsonc_object_t handle, const char* key, int64_t value) {
+    static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key) = value;
+}
+
+uint64_t jsonc_object_get_unsigned(jsonc_object_t handle, const char* key) {
+    return static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key).get<uint64_t>();
+}
+void jsonc_object_set_unsigned(jsonc_object_t handle, const char* key, uint64_t value) {
+    static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key) = value;
+}
+
 const char* jsonc_object_get_any_int(jsonc_object_t handle, const char* key) {
     return make_cstr(static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key).get_any_int_view());
 }
@@ -272,6 +286,22 @@ void jsonc_array_set_bool(jsonc_array_t handle, size_t index, bool value) {
     static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index) = value;
 }
 void jsonc_array_add_bool(jsonc_array_t handle, bool value) { static_cast<jsonc::ordered_jsonc::array_type*>(handle)->push_back(value); }
+
+int64_t jsonc_array_get_signed(jsonc_array_t handle, size_t index) {
+    return static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index).get<int64_t>();
+}
+void jsonc_array_set_signed(jsonc_array_t handle, size_t index, int64_t value) {
+    static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index) = value;
+}
+void jsonc_array_add_signed(jsonc_array_t handle, int64_t value) { static_cast<jsonc::ordered_jsonc::array_type*>(handle)->push_back(value); }
+
+uint64_t jsonc_array_get_unsigned(jsonc_array_t handle, size_t index) {
+    return static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index).get<uint64_t>();
+}
+void jsonc_array_set_unsigned(jsonc_array_t handle, size_t index, uint64_t value) {
+    static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index) = value;
+}
+void jsonc_array_add_unsigned(jsonc_array_t handle, uint64_t value) { static_cast<jsonc::ordered_jsonc::array_type*>(handle)->push_back(value); }
 
 const char* jsonc_array_get_any_int(jsonc_array_t handle, size_t index) {
     return make_cstr(static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index).get_any_int_view());
