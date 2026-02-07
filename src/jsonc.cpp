@@ -99,15 +99,15 @@ const char* jsonc_variant_dump(jsonc_variant_t handle, int indent, bool ensure_a
 bool jsonc_object_contains(jsonc_object_t handle, const char* key) { return static_cast<jsonc::ordered_jsonc::object_type*>(handle)->contains(key); }
 
 bool jsonc_object_value_is_any_int_type(jsonc_object_t handle, const char* key) {
-    return static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key).is_number_any_inteager();
+    return static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key).is_number_integer();
 }
 
 bool jsonc_object_value_is_any_float_type(jsonc_object_t handle, const char* key) {
-    return static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key).is_number_any_float();
+    return static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key).is_number_float();
 }
 
 bool jsonc_object_value_is_any_number_type(jsonc_object_t handle, const char* key) {
-    return static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key).is_any_number();
+    return static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key).is_number();
 }
 
 int jsonc_object_get_type(jsonc_object_t handle, const char* key) {
@@ -285,15 +285,15 @@ int jsonc_array_get_type(jsonc_array_t handle, size_t index) {
 }
 
 bool jsonc_array_value_is_any_int_type(jsonc_array_t handle, size_t index) {
-    return static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index).is_number_any_inteager();
+    return static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index).is_number_integer();
 }
 
 bool jsonc_array_value_is_any_float_type(jsonc_array_t handle, size_t index) {
-    return static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index).is_number_any_float();
+    return static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index).is_number_float();
 }
 
 bool jsonc_array_value_is_any_number_type(jsonc_array_t handle, size_t index) {
-    return static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index).is_any_number();
+    return static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index).is_number();
 }
 
 bool jsonc_array_get_bool(jsonc_array_t handle, size_t index) {

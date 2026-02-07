@@ -3,6 +3,7 @@
 #include "serializer.hpp"
 #include "type.hpp"
 #include <algorithm>
+#include <limits>
 #include <ranges>
 
 namespace jsonc::inline abi_v1_2_0::detail {
@@ -749,7 +750,7 @@ inline constexpr bool basic_jsonc<_Ordered>::is_number_unsigned() const noexcept
 }
 
 template <bool _Ordered>
-inline constexpr bool basic_jsonc<_Ordered>::is_number_integer() const noexcept {
+inline constexpr bool basic_jsonc<_Ordered>::is_number_normal_integer() const noexcept {
     return is_number_signed() || is_number_unsigned();
 }
 
@@ -759,12 +760,12 @@ inline constexpr bool basic_jsonc<_Ordered>::is_number_big_inteager() const noex
 }
 
 template <bool _Ordered>
-inline constexpr bool basic_jsonc<_Ordered>::is_number_any_inteager() const noexcept {
-    return is_number_integer() || is_number_big_inteager();
+inline constexpr bool basic_jsonc<_Ordered>::is_number_integer() const noexcept {
+    return is_number_normal_integer() || is_number_big_inteager();
 }
 
 template <bool _Ordered>
-inline constexpr bool basic_jsonc<_Ordered>::is_number_float() const noexcept {
+inline constexpr bool basic_jsonc<_Ordered>::is_number_normal_float() const noexcept {
     return hold(value_type::number_floating_point);
 }
 
@@ -774,23 +775,23 @@ inline constexpr bool basic_jsonc<_Ordered>::is_number_high_precision_float() co
 }
 
 template <bool _Ordered>
-inline constexpr bool basic_jsonc<_Ordered>::is_number_any_float() const noexcept {
-    return is_number_float() || is_number_high_precision_float();
+inline constexpr bool basic_jsonc<_Ordered>::is_number_float() const noexcept {
+    return is_number_normal_float() || is_number_high_precision_float();
 }
 
 template <bool _Ordered>
-inline constexpr bool basic_jsonc<_Ordered>::is_number() const noexcept {
-    return is_number_float() || is_number_integer();
+inline constexpr bool basic_jsonc<_Ordered>::is_normal_number() const noexcept {
+    return is_number_normal_float() || is_number_normal_integer();
 }
 
 template <bool _Ordered>
 inline constexpr bool basic_jsonc<_Ordered>::is_high_precision_number() const noexcept {
-    return is_number_high_precision_float() || is_number_any_inteager();
+    return is_number_high_precision_float() || is_number_big_inteager();
 }
 
 template <bool _Ordered>
-inline constexpr bool basic_jsonc<_Ordered>::is_any_number() const noexcept {
-    return is_number() || is_high_precision_number();
+inline constexpr bool basic_jsonc<_Ordered>::is_number() const noexcept {
+    return is_normal_number() || is_high_precision_number();
 }
 
 template <bool _Ordered>
@@ -880,6 +881,15 @@ inline JSONC_RESULT(bool) basic_jsonc<_Ordered>::erase(std::size_t first, std::s
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
 
+template <typename T>
+    requires(std::is_arithmetic_v<T> && !std::same_as<T, bool>)
+constexpr T truncate_high_precision_number(std::string_view num_str) {
+    bool is_negative = num_str.starts_with('-');
+    num_str.remove_prefix(1);
+    if (num_str.starts_with('0')) { return 0; }
+    return is_negative ? std::numeric_limits<T>::lowest() : std::numeric_limits<T>::max();
+}
+
 template <bool _Ordered>
 template <typename T>
     requires std::is_arithmetic_v<T>
@@ -889,6 +899,12 @@ inline basic_jsonc<_Ordered>::operator T() const JSONC_EXCEPTION_TYPE {
             using Type = std::decay_t<decltype(val)>;
             if constexpr (std::is_convertible_v<Type, T>) {
                 return static_cast<T>(val);
+            } else if constexpr (std::same_as<Type, basic_big_int> || std::same_as<Type, basic_high_precision_float>) {
+                if constexpr (std::same_as<T, bool>) {
+                    return val.view_ != "0";
+                } else {
+                    return truncate_high_precision_number<T>(val.view_);
+                }
             } else {
 #ifdef JSONC_NO_EXCEPTION
                 std::unreachable();
@@ -1019,6 +1035,12 @@ inline JSONC_RESULT(T) basic_jsonc<_Ordered>::get() const JSONC_EXCEPTION_TYPE {
             using Type = std::decay_t<decltype(val)>;
             if constexpr (std::is_convertible_v<Type, T>) {
                 return static_cast<T>(val);
+            } else if constexpr (std::same_as<Type, basic_big_int> || std::same_as<Type, basic_high_precision_float>) {
+                if constexpr (std::same_as<T, bool>) {
+                    return val.view_ != "0";
+                } else {
+                    return truncate_high_precision_number<T>(val.view_);
+                }
             } else {
                 _JSONC_TYPE_ERROR("bad type cast");
             }
