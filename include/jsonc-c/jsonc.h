@@ -24,16 +24,16 @@ typedef void* jsonc_variant_t;
 typedef void* jsonc_object_t;
 typedef void* jsonc_array_t;
 
-#define JSONC_VALUE_TYPE_NULL      0
-#define JSONC_VALUE_TYPE_BOOLEAN   1
-#define JSONC_VALUE_TYPE_SIGNED    2
-#define JSONC_VALUE_TYPE_UNSIGNED  3
-#define JSONC_VALUE_TYPE_FLOAT     4
-#define JSONC_VALUE_TYPE_STRING    5
-#define JSONC_VALUE_TYPE_OBJECT    6
-#define JSONC_VALUE_TYPE_ARRAY     7
-#define JSONC_VALUE_TYPE_BIG_INT   8
-#define JSONC_VALUE_TYPE_BIG_FLOAT 9
+#define JSONC_VALUE_TYPE_NULL                 0
+#define JSONC_VALUE_TYPE_BOOLEAN              1
+#define JSONC_VALUE_TYPE_SIGNED               2
+#define JSONC_VALUE_TYPE_UNSIGNED             3
+#define JSONC_VALUE_TYPE_FLOAT                4
+#define JSONC_VALUE_TYPE_STRING               5
+#define JSONC_VALUE_TYPE_OBJECT               6
+#define JSONC_VALUE_TYPE_ARRAY                7
+#define JSONC_VALUE_TYPE_BIG_INTEGER          8
+#define JSONC_VALUE_TYPE_HIGH_PRECISION_FLOAT 9
 
 JSONC_API const char* jsonc_get_library_version_string();
 

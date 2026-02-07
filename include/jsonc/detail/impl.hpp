@@ -716,8 +716,8 @@ inline constexpr std::string_view basic_jsonc<_Ordered>::type_name() const noexc
         return "array";
     case value_type::number_big_integer:
         return "big-inteager";
-    case value_type::number_big_floating_point:
-        return "big-floating-point";
+    case value_type::number_high_precision_float:
+        return "high-precision-float";
     default:
         std::unreachable();
     }
@@ -770,7 +770,7 @@ inline constexpr bool basic_jsonc<_Ordered>::is_number_float() const noexcept {
 
 template <bool _Ordered>
 inline constexpr bool basic_jsonc<_Ordered>::is_number_big_float() const noexcept {
-    return hold(value_type::number_big_floating_point);
+    return hold(value_type::number_high_precision_float);
 }
 
 template <bool _Ordered>
@@ -1595,10 +1595,11 @@ inline bool is_int(std::string_view view) {
 template <bool _Ordered>
 inline std::optional<basic_jsonc<_Ordered>> basic_jsonc<_Ordered>::from_any_int(std::string_view view) noexcept {
     bool is_int{true};
-    bool negative{false};
-    auto num_str = extract_jsonc_number(view, is_int, negative);
+    bool is_negative{false};
+    bool is_scientific{false};
+    auto num_str = extract_jsonc_number(view, is_int, is_negative, is_scientific);
     if (is_int && num_str == view) {
-        if (negative) {
+        if (is_negative) {
             std::int64_t res{};
             auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), res);
             if (ec != std::errc() || ptr != num_str.data() + num_str.size()) { return basic_big_int(num_str); }
@@ -1614,27 +1615,30 @@ inline std::optional<basic_jsonc<_Ordered>> basic_jsonc<_Ordered>::from_any_int(
 }
 
 template <bool _Ordered>
-inline std::optional<basic_jsonc<_Ordered>> basic_jsonc<_Ordered>::from_any_float(std::string_view view) noexcept {
+inline std::optional<basic_jsonc<_Ordered>> basic_jsonc<_Ordered>::from_any_float(std::string_view view, bool float_keep_precision) noexcept {
     bool is_int{true};
-    bool negative{false};
-    auto num_str = extract_jsonc_number(view, is_int, negative);
+    bool is_negative{false};
+    bool is_scientific{false};
+    auto num_str = extract_jsonc_number(view, is_int, is_negative, is_scientific);
     if (!is_int && num_str == view) {
         double res{};
         auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), res);
         if (ec != std::errc() || ptr != num_str.data() + num_str.size() || std::isinf(res)) { return basic_big_float(num_str); }
+        if (float_keep_precision && !is_scientific && std::format("{}", res) != num_str) { return basic_big_float(num_str); }
         return res;
     }
     return std::nullopt;
 }
 
 template <bool _Ordered>
-inline std::optional<basic_jsonc<_Ordered>> basic_jsonc<_Ordered>::from_any_number(std::string_view view) noexcept {
+inline std::optional<basic_jsonc<_Ordered>> basic_jsonc<_Ordered>::from_any_number(std::string_view view, bool float_keep_precision) noexcept {
     bool is_int{true};
-    bool negative{false};
-    auto num_str = extract_jsonc_number(view, is_int, negative);
+    bool is_negative{false};
+    bool is_scientific{false};
+    auto num_str = extract_jsonc_number(view, is_int, is_negative, is_scientific);
     if (num_str == view) {
         if (is_int) {
-            if (negative) {
+            if (is_negative) {
                 std::int64_t res{};
                 auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), res);
                 if (ec != std::errc() || ptr != num_str.data() + num_str.size()) { return basic_big_int(num_str); }
@@ -1649,6 +1653,7 @@ inline std::optional<basic_jsonc<_Ordered>> basic_jsonc<_Ordered>::from_any_numb
             double res{};
             auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), res);
             if (ec != std::errc() || ptr != num_str.data() + num_str.size() || std::isinf(res)) { return basic_big_float(num_str); }
+            if (float_keep_precision && !is_scientific && std::format("{}", res) != num_str) { return basic_big_float(num_str); }
             return res;
         }
     }
@@ -1656,10 +1661,13 @@ inline std::optional<basic_jsonc<_Ordered>> basic_jsonc<_Ordered>::from_any_numb
 }
 
 template <bool _Ordered>
-inline JSONC_PARSE_RESULT(
-    basic_jsonc<_Ordered>
-) basic_jsonc<_Ordered>::parse(std::string_view content, bool allow_trailing_comma, bool ignore_comments) JSONC_EXCEPTION_TYPE {
-    return detail::parse_jsonc_type<_Ordered>(content, allow_trailing_comma, ignore_comments);
+inline JSONC_PARSE_RESULT(basic_jsonc<_Ordered>) basic_jsonc<_Ordered>::parse(
+    std::string_view content,
+    bool             float_keep_precision,
+    bool             allow_trailing_comma,
+    bool             ignore_comments
+) JSONC_EXCEPTION_TYPE {
+    return detail::parse_jsonc_type<_Ordered>(content, allow_trailing_comma, ignore_comments, float_keep_precision);
 }
 
 } // namespace jsonc::inline abi_v1_2_0::detail
