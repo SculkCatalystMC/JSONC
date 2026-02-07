@@ -509,7 +509,7 @@ public:
     [[nodiscard]] JSONC_RESULT(std::string) get_big_int_view() const JSONC_EXCEPTION_TYPE;
     [[nodiscard]] JSONC_RESULT(std::string) get_any_int_view() const JSONC_EXCEPTION_TYPE;
 
-    [[nodiscard]] JSONC_RESULT(std::string) get_big_float_view() const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] JSONC_RESULT(std::string) get_high_precision_float_view() const JSONC_EXCEPTION_TYPE;
     [[nodiscard]] JSONC_RESULT(std::string) get_any_float_view() const JSONC_EXCEPTION_TYPE;
 
     [[nodiscard]] JSONC_RESULT(std::string) get_any_number_view() const JSONC_EXCEPTION_TYPE;

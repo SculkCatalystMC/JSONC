@@ -703,21 +703,21 @@ inline constexpr std::string_view basic_jsonc<_Ordered>::type_name() const noexc
     case value_type::boolean:
         return "boolean";
     case value_type::number_integer_signed:
-        return "signed-inteager";
+        return "signed inteager";
     case value_type::number_integer_unsigned:
-        return "unsigned-integer";
+        return "unsigned integer";
     case value_type::string:
         return "string";
     case value_type::number_floating_point:
-        return "floating-point";
+        return "floating point";
     case value_type::object:
         return "object";
     case value_type::array:
         return "array";
     case value_type::number_big_integer:
-        return "big-inteager";
+        return "big inteager";
     case value_type::number_high_precision_float:
-        return "high-precision-float";
+        return "high-precision float";
     default:
         std::unreachable();
     }
@@ -1073,9 +1073,9 @@ inline JSONC_RESULT(std::string) basic_jsonc<_Ordered>::get_any_int_view() const
 }
 
 template <bool _Ordered>
-inline JSONC_RESULT(std::string) basic_jsonc<_Ordered>::get_big_float_view() const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(std::string) basic_jsonc<_Ordered>::get_high_precision_float_view() const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_high_precision_float>(&storage_)) { return storage->view_; }
-    _JSONC_TYPE_ERROR(std::format("Type must be a big floating-point, but is {}", type_name()));
+    _JSONC_TYPE_ERROR(std::format("Type must be a high-precision float, but is {}", type_name()));
 }
 
 template <bool _Ordered>
