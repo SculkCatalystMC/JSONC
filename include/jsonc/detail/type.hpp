@@ -10,15 +10,16 @@ namespace jsonc {
 inline namespace abi_v1_2_0 {
 
 enum class value_type : std::uint8_t {
-    null                    = 0,
-    boolean                 = 1,
-    number_integer_signed   = 2,
-    number_integer_unsigned = 3,
-    number_floating_point   = 4,
-    string                  = 5,
-    object                  = 6,
-    array                   = 7,
-    number_big_integer      = 8,
+    null                      = 0,
+    boolean                   = 1,
+    number_integer_signed     = 2,
+    number_integer_unsigned   = 3,
+    number_floating_point     = 4,
+    string                    = 5,
+    object                    = 6,
+    array                     = 7,
+    number_big_integer        = 8,
+    number_big_floating_point = 9,
 };
 
 namespace detail {
@@ -53,6 +54,13 @@ struct basic_big_int {
     basic_big_int() noexcept = default;
     basic_big_int(std::string_view val) noexcept : view_(val) {}
     bool        operator==(const basic_big_int& other) const noexcept { return view_ == other.view_; }
+    std::string view_;
+};
+
+struct basic_big_float {
+    basic_big_float() noexcept = default;
+    basic_big_float(std::string_view val) noexcept : view_(val) {}
+    bool        operator==(const basic_big_float& other) const noexcept { return view_ == other.view_; }
     std::string view_;
 };
 
@@ -243,8 +251,8 @@ public:
     };
 
 public:
-    using type_variant =
-        std::variant<std::monostate, bool, std::int64_t, std::uint64_t, double, std::string, basic_object, basic_array, basic_big_int>;
+    using type_variant = std::
+        variant<std::monostate, bool, std::int64_t, std::uint64_t, double, std::string, basic_object, basic_array, basic_big_int, basic_big_float>;
 
     using object_type = basic_object;
     using array_type  = basic_array;
@@ -428,6 +436,7 @@ public:
     constexpr basic_jsonc(const basic_object& val) noexcept : storage_(val) {};
     constexpr basic_jsonc(const basic_array& val) noexcept : storage_(val) {};
     constexpr basic_jsonc(const basic_big_int& val) noexcept : storage_(val) {};
+    constexpr basic_jsonc(const basic_big_float& val) noexcept : storage_(val) {};
 
     constexpr basic_jsonc(std::initializer_list<std::pair<std::string, basic_jsonc>> val) noexcept
     : storage_(std::in_place_type<basic_object>, val) {}
@@ -447,7 +456,11 @@ public:
     [[nodiscard]] constexpr bool is_number_big_inteager() const noexcept;
     [[nodiscard]] constexpr bool is_number_any_inteager() const noexcept;
     [[nodiscard]] constexpr bool is_number_float() const noexcept;
+    [[nodiscard]] constexpr bool is_number_big_float() const noexcept;
+    [[nodiscard]] constexpr bool is_number_any_float() const noexcept;
     [[nodiscard]] constexpr bool is_number() const noexcept;
+    [[nodiscard]] constexpr bool is_big_number() const noexcept;
+    [[nodiscard]] constexpr bool is_any_number() const noexcept;
     [[nodiscard]] constexpr bool is_string() const noexcept;
     [[nodiscard]] constexpr bool is_object() const noexcept;
     [[nodiscard]] constexpr bool is_array() const noexcept;
@@ -486,6 +499,11 @@ public:
 
     [[nodiscard]] JSONC_RESULT(std::string) get_big_int_view() const JSONC_EXCEPTION_TYPE;
     [[nodiscard]] JSONC_RESULT(std::string) get_any_int_view() const JSONC_EXCEPTION_TYPE;
+
+    [[nodiscard]] JSONC_RESULT(std::string) get_big_float_view() const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] JSONC_RESULT(std::string) get_any_float_view() const JSONC_EXCEPTION_TYPE;
+
+    [[nodiscard]] JSONC_RESULT(std::string) get_any_number_view() const JSONC_EXCEPTION_TYPE;
 
     [[nodiscard]] JSONC_RESULT(basic_jsonc&) operator[](std::string_view index) JSONC_EXCEPTION_TYPE;
     [[nodiscard]] JSONC_RESULT(const basic_jsonc&) operator[](std::string_view index) const JSONC_EXCEPTION_TYPE;
@@ -643,7 +661,9 @@ public:
     static basic_jsonc array() JSONC_EXCEPTION_TYPE { return basic_array(); }
     static basic_jsonc array(std::initializer_list<basic_jsonc> val) JSONC_EXCEPTION_TYPE { return basic_array(val); }
 
-    static std::optional<basic_jsonc> from_big_int(std::string_view view) noexcept;
+    static std::optional<basic_jsonc> from_any_int(std::string_view view) noexcept;
+    static std::optional<basic_jsonc> from_any_float(std::string_view view) noexcept;  // TODO
+    static std::optional<basic_jsonc> from_any_number(std::string_view view) noexcept; // TODO
 
 private:
     friend class basic_object;

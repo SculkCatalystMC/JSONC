@@ -291,14 +291,16 @@ inline std::string dump_typed(
 template <bool B, typename T>
     requires std::is_arithmetic_v<T>
 inline std::string dump_typed(T val, bool, int, bool, bool) JSONC_EXCEPTION_TYPE {
-    if constexpr (std::is_floating_point_v<T>) {
-        if (std::round(val) == val) { return std::format("{:.1f}", val); }
-    }
     return std::format("{}", val);
 }
 
 template <bool B>
 inline std::string dump_typed(basic_big_int val, bool, int, bool, bool) JSONC_EXCEPTION_TYPE {
+    return val.view_;
+}
+
+template <bool B>
+inline std::string dump_typed(basic_big_float val, bool, int, bool, bool) JSONC_EXCEPTION_TYPE {
     return val.view_;
 }
 

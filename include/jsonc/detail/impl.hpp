@@ -716,6 +716,8 @@ inline constexpr std::string_view basic_jsonc<_Ordered>::type_name() const noexc
         return "array";
     case value_type::number_big_integer:
         return "big-inteager";
+    case value_type::number_big_floating_point:
+        return "big-floating-point";
     default:
         std::unreachable();
     }
@@ -767,8 +769,28 @@ inline constexpr bool basic_jsonc<_Ordered>::is_number_float() const noexcept {
 }
 
 template <bool _Ordered>
+inline constexpr bool basic_jsonc<_Ordered>::is_number_big_float() const noexcept {
+    return hold(value_type::number_big_floating_point);
+}
+
+template <bool _Ordered>
+inline constexpr bool basic_jsonc<_Ordered>::is_number_any_float() const noexcept {
+    return is_number_float() || is_number_big_float();
+}
+
+template <bool _Ordered>
 inline constexpr bool basic_jsonc<_Ordered>::is_number() const noexcept {
-    return is_number_float() || is_number_any_inteager();
+    return is_number_float() || is_number_integer();
+}
+
+template <bool _Ordered>
+inline constexpr bool basic_jsonc<_Ordered>::is_big_number() const noexcept {
+    return is_number_big_float() || is_number_any_inteager();
+}
+
+template <bool _Ordered>
+inline constexpr bool basic_jsonc<_Ordered>::is_any_number() const noexcept {
+    return is_number() || is_big_number();
 }
 
 template <bool _Ordered>
@@ -1043,7 +1065,47 @@ inline JSONC_RESULT(std::string) basic_jsonc<_Ordered>::get_any_int_view() const
             } else if constexpr (std::same_as<std::int64_t, Type> || std::same_as<std::uint64_t, Type>) {
                 return std::to_string(val);
             } else {
-                _JSONC_TYPE_ERROR(std::format("Type must be a any integer type, but is {}", type_name()));
+                _JSONC_TYPE_ERROR(std::format("Type must be any integer type, but is {}", type_name()));
+            }
+        },
+        storage_
+    );
+}
+
+template <bool _Ordered>
+inline JSONC_RESULT(std::string) basic_jsonc<_Ordered>::get_big_float_view() const JSONC_EXCEPTION_TYPE {
+    if (auto* storage = std::get_if<basic_big_float>(&storage_)) { return storage->view_; }
+    _JSONC_TYPE_ERROR(std::format("Type must be a big floating-point, but is {}", type_name()));
+}
+
+template <bool _Ordered>
+inline JSONC_RESULT(std::string) basic_jsonc<_Ordered>::get_any_float_view() const JSONC_EXCEPTION_TYPE {
+    return std::visit(
+        [&](const auto& val) -> JSONC_RESULT(std::string) {
+            using Type = std::decay_t<decltype(val)>;
+            if constexpr (std::same_as<basic_big_float, Type>) {
+                return val.view_;
+            } else if constexpr (std::same_as<double, Type>) {
+                return std::format("{}", val);
+            } else {
+                _JSONC_TYPE_ERROR(std::format("Type must be any floating-point type, but is {}", type_name()));
+            }
+        },
+        storage_
+    );
+}
+
+template <bool _Ordered>
+inline JSONC_RESULT(std::string) basic_jsonc<_Ordered>::get_any_number_view() const JSONC_EXCEPTION_TYPE {
+    return std::visit(
+        [&](const auto& val) -> JSONC_RESULT(std::string) {
+            using Type = std::decay_t<decltype(val)>;
+            if constexpr (std::same_as<basic_big_float, Type> || std::same_as<basic_big_int, Type>) {
+                return val.view_;
+            } else if constexpr (std::same_as<double, Type> || std::same_as<std::int64_t, Type> || std::same_as<std::uint64_t, Type>) {
+                return std::format("{}", val);
+            } else {
+                _JSONC_TYPE_ERROR(std::format("Type must be any number type, but is {}", type_name()));
             }
         },
         storage_
@@ -1531,7 +1593,7 @@ inline bool is_int(std::string_view view) {
 }
 
 template <bool _Ordered>
-inline std::optional<basic_jsonc<_Ordered>> basic_jsonc<_Ordered>::from_big_int(std::string_view view) noexcept {
+inline std::optional<basic_jsonc<_Ordered>> basic_jsonc<_Ordered>::from_any_int(std::string_view view) noexcept {
     if (view.empty()) { return std::nullopt; }
     if (view.starts_with('-')) {
         std::int64_t res{};

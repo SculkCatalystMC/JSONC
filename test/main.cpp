@@ -7,7 +7,7 @@ int main() {
     auto        file = std::ifstream("./bin/test.jsonc");
     std::string content{std::istreambuf_iterator<char>(file), {}};
 #ifdef JSONC_USE_EXPECTED
-    auto json              = *jsonc::jsonc::parse(content);
+    auto json              = *jsonc::ordered_jsonc::parse(content);
     json["new"]->get()     = 3.233;
     json["new_map"]->get() = {
         {"5", 6},
@@ -16,7 +16,7 @@ int main() {
         {"3", 4},
     };
     std::map<int, int> a{};
-    json["new_vec"]->get()         = jsonc::jsonc::array({1, 2, 3, 4, 5, 6, 7, 8});
+    json["new_vec"]->get()         = jsonc::ordered_jsonc::array({1, 2, 3, 4, 5, 6, 7, 8});
     std::map<std::string, int> map = json["new_map"]->get();
     auto                       vec = *json["new_vec"]->get().get<std::vector<int>>();
     std::println("{}", json.dump());
@@ -25,7 +25,6 @@ int main() {
     const auto& vec_value = json["new_vec"];
     for (int val : vec_value->get()) { std::println("{}", val); }
     for (auto& [k, v] : *json["new_map"]->get().items()) { std::println("{}: {}", k, (int)v); }
-    std::println("{}", json.dump());
     return 0;
 #else
     try {
@@ -45,7 +44,6 @@ int main() {
         const auto& vec_value = json["new_vec"];
         for (int val : vec_value) { std::println("{}", val); }
         for (auto& [k, v] : json["new_map"].items()) { std::println("{}: {}", k, (int)v); }
-        std::println("{}", json.dump());
         return 0;
     } catch (const std::exception& e) { std::println("{}", e.what()); }
 #endif

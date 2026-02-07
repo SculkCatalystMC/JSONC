@@ -192,61 +192,89 @@ inline JSONC_PARSE_RESULT(
     _JSONC_PARSE_ERROR("invalid value");
 }
 
+constexpr std::string_view extract_jsonc_number(std::string_view& s, bool& is_int, bool& negative) noexcept {
+    auto n = s.size();
+    auto i = 0uz;
+
+    auto is_digit = [](char c) { return c >= '0' && c <= '9'; };
+
+    if (i < n && s[i] == '-') {
+        ++i;
+        negative = true;
+    }
+
+    if (i >= n || !is_digit(s[i])) { return {}; }
+
+    if (s[i] == '0') {
+        ++i;
+    } else {
+        while (i < n && is_digit(s[i])) { ++i; }
+    }
+
+    if (i < n && s[i] == '.') {
+        is_int = false;
+        auto j = i++;
+        while (i < n && is_digit(s[i])) { ++i; }
+        if (i == j + 1) {
+            auto num = s.substr(0, j);
+            s.remove_prefix(j);
+            return num;
+        }
+    }
+
+    if (i < n && (s[i] == 'e' || s[i] == 'E')) {
+        is_int = false;
+        auto j = i++;
+        if (i < n && (s[i] == '+' || s[i] == '-')) { ++i; }
+        if (i >= n || !is_digit(s[i])) {
+            auto num = s.substr(0, j);
+            s.remove_prefix(j);
+            return num;
+        }
+        while (i < n && is_digit(s[i])) { ++i; }
+    }
+
+    auto num = s.substr(0, i);
+    s.remove_prefix(i);
+    return num;
+}
+
 template <bool B>
 inline JSONC_PARSE_RESULT(
     basic_jsonc<B>
 ) parse_number(std::string_view& str, std::vector<std::string>&& comments_before, bool ignore_comments) JSONC_EXCEPTION_TYPE {
-    std::size_t length = 0;
-    bool        is_int = true;
-    if (str.empty()) { _JSONC_PARSE_ERROR("illegal escape"); }
-
-    auto it    = str.begin();
-    auto end   = str.end();
-    auto start = it;
-
-    bool negative = false;
-
-    if (*it == '-') {
-        negative = true;
-        ++it;
-    }
-
-    while (it != end && std::isdigit(*it)) { ++it; }
-
-    if (it != end && *it == '.') {
-        is_int = false;
-        ++it;
-        while (it != end && std::isdigit(*it)) { ++it; }
-    }
-
-    length      = static_cast<std::size_t>(it - str.begin());
-    auto number = str.substr(static_cast<std::size_t>(start - str.begin()), static_cast<std::size_t>(it - start));
-    str.remove_prefix(length);
+    bool is_int{true};
+    bool negative{false};
+    auto num_str = extract_jsonc_number(str, is_int, negative);
 
     basic_jsonc<B> result{};
 
     if (is_int) {
         if (negative) {
             std::int64_t res{};
-            auto [ptr, ec] = std::from_chars(number.data(), number.data() + number.size(), res);
-            if (ec != std::errc()) {
-                result = basic_big_int(number);
+            auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), res);
+            if (ec != std::errc() || ptr != num_str.data() + num_str.size()) {
+                result = basic_big_int(num_str);
             } else {
                 result = res;
             }
         } else {
             std::uint64_t res{};
-            auto [ptr, ec] = std::from_chars(number.data(), number.data() + number.size(), res);
-            if (ec != std::errc()) {
-                result = basic_big_int(number);
+            auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), res);
+            if (ec != std::errc() || ptr != num_str.data() + num_str.size()) {
+                result = basic_big_int(num_str);
             } else {
                 result = res;
             }
         }
     } else {
         double res{};
-        std::from_chars(number.data(), number.data() + number.size(), res);
-        result = res;
+        auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), res);
+        if (ec != std::errc() || ptr != num_str.data() + num_str.size() || std::isinf(res)) {
+            result = basic_big_float(num_str);
+        } else {
+            result = res;
+        }
     }
 
     std::vector<std::string> comments_after{};

@@ -114,7 +114,7 @@ const char* jsonc_object_get_any_int(jsonc_object_t handle, const char* key) {
     return make_cstr(static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key).get_any_int_view());
 }
 bool jsonc_object_set_any_int(jsonc_object_t handle, const char* key, const char* value) {
-    auto val = jsonc::ordered_jsonc::from_big_int(value);
+    auto val = jsonc::ordered_jsonc::from_any_int(value);
     if (val) { static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key) = *val; }
     return val.has_value();
 }
@@ -257,12 +257,12 @@ const char* jsonc_array_get_any_int(jsonc_array_t handle, size_t index) {
     return make_cstr(static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index).get_any_int_view());
 }
 bool jsonc_array_set_any_int(jsonc_array_t handle, size_t index, const char* value) {
-    auto val = jsonc::ordered_jsonc::from_big_int(value);
+    auto val = jsonc::ordered_jsonc::from_any_int(value);
     if (val) { static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index) = *val; }
     return val.has_value();
 }
 bool jsonc_array_add_any_int(jsonc_array_t handle, const char* value) {
-    auto val = jsonc::ordered_jsonc::from_big_int(value);
+    auto val = jsonc::ordered_jsonc::from_any_int(value);
     if (val) { static_cast<jsonc::ordered_jsonc::array_type*>(handle)->push_back(*val); }
     return val.has_value();
 }
