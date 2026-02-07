@@ -287,10 +287,10 @@ inline JSONC_PARSE_RESULT(basic_jsonc<B>) parse_number(
         double res{};
         auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), res);
         if (ec != std::errc() || ptr != num_str.data() + num_str.size() || std::isinf(res)) {
-            result = basic_big_float(num_str);
+            result = basic_high_precision_float(num_str);
         } else {
             if (float_keep_precision && !is_scientific && std::format("{}", res) != num_str) {
-                result = basic_big_float(num_str);
+                result = basic_high_precision_float(num_str);
             } else {
                 result = res;
             }

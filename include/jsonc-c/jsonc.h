@@ -52,7 +52,7 @@ JSONC_API double   jsonc_variant_to_float(jsonc_variant_t handle);
 
 JSONC_API const char* jsonc_variant_as_string(jsonc_variant_t handle);
 JSONC_API const char* jsonc_variant_as_big_int(jsonc_variant_t handle);
-JSONC_API const char* jsonc_variant_as_big_float(jsonc_variant_t handle);
+JSONC_API const char* jsonc_variant_as_high_precision_float(jsonc_variant_t handle);
 
 JSONC_API jsonc_object_t jsonc_variant_as_object(jsonc_variant_t handle);
 JSONC_API jsonc_array_t  jsonc_variant_as_array(jsonc_variant_t handle);

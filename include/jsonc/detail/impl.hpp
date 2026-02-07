@@ -769,13 +769,13 @@ inline constexpr bool basic_jsonc<_Ordered>::is_number_float() const noexcept {
 }
 
 template <bool _Ordered>
-inline constexpr bool basic_jsonc<_Ordered>::is_number_big_float() const noexcept {
+inline constexpr bool basic_jsonc<_Ordered>::is_number_high_precision_float() const noexcept {
     return hold(value_type::number_high_precision_float);
 }
 
 template <bool _Ordered>
 inline constexpr bool basic_jsonc<_Ordered>::is_number_any_float() const noexcept {
-    return is_number_float() || is_number_big_float();
+    return is_number_float() || is_number_high_precision_float();
 }
 
 template <bool _Ordered>
@@ -784,13 +784,13 @@ inline constexpr bool basic_jsonc<_Ordered>::is_number() const noexcept {
 }
 
 template <bool _Ordered>
-inline constexpr bool basic_jsonc<_Ordered>::is_big_number() const noexcept {
-    return is_number_big_float() || is_number_any_inteager();
+inline constexpr bool basic_jsonc<_Ordered>::is_high_precision_number() const noexcept {
+    return is_number_high_precision_float() || is_number_any_inteager();
 }
 
 template <bool _Ordered>
 inline constexpr bool basic_jsonc<_Ordered>::is_any_number() const noexcept {
-    return is_number() || is_big_number();
+    return is_number() || is_high_precision_number();
 }
 
 template <bool _Ordered>
@@ -1074,7 +1074,7 @@ inline JSONC_RESULT(std::string) basic_jsonc<_Ordered>::get_any_int_view() const
 
 template <bool _Ordered>
 inline JSONC_RESULT(std::string) basic_jsonc<_Ordered>::get_big_float_view() const JSONC_EXCEPTION_TYPE {
-    if (auto* storage = std::get_if<basic_big_float>(&storage_)) { return storage->view_; }
+    if (auto* storage = std::get_if<basic_high_precision_float>(&storage_)) { return storage->view_; }
     _JSONC_TYPE_ERROR(std::format("Type must be a big floating-point, but is {}", type_name()));
 }
 
@@ -1083,7 +1083,7 @@ inline JSONC_RESULT(std::string) basic_jsonc<_Ordered>::get_any_float_view() con
     return std::visit(
         [&](const auto& val) -> JSONC_RESULT(std::string) {
             using Type = std::decay_t<decltype(val)>;
-            if constexpr (std::same_as<basic_big_float, Type>) {
+            if constexpr (std::same_as<basic_high_precision_float, Type>) {
                 return val.view_;
             } else if constexpr (std::same_as<double, Type>) {
                 return std::format("{}", val);
@@ -1100,7 +1100,7 @@ inline JSONC_RESULT(std::string) basic_jsonc<_Ordered>::get_any_number_view() co
     return std::visit(
         [&](const auto& val) -> JSONC_RESULT(std::string) {
             using Type = std::decay_t<decltype(val)>;
-            if constexpr (std::same_as<basic_big_float, Type> || std::same_as<basic_big_int, Type>) {
+            if constexpr (std::same_as<basic_high_precision_float, Type> || std::same_as<basic_big_int, Type>) {
                 return val.view_;
             } else if constexpr (std::same_as<double, Type> || std::same_as<std::int64_t, Type> || std::same_as<std::uint64_t, Type>) {
                 return std::format("{}", val);
@@ -1623,8 +1623,8 @@ inline std::optional<basic_jsonc<_Ordered>> basic_jsonc<_Ordered>::from_any_floa
     if (!is_int && num_str == view) {
         double res{};
         auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), res);
-        if (ec != std::errc() || ptr != num_str.data() + num_str.size() || std::isinf(res)) { return basic_big_float(num_str); }
-        if (float_keep_precision && !is_scientific && std::format("{}", res) != num_str) { return basic_big_float(num_str); }
+        if (ec != std::errc() || ptr != num_str.data() + num_str.size() || std::isinf(res)) { return basic_high_precision_float(num_str); }
+        if (float_keep_precision && !is_scientific && std::format("{}", res) != num_str) { return basic_high_precision_float(num_str); }
         return res;
     }
     return std::nullopt;
@@ -1652,8 +1652,8 @@ inline std::optional<basic_jsonc<_Ordered>> basic_jsonc<_Ordered>::from_any_numb
         } else {
             double res{};
             auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), res);
-            if (ec != std::errc() || ptr != num_str.data() + num_str.size() || std::isinf(res)) { return basic_big_float(num_str); }
-            if (float_keep_precision && !is_scientific && std::format("{}", res) != num_str) { return basic_big_float(num_str); }
+            if (ec != std::errc() || ptr != num_str.data() + num_str.size() || std::isinf(res)) { return basic_high_precision_float(num_str); }
+            if (float_keep_precision && !is_scientific && std::format("{}", res) != num_str) { return basic_high_precision_float(num_str); }
             return res;
         }
     }

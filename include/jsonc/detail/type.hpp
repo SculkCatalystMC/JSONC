@@ -57,10 +57,10 @@ struct basic_big_int {
     std::string view_;
 };
 
-struct basic_big_float {
-    basic_big_float() noexcept = default;
-    basic_big_float(std::string_view val) noexcept : view_(val) {}
-    bool        operator==(const basic_big_float& other) const noexcept { return view_ == other.view_; }
+struct basic_high_precision_float {
+    basic_high_precision_float() noexcept = default;
+    basic_high_precision_float(std::string_view val) noexcept : view_(val) {}
+    bool        operator==(const basic_high_precision_float& other) const noexcept { return view_ == other.view_; }
     std::string view_;
 };
 
@@ -251,8 +251,17 @@ public:
     };
 
 public:
-    using type_variant = std::
-        variant<std::monostate, bool, std::int64_t, std::uint64_t, double, std::string, basic_object, basic_array, basic_big_int, basic_big_float>;
+    using type_variant = std::variant<
+        std::monostate,
+        bool,
+        std::int64_t,
+        std::uint64_t,
+        double,
+        std::string,
+        basic_object,
+        basic_array,
+        basic_big_int,
+        basic_high_precision_float>;
 
     using object_type = basic_object;
     using array_type  = basic_array;
@@ -436,7 +445,7 @@ public:
     constexpr basic_jsonc(const basic_object& val) noexcept : storage_(val) {};
     constexpr basic_jsonc(const basic_array& val) noexcept : storage_(val) {};
     constexpr basic_jsonc(const basic_big_int& val) noexcept : storage_(val) {};
-    constexpr basic_jsonc(const basic_big_float& val) noexcept : storage_(val) {};
+    constexpr basic_jsonc(const basic_high_precision_float& val) noexcept : storage_(val) {};
 
     constexpr basic_jsonc(std::initializer_list<std::pair<std::string, basic_jsonc>> val) noexcept
     : storage_(std::in_place_type<basic_object>, val) {}
@@ -456,10 +465,10 @@ public:
     [[nodiscard]] constexpr bool is_number_big_inteager() const noexcept;
     [[nodiscard]] constexpr bool is_number_any_inteager() const noexcept;
     [[nodiscard]] constexpr bool is_number_float() const noexcept;
-    [[nodiscard]] constexpr bool is_number_big_float() const noexcept;
+    [[nodiscard]] constexpr bool is_number_high_precision_float() const noexcept;
     [[nodiscard]] constexpr bool is_number_any_float() const noexcept;
     [[nodiscard]] constexpr bool is_number() const noexcept;
-    [[nodiscard]] constexpr bool is_big_number() const noexcept;
+    [[nodiscard]] constexpr bool is_high_precision_number() const noexcept;
     [[nodiscard]] constexpr bool is_any_number() const noexcept;
     [[nodiscard]] constexpr bool is_string() const noexcept;
     [[nodiscard]] constexpr bool is_object() const noexcept;

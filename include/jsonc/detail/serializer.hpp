@@ -300,7 +300,7 @@ inline std::string dump_typed(basic_big_int val, bool, int, bool, bool) JSONC_EX
 }
 
 template <bool B>
-inline std::string dump_typed(basic_big_float val, bool, int, bool, bool) JSONC_EXCEPTION_TYPE {
+inline std::string dump_typed(basic_high_precision_float val, bool, int, bool, bool) JSONC_EXCEPTION_TYPE {
     return val.view_;
 }
 
