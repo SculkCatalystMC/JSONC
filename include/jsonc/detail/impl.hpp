@@ -884,10 +884,10 @@ inline JSONC_RESULT(bool) basic_jsonc<_Ordered>::erase(std::size_t first, std::s
 template <typename T>
     requires(std::is_arithmetic_v<T> && !std::same_as<T, bool>)
 constexpr T truncate_high_precision_number(std::string_view num_str) {
-    bool is_negative = num_str.starts_with('-');
-    num_str.remove_prefix(1);
-    if (num_str.starts_with('0')) { return 0; }
-    return is_negative ? std::numeric_limits<T>::lowest() : std::numeric_limits<T>::max();
+    T value{};
+    auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), value);
+    if (ec == std::errc{}) { return value; }
+    return num_str.starts_with('-') ? std::numeric_limits<T>::lowest() : std::numeric_limits<T>::max();
 }
 
 template <bool _Ordered>
@@ -899,11 +899,17 @@ inline basic_jsonc<_Ordered>::operator T() const JSONC_EXCEPTION_TYPE {
             using Type = std::decay_t<decltype(val)>;
             if constexpr (std::is_convertible_v<Type, T>) {
                 return static_cast<T>(val);
-            } else if constexpr (std::same_as<Type, basic_big_int> || std::same_as<Type, basic_high_precision_float>) {
+            } else if constexpr (std::same_as<Type, basic_big_int>) {
                 if constexpr (std::same_as<T, bool>) {
                     return val.view_ != "0";
                 } else {
                     return truncate_high_precision_number<T>(val.view_);
+                }
+            } else if constexpr (std::same_as<Type, basic_high_precision_float>) {
+                if constexpr (std::same_as<T, bool>) {
+                    return val.view_ != "0";
+                } else {
+                    return static_cast<T>(truncate_high_precision_number<double>(val.view_));
                 }
             } else {
 #ifdef JSONC_NO_EXCEPTION
@@ -1035,11 +1041,17 @@ inline JSONC_RESULT(T) basic_jsonc<_Ordered>::get() const JSONC_EXCEPTION_TYPE {
             using Type = std::decay_t<decltype(val)>;
             if constexpr (std::is_convertible_v<Type, T>) {
                 return static_cast<T>(val);
-            } else if constexpr (std::same_as<Type, basic_big_int> || std::same_as<Type, basic_high_precision_float>) {
+            } else if constexpr (std::same_as<Type, basic_big_int>) {
                 if constexpr (std::same_as<T, bool>) {
                     return val.view_ != "0";
                 } else {
                     return truncate_high_precision_number<T>(val.view_);
+                }
+            } else if constexpr (std::same_as<Type, basic_high_precision_float>) {
+                if constexpr (std::same_as<T, bool>) {
+                    return val.view_ != "0";
+                } else {
+                    return static_cast<T>(truncate_high_precision_number<double>(val.view_));
                 }
             } else {
                 _JSONC_TYPE_ERROR("bad type cast");
