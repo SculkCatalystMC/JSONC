@@ -1594,23 +1594,65 @@ inline bool is_int(std::string_view view) {
 
 template <bool _Ordered>
 inline std::optional<basic_jsonc<_Ordered>> basic_jsonc<_Ordered>::from_any_int(std::string_view view) noexcept {
-    if (view.empty()) { return std::nullopt; }
-    if (view.starts_with('-')) {
-        std::int64_t res{};
-        auto [ptr, ec] = std::from_chars(view.data(), view.data() + view.size(), res);
-        if (ec != std::errc() || ptr != view.data() + view.size()) {
-            if (is_int(view)) { return basic_big_int(view); }
-            return std::nullopt;
+    bool is_int{true};
+    bool negative{false};
+    auto num_str = extract_jsonc_number(view, is_int, negative);
+    if (is_int && num_str == view) {
+        if (negative) {
+            std::int64_t res{};
+            auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), res);
+            if (ec != std::errc() || ptr != num_str.data() + num_str.size()) { return basic_big_int(num_str); }
+            return res;
+        } else {
+            std::uint64_t res{};
+            auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), res);
+            if (ec != std::errc() || ptr != num_str.data() + num_str.size()) { return basic_big_int(num_str); }
+            return res;
         }
+    }
+    return std::nullopt;
+}
+
+template <bool _Ordered>
+inline std::optional<basic_jsonc<_Ordered>> basic_jsonc<_Ordered>::from_any_float(std::string_view view) noexcept {
+    bool is_int{true};
+    bool negative{false};
+    auto num_str = extract_jsonc_number(view, is_int, negative);
+    if (!is_int && num_str == view) {
+        double res{};
+        auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), res);
+        if (ec != std::errc() || ptr != num_str.data() + num_str.size() || std::isinf(res)) { return basic_big_float(num_str); }
         return res;
     }
-    std::uint64_t res{};
-    auto [ptr, ec] = std::from_chars(view.data(), view.data() + view.size(), res);
-    if (ec != std::errc() || ptr != view.data() + view.size()) {
-        if (is_int(view)) { return basic_big_int(view); }
-        return std::nullopt;
+    return std::nullopt;
+}
+
+template <bool _Ordered>
+inline std::optional<basic_jsonc<_Ordered>> basic_jsonc<_Ordered>::from_any_number(std::string_view view) noexcept {
+    bool is_int{true};
+    bool negative{false};
+    auto num_str = extract_jsonc_number(view, is_int, negative);
+    if (num_str == view) {
+        if (is_int) {
+            if (negative) {
+                std::int64_t res{};
+                auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), res);
+                if (ec != std::errc() || ptr != num_str.data() + num_str.size()) { return basic_big_int(num_str); }
+                return res;
+            } else {
+                std::uint64_t res{};
+                auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), res);
+                if (ec != std::errc() || ptr != num_str.data() + num_str.size()) { return basic_big_int(num_str); }
+                return res;
+            }
+        } else {
+            double res{};
+            auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), res);
+            if (ec != std::errc() || ptr != num_str.data() + num_str.size() || std::isinf(res)) { return basic_big_float(num_str); }
+            return res;
+        }
     }
-    return res;
+    return std::nullopt;
 }
 
 template <bool _Ordered>

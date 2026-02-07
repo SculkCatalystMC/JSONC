@@ -24,15 +24,16 @@ typedef void* jsonc_variant_t;
 typedef void* jsonc_object_t;
 typedef void* jsonc_array_t;
 
-#define JSONC_VALUE_TYPE_NULL     0
-#define JSONC_VALUE_TYPE_BOOLEAN  1
-#define JSONC_VALUE_TYPE_SIGNED   2
-#define JSONC_VALUE_TYPE_UNSIGNED 3
-#define JSONC_VALUE_TYPE_FLOAT    4
-#define JSONC_VALUE_TYPE_STRING   5
-#define JSONC_VALUE_TYPE_OBJECT   6
-#define JSONC_VALUE_TYPE_ARRAY    7
-#define JSONC_VALUE_TYPE_BIG_INT  8
+#define JSONC_VALUE_TYPE_NULL      0
+#define JSONC_VALUE_TYPE_BOOLEAN   1
+#define JSONC_VALUE_TYPE_SIGNED    2
+#define JSONC_VALUE_TYPE_UNSIGNED  3
+#define JSONC_VALUE_TYPE_FLOAT     4
+#define JSONC_VALUE_TYPE_STRING    5
+#define JSONC_VALUE_TYPE_OBJECT    6
+#define JSONC_VALUE_TYPE_ARRAY     7
+#define JSONC_VALUE_TYPE_BIG_INT   8
+#define JSONC_VALUE_TYPE_BIG_FLOAT 9
 
 JSONC_API const char* jsonc_get_library_version_string();
 
@@ -51,6 +52,7 @@ JSONC_API double   jsonc_variant_to_float(jsonc_variant_t handle);
 
 JSONC_API const char* jsonc_variant_as_string(jsonc_variant_t handle);
 JSONC_API const char* jsonc_variant_as_big_int(jsonc_variant_t handle);
+JSONC_API const char* jsonc_variant_as_big_float(jsonc_variant_t handle);
 
 JSONC_API jsonc_object_t jsonc_variant_as_object(jsonc_variant_t handle);
 JSONC_API jsonc_array_t  jsonc_variant_as_array(jsonc_variant_t handle);
@@ -67,6 +69,7 @@ jsonc_variant_dump(jsonc_variant_t handle, int indent, bool ensure_ascii, bool i
 
 JSONC_API bool           jsonc_object_contains(jsonc_object_t handle, const char* key);
 JSONC_API bool           jsonc_object_value_is_any_int_type(jsonc_object_t handle, const char* key);
+JSONC_API bool           jsonc_object_value_is_any_float_type(jsonc_object_t handle, const char* key);
 JSONC_API int            jsonc_object_get_type(jsonc_object_t handle, const char* key);
 JSONC_API bool           jsonc_object_get_bool(jsonc_object_t handle, const char* key);
 JSONC_API void           jsonc_object_set_bool(jsonc_object_t handle, const char* key, bool value);
@@ -78,6 +81,8 @@ JSONC_API const char*    jsonc_object_get_any_int(jsonc_object_t handle, const c
 JSONC_API bool           jsonc_object_set_any_int(jsonc_object_t handle, const char* key, const char* value);
 JSONC_API double         jsonc_object_get_float(jsonc_object_t handle, const char* key);
 JSONC_API void           jsonc_object_set_float(jsonc_object_t handle, const char* key, double value);
+JSONC_API const char*    jsonc_object_get_any_float(jsonc_object_t handle, const char* key); // Need release buffer
+JSONC_API bool           jsonc_object_set_any_float(jsonc_object_t handle, const char* key, const char* value);
 JSONC_API const char*    jsonc_object_get_string(jsonc_object_t handle, const char* key);
 JSONC_API void           jsonc_object_set_string(jsonc_object_t handle, const char* key, const char* value);
 JSONC_API jsonc_object_t jsonc_object_get_object(jsonc_object_t handle, const char* key);
@@ -106,6 +111,7 @@ JSONC_API bool        jsonc_object_equals(jsonc_object_t lhs, jsonc_object_t rhs
 
 JSONC_API int            jsonc_array_get_type(jsonc_array_t handle, size_t index);
 JSONC_API bool           jsonc_array_value_is_any_int_type(jsonc_array_t handle, size_t index);
+JSONC_API bool           jsonc_array_value_is_any_float_type(jsonc_array_t handle, size_t index);
 JSONC_API bool           jsonc_array_get_bool(jsonc_array_t handle, size_t index);
 JSONC_API void           jsonc_array_set_bool(jsonc_array_t handle, size_t index, bool value);
 JSONC_API void           jsonc_array_add_bool(jsonc_array_t handle, bool value);
@@ -121,6 +127,9 @@ JSONC_API bool           jsonc_array_add_any_int(jsonc_array_t handle, const cha
 JSONC_API double         jsonc_array_get_float(jsonc_array_t handle, size_t index);
 JSONC_API void           jsonc_array_set_float(jsonc_array_t handle, size_t index, double value);
 JSONC_API void           jsonc_array_add_float(jsonc_array_t handle, double value);
+JSONC_API const char*    jsonc_array_get_any_float(jsonc_array_t handle, size_t index); // Need release buffer
+JSONC_API bool           jsonc_array_set_any_float(jsonc_array_t handle, size_t index, const char* value);
+JSONC_API bool           jsonc_array_add_any_float(jsonc_array_t handle, const char* value);
 JSONC_API const char*    jsonc_array_get_string(jsonc_array_t handle, size_t index);
 JSONC_API void           jsonc_array_set_string(jsonc_array_t handle, size_t index, const char* value);
 JSONC_API void           jsonc_array_add_string(jsonc_array_t handle, const char* value);

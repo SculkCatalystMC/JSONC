@@ -662,8 +662,8 @@ public:
     static basic_jsonc array(std::initializer_list<basic_jsonc> val) JSONC_EXCEPTION_TYPE { return basic_array(val); }
 
     static std::optional<basic_jsonc> from_any_int(std::string_view view) noexcept;
-    static std::optional<basic_jsonc> from_any_float(std::string_view view) noexcept;  // TODO
-    static std::optional<basic_jsonc> from_any_number(std::string_view view) noexcept; // TODO
+    static std::optional<basic_jsonc> from_any_float(std::string_view view) noexcept;
+    static std::optional<basic_jsonc> from_any_number(std::string_view view) noexcept;
 
 private:
     friend class basic_object;

@@ -5,8 +5,8 @@
 #include "jsonc-c/jsonc.h"
 
 #define JSONC_VERSION_MAJOR 1
-#define JSONC_VERSION_MINOR 1
-#define JSONC_VERSION_PATCH 1
+#define JSONC_VERSION_MINOR 2
+#define JSONC_VERSION_PATCH 0
 
 #define _STRINGIZE(S) #S
 #define STRINGIZE(S)  _STRINGIZE(S)
@@ -44,6 +44,9 @@ double   jsonc_variant_to_float(jsonc_variant_t handle) { return static_cast<jso
 const char* jsonc_variant_as_string(jsonc_variant_t handle) { return static_cast<jsonc::ordered_jsonc*>(handle)->as<std::string>().c_str(); }
 const char* jsonc_variant_as_big_int(jsonc_variant_t handle) {
     return static_cast<jsonc::ordered_jsonc*>(handle)->as<jsonc::detail::basic_big_int>().view_.c_str();
+}
+const char* jsonc_variant_as_big_float(jsonc_variant_t handle) {
+    return static_cast<jsonc::ordered_jsonc*>(handle)->as<jsonc::detail::basic_big_float>().view_.c_str();
 }
 
 jsonc_object_t jsonc_variant_as_object(jsonc_variant_t handle) {
@@ -99,6 +102,10 @@ bool jsonc_object_value_is_any_int_type(jsonc_object_t handle, const char* key) 
     return static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key).is_number_any_inteager();
 }
 
+bool jsonc_object_value_is_any_float_type(jsonc_object_t handle, const char* key) {
+    return static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key).is_number_any_float();
+}
+
 int jsonc_object_get_type(jsonc_object_t handle, const char* key) {
     return static_cast<int>(static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key).type());
 }
@@ -124,6 +131,15 @@ double jsonc_object_get_float(jsonc_object_t handle, const char* key) {
 }
 void jsonc_object_set_float(jsonc_object_t handle, const char* key, double value) {
     static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key) = value;
+}
+
+const char* jsonc_object_get_any_float(jsonc_object_t handle, const char* key) {
+    return make_cstr(static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key).get_any_float_view());
+}
+bool jsonc_object_set_any_float(jsonc_object_t handle, const char* key, const char* value) {
+    auto val = jsonc::ordered_jsonc::from_any_float(value);
+    if (val) { static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key) = *val; }
+    return val.has_value();
 }
 
 const char* jsonc_object_get_string(jsonc_object_t handle, const char* key) {
@@ -245,6 +261,10 @@ bool jsonc_array_value_is_any_int_type(jsonc_array_t handle, size_t index) {
     return static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index).is_number_any_inteager();
 }
 
+bool jsonc_array_value_is_any_float_type(jsonc_array_t handle, size_t index) {
+    return static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index).is_number_any_float();
+}
+
 bool jsonc_array_get_bool(jsonc_array_t handle, size_t index) {
     return static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index).get<bool>();
 }
@@ -274,6 +294,20 @@ void jsonc_array_set_float(jsonc_array_t handle, size_t index, double value) {
     static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index) = value;
 }
 void jsonc_array_add_float(jsonc_array_t handle, double value) { static_cast<jsonc::ordered_jsonc::array_type*>(handle)->push_back(value); }
+
+const char* jsonc_array_get_any_float(jsonc_array_t handle, size_t index) {
+    return make_cstr(static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index).get_any_float_view());
+}
+bool jsonc_array_set_any_float(jsonc_array_t handle, size_t index, const char* value) {
+    auto val = jsonc::ordered_jsonc::from_any_float(value);
+    if (val) { static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index) = *val; }
+    return val.has_value();
+}
+bool jsonc_array_add_any_float(jsonc_array_t handle, const char* value) {
+    auto val = jsonc::ordered_jsonc::from_any_float(value);
+    if (val) { static_cast<jsonc::ordered_jsonc::array_type*>(handle)->push_back(*val); }
+    return val.has_value();
+}
 
 const char* jsonc_array_get_string(jsonc_array_t handle, size_t index) {
     return static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index).as<std::string>().c_str();
