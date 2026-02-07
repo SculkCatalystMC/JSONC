@@ -665,7 +665,7 @@ public:
         std::string_view content,
         bool             allow_trailing_comma = false,
         bool             ignore_comments      = false,
-        bool             float_keep_precision = false
+        bool             float_keep_precision = true
     ) JSONC_EXCEPTION_TYPE;
 
     static basic_jsonc object() JSONC_EXCEPTION_TYPE { return basic_object(); }

@@ -1697,9 +1697,9 @@ inline std::optional<basic_jsonc<_Ordered>> basic_jsonc<_Ordered>::from_any_numb
 template <bool _Ordered>
 inline JSONC_PARSE_RESULT(basic_jsonc<_Ordered>) basic_jsonc<_Ordered>::parse(
     std::string_view content,
-    bool             float_keep_precision,
     bool             allow_trailing_comma,
-    bool             ignore_comments
+    bool             ignore_comments,
+    bool             float_keep_precision
 ) JSONC_EXCEPTION_TYPE {
     return detail::parse_jsonc_type<_Ordered>(content, allow_trailing_comma, ignore_comments, float_keep_precision);
 }
