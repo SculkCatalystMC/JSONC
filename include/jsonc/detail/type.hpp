@@ -737,9 +737,10 @@ public:
 private:
     friend class basic_object;
     friend class basic_array;
-    type_variant             storage_{};
-    std::vector<std::string> before_comments_{};
-    std::vector<std::string> after_comments_{};
+    using comments_type = std::conditional_t<_AllowComments, std::vector<std::string>, std::monostate>;
+    type_variant                        storage_{};
+    [[no_unique_address]] comments_type before_comments_{};
+    [[no_unique_address]] comments_type after_comments_{};
 };
 
 } // namespace detail

@@ -1068,23 +1068,32 @@ inline std::string basic_jsonc<_IsOrdered, _AllowComments>::dump(
     bool multi_line_comments_format,
     bool global_comments
 ) const JSONC_EXCEPTION_TYPE {
-    auto result = std::visit(
-        [&](const auto& val) {
-            return dump_typed<_IsOrdered, _AllowComments>(val, ensure_ascii, indent, ignore_comments, multi_line_comments_format);
-        },
-        storage_
-    );
-    if (!ignore_comments && global_comments) {
-        auto before = format_comments(before_comments_, "", false, multi_line_comments_format);
-        if (!before.empty()) { result = before + result; }
-        auto after = format_comments(after_comments_, "", false, multi_line_comments_format);
-        if (!after.empty()) {
-            if (indent >= 0) { result.push_back(' '); }
-            result.append(after);
-            if (result.back() == '\n') { result.pop_back(); }
+    if constexpr (_AllowComments) {
+        auto result = std::visit(
+            [&](const auto& val) {
+                return dump_typed<_IsOrdered, _AllowComments>(val, ensure_ascii, indent, ignore_comments, multi_line_comments_format);
+            },
+            storage_
+        );
+        if (!ignore_comments && global_comments) {
+            auto before = format_comments(before_comments_, "", false, multi_line_comments_format);
+            if (!before.empty()) { result = before + result; }
+            auto after = format_comments(after_comments_, "", false, multi_line_comments_format);
+            if (!after.empty()) {
+                if (indent >= 0) { result.push_back(' '); }
+                result.append(after);
+                if (result.back() == '\n') { result.pop_back(); }
+            }
         }
+        return result;
+    } else {
+        return std::visit(
+            [&](const auto& val) {
+                return dump_typed<_IsOrdered, _AllowComments>(val, ensure_ascii, indent, ignore_comments, multi_line_comments_format);
+            },
+            storage_
+        );
     }
-    return result;
 }
 
 template <typename T>
