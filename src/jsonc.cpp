@@ -5,7 +5,7 @@
 #include "jsonc-c/jsonc.h"
 
 #define JSONC_VERSION_MAJOR 1
-#define JSONC_VERSION_MINOR 2
+#define JSONC_VERSION_MINOR 3
 #define JSONC_VERSION_PATCH 0
 
 #define _STRINGIZE(S) #S

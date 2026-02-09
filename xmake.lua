@@ -150,7 +150,7 @@ target("test")
         )
         add_cxflags("/utf-8", "/W4")
     else 
-        add_cxflags("-Wall", "-stdlib=libc++")
+        add_cxflags("-Wall", "-Wextra", "-stdlib=libc++")
         add_syslinks("c++")
     end
 

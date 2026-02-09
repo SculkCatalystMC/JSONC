@@ -1,7 +1,7 @@
 #pragma once
 #include "type.hpp"
 
-namespace jsonc::inline abi_v1_2_0::detail {
+namespace jsonc::inline abi_v1_3_0::detail {
 
 inline std::string format_comments(
     const std::vector<std::string>& comments,
@@ -73,12 +73,12 @@ inline std::string& fix_indent(std::string& str, std::string_view indent_space) 
     return str;
 }
 
-template <bool B>
+template <bool B, bool A>
 inline std::string dump_typed(const std::monostate&, bool, int, bool, bool) JSONC_EXCEPTION_TYPE {
     return "null";
 }
 
-template <bool B>
+template <bool B, bool A>
 inline std::string dump_typed(const std::string& str, bool ensure_ascii, int, bool, bool) JSONC_EXCEPTION_TYPE {
     if (str.empty()) { return "\"\""; }
 
@@ -173,13 +173,13 @@ inline std::string dump_typed(const std::string& str, bool ensure_ascii, int, bo
     return "\"" + result + "\"";
 }
 
-template <bool B>
+template <bool B, bool A>
 inline std::string dump_typed(
-    const typename basic_jsonc<B>::array_type& val,
-    bool                                       ensure_ascii,
-    int                                        indent,
-    bool                                       ignore_comments,
-    bool                                       multi_line_comments_format
+    const typename basic_jsonc<B, A>::array_type& val,
+    bool                                          ensure_ascii,
+    int                                           indent,
+    bool                                          ignore_comments,
+    bool                                          multi_line_comments_format
 ) JSONC_EXCEPTION_TYPE {
     std::string result{"["};
 
@@ -195,19 +195,23 @@ inline std::string dump_typed(
         i--;
         if (line_feed) { result += indent_space; }
 
-        if (!ignore_comments && element.has_before_comments()) {
-            result += format_comments(element.before_comments(), indent_space, !line_feed, multi_line_comments_format);
-            result += indent_space;
+        if constexpr (A) {
+            if (!ignore_comments && element.has_before_comments()) {
+                result += format_comments(element.before_comments(), indent_space, !line_feed, multi_line_comments_format);
+                result += indent_space;
+            }
         }
         auto value  = element.dump(indent, ensure_ascii, ignore_comments, multi_line_comments_format, false);
         result     += fix_indent(value, indent_space);
 
         if (i > 0) { result.push_back(','); }
 
-        if (!ignore_comments && element.has_after_comments()) {
-            if (line_feed) { result.push_back(' '); }
-            result += format_comments(element.after_comments(), indent_space, !line_feed, multi_line_comments_format);
-            if (line_feed) { result.pop_back(); }
+        if constexpr (A) {
+            if (!ignore_comments && element.has_after_comments()) {
+                if (line_feed) { result.push_back(' '); }
+                result += format_comments(element.after_comments(), indent_space, !line_feed, multi_line_comments_format);
+                if (line_feed) { result.pop_back(); }
+            }
         }
 
         if (line_feed) { result.push_back('\n'); }
@@ -217,13 +221,13 @@ inline std::string dump_typed(
     return result;
 }
 
-template <bool B>
+template <bool B, bool A>
 inline std::string dump_typed(
-    const typename basic_jsonc<B>::object_type& val,
-    bool                                        ensure_ascii,
-    int                                         indent,
-    bool                                        ignore_comments,
-    bool                                        multi_line_comments_format
+    const typename basic_jsonc<B, A>::object_type& val,
+    bool                                           ensure_ascii,
+    int                                            indent,
+    bool                                           ignore_comments,
+    bool                                           multi_line_comments_format
 ) JSONC_EXCEPTION_TYPE {
     std::string result{"{"};
 
@@ -239,45 +243,53 @@ inline std::string dump_typed(
         i--;
         if (line_feed) { result += indent_space; }
 
-        if (!ignore_comments && val.has_key_before_comments(k)) {
+        if constexpr (A) {
+            if (!ignore_comments && val.has_key_before_comments(k)) {
 #ifdef JSONC_USE_EXPECTED
-            result += format_comments(val.key_before_comments(k)->get(), indent_space, !line_feed, multi_line_comments_format);
+                result += format_comments(val.key_before_comments(k)->get(), indent_space, !line_feed, multi_line_comments_format);
 #else
-            result += format_comments(val.key_before_comments(k), indent_space, !line_feed, multi_line_comments_format);
+                result += format_comments(val.key_before_comments(k), indent_space, !line_feed, multi_line_comments_format);
 #endif
-            if (line_feed) { result += indent_space; }
+                if (line_feed) { result += indent_space; }
+            }
         }
 
-        result += dump_typed<B>(k, indent, ensure_ascii, ignore_comments, multi_line_comments_format);
+        result += dump_typed<B, A>(k, indent, ensure_ascii, ignore_comments, multi_line_comments_format);
 
-        if (!ignore_comments && val.has_key_after_comments(k)) {
+        if constexpr (A) {
+            if (!ignore_comments && val.has_key_after_comments(k)) {
 #ifdef JSONC_USE_EXPECTED
-            auto after_comments = val.key_after_comments(k)->get();
+                auto after_comments = val.key_after_comments(k)->get();
 #else
-            auto after_comments = val.key_after_comments(k);
+                auto after_comments = val.key_after_comments(k);
 #endif
-            if (line_feed) { result.push_back(' '); }
-            result += format_comments(after_comments, indent_space, true, multi_line_comments_format);
-            if (line_feed && after_comments.size() > 1) { result += indent_space; }
+                if (line_feed) { result.push_back(' '); }
+                result += format_comments(after_comments, indent_space, true, multi_line_comments_format);
+                if (line_feed && after_comments.size() > 1) { result += indent_space; }
+            }
         }
         result.push_back(':');
 
         if (indent >= 0) { result += ' '; }
 
         std::string value{};
-        if (!ignore_comments && v.has_before_comments()) {
-            value += format_comments(v.before_comments(), indent_space, true, multi_line_comments_format);
-            if (line_feed) { value.push_back(' '); }
+        if constexpr (A) {
+            if (!ignore_comments && v.has_before_comments()) {
+                value += format_comments(v.before_comments(), indent_space, true, multi_line_comments_format);
+                if (line_feed) { value.push_back(' '); }
+            }
         }
         value  += v.dump(indent, ensure_ascii, ignore_comments, multi_line_comments_format, false);
         result += fix_indent(value, indent_space);
 
         if (i > 0) { result.push_back(','); }
 
-        if (!ignore_comments && v.has_after_comments()) {
-            if (line_feed) { result.push_back(' '); }
-            result += format_comments(v.after_comments(), indent_space, !line_feed, multi_line_comments_format);
-            if (line_feed) { result.pop_back(); }
+        if constexpr (A) {
+            if (!ignore_comments && v.has_after_comments()) {
+                if (line_feed) { result.push_back(' '); }
+                result += format_comments(v.after_comments(), indent_space, !line_feed, multi_line_comments_format);
+                if (line_feed) { result.pop_back(); }
+            }
         }
 
         if (line_feed) { result.push_back('\n'); }
@@ -288,20 +300,20 @@ inline std::string dump_typed(
     return result;
 }
 
-template <bool B, typename T>
+template <bool B, bool A, typename T>
     requires std::is_arithmetic_v<T>
 inline std::string dump_typed(T val, bool, int, bool, bool) JSONC_EXCEPTION_TYPE {
     return std::format("{}", val);
 }
 
-template <bool B>
+template <bool B, bool A>
 inline std::string dump_typed(basic_big_int val, bool, int, bool, bool) JSONC_EXCEPTION_TYPE {
     return val.view_;
 }
 
-template <bool B>
+template <bool B, bool A>
 inline std::string dump_typed(basic_high_precision_float val, bool, int, bool, bool) JSONC_EXCEPTION_TYPE {
     return val.view_;
 }
 
-} // namespace jsonc::inline abi_v1_2_0::detail
+} // namespace jsonc::inline abi_v1_3_0::detail

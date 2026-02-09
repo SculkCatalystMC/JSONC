@@ -16,7 +16,7 @@
 
 
 #ifndef JSONC_NO_EXCEPTION
-namespace jsonc::inline abi_v1_2_0::detail {
+namespace jsonc::inline abi_v1_3_0::detail {
 
 class out_of_range : public std::runtime_error {
 public:
@@ -40,16 +40,16 @@ public:
 
 #define _JSONC_THROW_EXCEPTION(TYPE, EXCEPTION) throw TYPE(EXCEPTION)
 
-#define JSONC_RESULT(TYPE)         TYPE
-#define _JSONC_MAKE_RESULT(RESULT) RESULT
+#define JSONC_RESULT(...)       __VA_ARGS__
+#define _JSONC_MAKE_RESULT(...) __VA_ARGS__
 #define _JSONC_MAKE_VOID_RESULT()
 
 #define JSONC_EXCEPTION_TYPE
 
-} // namespace jsonc::inline abi_v1_2_0::detail
+} // namespace jsonc::inline abi_v1_3_0::detail
 #else
 #ifdef JSONC_USE_EXPECTED
-namespace jsonc::inline abi_v1_2_0::detail {
+namespace jsonc::inline abi_v1_3_0::detail {
 
 enum class error_code : std::uint8_t {
     out_of_range = 0,
@@ -90,18 +90,18 @@ template <typename T = void>
     return Result<void>{};
 }
 
-#define _JSONC_MAKE_RESULT(RESULT) make_result(RESULT)
-#define _JSONC_MAKE_VOID_RESULT()  make_result()
-#define JSONC_RESULT(TYPE)         detail::Result<TYPE>
+#define _JSONC_MAKE_RESULT(...)   make_result(__VA_ARGS__)
+#define _JSONC_MAKE_VOID_RESULT() make_result()
+#define JSONC_RESULT(...)         detail::Result<__VA_ARGS__>
 
-} // namespace jsonc::inline abi_v1_2_0::detail
+} // namespace jsonc::inline abi_v1_3_0::detail
 
 #else
 #define _JSONC_THROW_EXCEPTION(TYPE, EXCEPTION) std::unreachable()
 
 #define _JSONC_MAKE_RESULT(RESULT) RESULT
 #define _JSONC_MAKE_VOID_RESULT()
-#define JSONC_RESULT(TYPE) TYPE
+#define JSONC_RESULT(...) __VA_ARGS__
 #endif
 #define JSONC_EXCEPTION_TYPE noexcept
 #endif
@@ -111,9 +111,9 @@ template <typename T = void>
 #define _JSONC_KEY_ERROR(ERROR)    _JSONC_THROW_EXCEPTION(parse_error, ERROR)
 #if !defined(JSONC_NO_EXCEPTION) || defined(JSONC_USE_EXPECTED)
 #define _JSONC_PARSE_ERROR(ERROR) _JSONC_THROW_EXCEPTION(key_error, std::format("jsonc parse error: {}", ERROR))
-#define JSONC_PARSE_RESULT(TYPE)  JSONC_RESULT(TYPE)
+#define JSONC_PARSE_RESULT(...)   JSONC_RESULT(__VA_ARGS__)
 #else
 #include <optional>
 #define _JSONC_PARSE_ERROR(ERROR) return std::nullopt
-#define JSONC_PARSE_RESULT(TYPE)  std::optional<TYPE>
+#define JSONC_PARSE_RESULT(...)   std::optional<__VA_ARGS__>
 #endif
