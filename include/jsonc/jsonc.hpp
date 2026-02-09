@@ -11,7 +11,4 @@ using ordered_json = detail::basic_jsonc<true, false>;
 using jsonc         = detail::basic_jsonc<false, true>;
 using ordered_jsonc = detail::basic_jsonc<true, true>;
 
-using json_with_comments         = detail::basic_jsonc<false, true>;
-using ordered_json_with_comments = detail::basic_jsonc<true, true>;
-
 } // namespace jsonc

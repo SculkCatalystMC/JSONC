@@ -1928,7 +1928,7 @@ inline JSONC_PARSE_RESULT(basic_jsonc<_IsOrdered, _AllowComments>) basic_jsonc<_
     bool             ignore_comments,
     bool             float_keep_precision
 ) JSONC_EXCEPTION_TYPE {
-    return detail::parse_jsonc_type<_IsOrdered, _AllowComments>(content, allow_trailing_comma, ignore_comments, float_keep_precision);
+    return detail::parse_basic_jsonc<_IsOrdered, _AllowComments>(content, allow_trailing_comma, ignore_comments, float_keep_precision);
 }
 
 } // namespace jsonc::inline abi_v1_3_0::detail

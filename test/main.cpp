@@ -7,7 +7,12 @@ int main() {
     auto        file = std::ifstream("./bin/test.jsonc");
     std::string content{std::istreambuf_iterator<char>(file), {}};
 #ifdef JSONC_USE_EXPECTED
-    auto json              = *jsonc::ordered_jsonc::parse(content);
+    auto res = jsonc::ordered_json::parse(content, false, true);
+    if (!res) {
+        std::println("{}", res.error().mErrorInfo);
+        return 1;
+    }
+    auto json              = *res;
     json["new"]->get()     = 3.233;
     json["new_map"]->get() = {
         {"5", 6},
@@ -16,7 +21,7 @@ int main() {
         {"3", 4},
     };
     std::map<int, int> a{};
-    json["new_vec"]->get()         = jsonc::ordered_jsonc::array({1, 2, 3, 4, 5, 6, 7, 8});
+    json["new_vec"]->get()         = jsonc::ordered_json::array({1, 2, 3, 4, 5, 6, 7, 8});
     std::map<std::string, int> map = json["new_map"]->get();
     auto                       vec = *json["new_vec"]->get().get<std::vector<int>>();
     std::println("{}", json.dump());
@@ -28,14 +33,23 @@ int main() {
     return 0;
 #else
     try {
-        auto json       = jsonc::ordered_jsonc::parse(content);
+#ifdef JSONC_NO_EXCEPTION
+        auto res = jsonc::ordered_json::parse(content, false, true);
+        if (!res) {
+            std::println("parse failed");
+            return 1;
+        }
+        auto json = *res;
+#else
+        auto json = jsonc::ordered_json::parse(content, false, true);
+#endif
         json["new_map"] = {
             {"5", 6},
             {"7", 8},
             {"1", 2},
             {"3", 4},
         };
-        json["new_vec"]                = jsonc::jsonc::array({1, 2, 3, 4, 5, 6, 7, 8});
+        json["new_vec"]                = jsonc::ordered_json::array({1, 2, 3, 4, 5, 6, 7, 8});
         std::map<std::string, int> map = json["new_map"];
         auto                       vec = json["new_vec"].get<std::vector<int>>();
         std::println("{}", json.dump());
