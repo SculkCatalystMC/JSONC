@@ -69,7 +69,7 @@ class basic_jsonc {
 public:
     class basic_object {
     public:
-        using map_type               = std::conditional_t<_IsOrdered, ordered_string_hash_map<basic_jsonc>, string_map<basic_jsonc>>;
+        using map_type               = std::conditional_t<_IsOrdered, ordered_string_map<basic_jsonc>, string_map<basic_jsonc>>;
         using iterator               = map_type::iterator;
         using const_iterator         = map_type::const_iterator;
         using reverse_iterator       = map_type::reverse_iterator;
