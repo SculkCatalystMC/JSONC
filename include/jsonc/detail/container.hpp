@@ -40,6 +40,15 @@ public:
 
 public:
     [[nodiscard]] ordered_string_map() = default;
+    [[nodiscard]] ordered_string_map(const ordered_string_map& other) : storage_(other.storage_) {
+        for (auto it = storage_.begin(); it != storage_.end(); ++it) { entry_.emplace(it->first, it); }
+    }
+    ordered_string_map& operator=(const ordered_string_map& other) {
+        storage_ = other.storage_;
+        entry_.clear();
+        for (auto it = storage_.begin(); it != storage_.end(); ++it) { entry_.emplace(it->first, it); }
+        return *this;
+    }
 
     [[nodiscard]] std::size_t size() const noexcept { return storage_.size(); }
     [[nodiscard]] bool        empty() const noexcept { return storage_.empty(); }

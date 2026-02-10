@@ -306,6 +306,7 @@ inline JSONC_PARSE_RESULT(basic_jsonc<B, A>) parse_number(
         }
     } else {
         while (num_str.ends_with('0')) { num_str.remove_suffix(1); }
+        if (num_str.ends_with('.')) { num_str.remove_suffix(1); }
         double res{};
         auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), res);
         if (ec != std::errc() || ptr != num_str.data() + num_str.size() || std::isinf(res)) {
