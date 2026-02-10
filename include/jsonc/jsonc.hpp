@@ -1,5 +1,4 @@
 #pragma once
-#include "detail/deserializer.hpp"
 #include "detail/impl.hpp"
 #include "detail/type.hpp"
 
