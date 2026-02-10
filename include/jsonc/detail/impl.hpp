@@ -131,7 +131,7 @@ inline const std::string& basic_jsonc<_IsOrdered, _AllowComments>::basic_object:
     } else {
         auto it = std::next(storage_.begin(), static_cast<std::map<std::string, basic_jsonc<_IsOrdered, _AllowComments>>::difference_type>(index));
         if (it != storage_.end()) { return it->first; }
-        std::unreachable();
+        std::abort();
     }
 }
 
@@ -822,9 +822,8 @@ inline constexpr std::string_view basic_jsonc<_IsOrdered, _AllowComments>::type_
         return "big inteager";
     case value_type::number_high_precision_float:
         return "high-precision float";
-    default:
-        std::unreachable();
     }
+    std::unreachable();
 }
 
 template <bool _IsOrdered, bool _AllowComments>
@@ -1016,7 +1015,7 @@ inline basic_jsonc<_IsOrdered, _AllowComments>::operator T() const JSONC_EXCEPTI
                 }
             } else {
 #ifdef JSONC_NO_EXCEPTION
-                std::unreachable();
+                std::abort();
 #else
                 _JSONC_TYPE_ERROR("bad type cast");
 #endif
@@ -1032,7 +1031,7 @@ template <typename T>
 inline basic_jsonc<_IsOrdered, _AllowComments>::operator T() const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<std::string>(&storage_)) { return *storage; }
 #ifdef JSONC_NO_EXCEPTION
-    std::unreachable();
+    std::abort();
 #else
     _JSONC_TYPE_ERROR("bad type cast");
 #endif
@@ -1043,7 +1042,7 @@ template <is_array_like T>
 inline basic_jsonc<_IsOrdered, _AllowComments>::operator T() const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_array>(&storage_)) { return T(storage->begin(), storage->end()); }
 #ifdef JSONC_NO_EXCEPTION
-    std::unreachable();
+    std::abort();
 #else
     _JSONC_TYPE_ERROR("bad type cast");
 #endif
@@ -1054,7 +1053,7 @@ template <is_object_like T>
 inline basic_jsonc<_IsOrdered, _AllowComments>::operator T() const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return T(storage->begin(), storage->end()); }
 #ifdef JSONC_NO_EXCEPTION
-    std::unreachable();
+    std::abort();
 #else
     _JSONC_TYPE_ERROR("bad type cast");
 #endif

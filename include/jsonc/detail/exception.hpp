@@ -97,7 +97,7 @@ template <typename T = void>
 } // namespace jsonc::inline abi_v1_3_0::detail
 
 #else
-#define _JSONC_THROW_EXCEPTION(TYPE, EXCEPTION) std::unreachable()
+#define _JSONC_THROW_EXCEPTION(TYPE, EXCEPTION) std::abort()
 
 #define _JSONC_MAKE_RESULT(RESULT) RESULT
 #define _JSONC_MAKE_VOID_RESULT()
