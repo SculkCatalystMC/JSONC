@@ -1866,7 +1866,7 @@ inline std::optional<basic_jsonc<_IsOrdered, _AllowComments>> basic_jsonc<_IsOrd
     bool is_negative{false};
     bool is_scientific{false};
     auto num_str = extract_jsonc_number(view, is_int, is_negative, is_scientific);
-    if (is_int && num_str == view) {
+    if (is_int && view.empty()) {
         if (is_negative) {
             std::int64_t res{};
             auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), res);
@@ -1889,7 +1889,7 @@ basic_jsonc<_IsOrdered, _AllowComments>::from_any_float(std::string_view view, b
     bool is_negative{false};
     bool is_scientific{false};
     auto num_str = extract_jsonc_number(view, is_int, is_negative, is_scientific);
-    if (!is_int && num_str == view) {
+    if (!is_int && view.empty()) {
         double res{};
         auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), res);
         if (ec != std::errc() || ptr != num_str.data() + num_str.size() || std::isinf(res)) { return basic_high_precision_float(num_str); }
@@ -1906,7 +1906,7 @@ basic_jsonc<_IsOrdered, _AllowComments>::from_any_number(std::string_view view, 
     bool is_negative{false};
     bool is_scientific{false};
     auto num_str = extract_jsonc_number(view, is_int, is_negative, is_scientific);
-    if (num_str == view) {
+    if (view.empty()) {
         if (is_int) {
             if (is_negative) {
                 std::int64_t res{};
