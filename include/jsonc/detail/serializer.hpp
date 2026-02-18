@@ -1,7 +1,7 @@
 #pragma once
 #include "type.hpp"
 
-namespace jsonc::inline abi_v1_3_0::detail {
+namespace jsonc::inline abi_v1_3_1::detail {
 
 inline std::string format_comments(
     const std::vector<std::string>& comments,
@@ -316,4 +316,4 @@ inline std::string dump_typed(basic_high_precision_float val, bool, int, bool, b
     return val.view_;
 }
 
-} // namespace jsonc::inline abi_v1_3_0::detail
+} // namespace jsonc::inline abi_v1_3_1::detail

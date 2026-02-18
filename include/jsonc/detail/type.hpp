@@ -7,7 +7,7 @@
 #include <vector>
 
 namespace jsonc {
-inline namespace abi_v1_3_0 {
+inline namespace abi_v1_3_1 {
 
 enum class value_type : std::uint8_t {
     null                        = 0,
@@ -764,6 +764,6 @@ private:
 
 } // namespace detail
 
-} // namespace abi_v1_3_0
+} // namespace abi_v1_3_1
 
 } // namespace jsonc

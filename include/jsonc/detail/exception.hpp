@@ -16,7 +16,7 @@
 
 
 #ifndef JSONC_NO_EXCEPTION
-namespace jsonc::inline abi_v1_3_0::detail {
+namespace jsonc::inline abi_v1_3_1::detail {
 
 class out_of_range : public std::runtime_error {
 public:
@@ -46,10 +46,10 @@ public:
 
 #define JSONC_EXCEPTION_TYPE
 
-} // namespace jsonc::inline abi_v1_3_0::detail
+} // namespace jsonc::inline abi_v1_3_1::detail
 #else
 #ifdef JSONC_USE_EXPECTED
-namespace jsonc::inline abi_v1_3_0::detail {
+namespace jsonc::inline abi_v1_3_1::detail {
 
 enum class error_code : std::uint8_t {
     out_of_range = 0,
@@ -94,7 +94,7 @@ template <typename T = void>
 #define _JSONC_MAKE_VOID_RESULT() make_result()
 #define JSONC_RESULT(...)         detail::Result<__VA_ARGS__>
 
-} // namespace jsonc::inline abi_v1_3_0::detail
+} // namespace jsonc::inline abi_v1_3_1::detail
 
 #else
 #define _JSONC_THROW_EXCEPTION(TYPE, EXCEPTION) std::abort()

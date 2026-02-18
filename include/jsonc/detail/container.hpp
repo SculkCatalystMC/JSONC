@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <utility>
 
-namespace jsonc::inline abi_v1_3_0::detail {
+namespace jsonc::inline abi_v1_3_1::detail {
 
 struct string_hash {
     using is_transparent = void;
@@ -126,4 +126,4 @@ private:
     entry_type   entry_;
 };
 
-} // namespace jsonc::inline abi_v1_3_0::detail
+} // namespace jsonc::inline abi_v1_3_1::detail

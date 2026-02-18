@@ -7,7 +7,7 @@
 #include <limits>
 #include <ranges>
 
-namespace jsonc::inline abi_v1_3_0::detail {
+namespace jsonc::inline abi_v1_3_1::detail {
 
 inline std::vector<std::string> split_comments(std::string_view comment) noexcept {
     std::vector<std::string> result{};
@@ -2091,4 +2091,4 @@ inline JSONC_PARSE_RESULT(basic_jsonc<_IsOrdered, _AllowComments>) basic_jsonc<_
     return detail::parse_basic_jsonc<_IsOrdered, _AllowComments>(content, allow_trailing_comma, ignore_comments, float_keep_precision);
 }
 
-} // namespace jsonc::inline abi_v1_3_0::detail
+} // namespace jsonc::inline abi_v1_3_1::detail
