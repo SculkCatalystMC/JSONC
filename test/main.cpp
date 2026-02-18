@@ -21,7 +21,7 @@ int main() {
         {"3", 4},
     };
     std::map<int, int> a{};
-    json["new_vec"]->get()         = jsonc::ordered_json::array({1, 2, 3, 4, 5, 6, 7, 8});
+    json["new_vec"]->get()         = jsonc::jsonc::array({1, 2, 3, 4, 5, 6, 7, 8});
     std::map<std::string, int> map = json["new_map"]->get();
     auto                       vec = *json["new_vec"]->get().get<std::vector<int>>();
     std::println("{}", json.dump());

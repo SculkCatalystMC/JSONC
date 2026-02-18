@@ -796,6 +796,150 @@ basic_jsonc<_IsOrdered, _AllowComments>::basic_array::operator==(const basic_jso
 }
 
 template <bool _IsOrdered, bool _AllowComments>
+template <bool IsOrdered, bool AllowComments>
+inline constexpr basic_jsonc<_IsOrdered, _AllowComments>::basic_jsonc(const basic_jsonc<IsOrdered, AllowComments>& other) noexcept {
+    if constexpr (_IsOrdered == IsOrdered && _AllowComments == AllowComments) {
+        storage_ = other.storage_;
+        if constexpr (_AllowComments && AllowComments) {
+            before_comments_ = other.before_comments_;
+            after_comments_  = other.after_comments_;
+        }
+    } else {
+        std::visit(
+            [&](const auto val) {
+                using VT = std::remove_cvref_t<decltype(val)>;
+                if constexpr (std::same_as<VT, typename basic_jsonc<IsOrdered, AllowComments>::object_type>) {
+                    auto value = object_type();
+                    for (const auto& [k, v] : val.storage_) { value[k] = basic_jsonc(v); }
+                    if constexpr (_AllowComments && AllowComments) { value.key_comments_ = other.key_comments_; }
+                    storage_ = std::move(value);
+                } else if constexpr (std::same_as<VT, typename basic_jsonc<IsOrdered, AllowComments>::array_type>) {
+                    auto value = array_type();
+                    for (const auto& ele : val.storage_) { value.push_back(basic_jsonc(ele)); }
+                    storage_ = std::move(value);
+                } else {
+                    storage_ = val;
+                }
+            },
+            other.storage_
+        );
+        if constexpr (_AllowComments && AllowComments) {
+            before_comments_ = other.before_comments_;
+            after_comments_  = other.after_comments_;
+        }
+    }
+}
+
+template <bool _IsOrdered, bool _AllowComments>
+template <bool IsOrdered, bool AllowComments>
+inline constexpr basic_jsonc<_IsOrdered, _AllowComments>::basic_jsonc(basic_jsonc<IsOrdered, AllowComments>&& other) noexcept {
+    if constexpr (_IsOrdered == IsOrdered && _AllowComments == AllowComments) {
+        storage_ = std::move(other.storage_);
+        if constexpr (_AllowComments && AllowComments) {
+            before_comments_ = std::move(other.before_comments_);
+            after_comments_  = std::move(other.after_comments_);
+        }
+    } else {
+        std::visit(
+            [&](const auto val) {
+                using VT = std::remove_cvref_t<decltype(val)>;
+                if constexpr (std::same_as<VT, typename basic_jsonc<IsOrdered, AllowComments>::object_type>) {
+                    auto value = object_type();
+                    for (auto&& [k, v] : val.storage_) { value[k] = basic_jsonc(std::move(v)); }
+                    if constexpr (_AllowComments && AllowComments) { value.key_comments_ = std::move(other.key_comments_); }
+                    storage_ = std::move(value);
+                } else if constexpr (std::same_as<VT, typename basic_jsonc<IsOrdered, AllowComments>::array_type>) {
+                    auto value = array_type();
+                    for (auto&& ele : val.storage_) { value.push_back(basic_jsonc(std::move(ele))); }
+                    storage_ = std::move(value);
+                } else {
+                    storage_ = std::move(val);
+                }
+            },
+            other.storage_
+        );
+        if constexpr (_AllowComments && AllowComments) {
+            before_comments_ = std::move(other.before_comments_);
+            after_comments_  = std::move(other.after_comments_);
+        }
+    }
+}
+
+template <bool _IsOrdered, bool _AllowComments>
+template <bool IsOrdered, bool AllowComments>
+inline constexpr basic_jsonc<_IsOrdered, _AllowComments>&
+basic_jsonc<_IsOrdered, _AllowComments>::operator=(const basic_jsonc<IsOrdered, AllowComments>& other) noexcept {
+    if constexpr (_IsOrdered == IsOrdered && _AllowComments == AllowComments) {
+        storage_ = other.storage_;
+        if constexpr (_AllowComments && AllowComments) {
+            before_comments_ = other.before_comments_;
+            after_comments_  = other.after_comments_;
+        }
+    } else {
+        std::visit(
+            [&](const auto val) {
+                using VT = std::remove_cvref_t<decltype(val)>;
+                if constexpr (std::same_as<VT, typename basic_jsonc<IsOrdered, AllowComments>::object_type>) {
+                    auto value = object_type();
+                    for (const auto& [k, v] : val.storage_) { value[k] = basic_jsonc(v); }
+                    if constexpr (_AllowComments && AllowComments) { value.key_comments_ = other.key_comments_; }
+                    storage_ = std::move(value);
+                } else if constexpr (std::same_as<VT, typename basic_jsonc<IsOrdered, AllowComments>::array_type>) {
+                    auto value = array_type();
+                    for (const auto& ele : val.storage_) { value.push_back(basic_jsonc(ele)); }
+                    storage_ = std::move(value);
+                } else {
+                    storage_ = val;
+                }
+            },
+            other.storage_
+        );
+        if constexpr (_AllowComments && AllowComments) {
+            before_comments_ = other.before_comments_;
+            after_comments_  = other.after_comments_;
+        }
+    }
+    return *this;
+}
+
+template <bool _IsOrdered, bool _AllowComments>
+template <bool IsOrdered, bool AllowComments>
+inline constexpr basic_jsonc<_IsOrdered, _AllowComments>&
+basic_jsonc<_IsOrdered, _AllowComments>::operator=(basic_jsonc<IsOrdered, AllowComments>&& other) noexcept {
+    if constexpr (_IsOrdered == IsOrdered && _AllowComments == AllowComments) {
+        storage_ = std::move(other.storage_);
+        if constexpr (_AllowComments && AllowComments) {
+            before_comments_ = std::move(other.before_comments_);
+            after_comments_  = std::move(other.after_comments_);
+        }
+    } else {
+        std::visit(
+            [&](const auto val) {
+                using VT = std::remove_cvref_t<decltype(val)>;
+                if constexpr (std::same_as<VT, typename basic_jsonc<IsOrdered, AllowComments>::object_type>) {
+                    auto value = object_type();
+                    for (auto&& [k, v] : val.storage_) { value[k] = basic_jsonc(std::move(v)); }
+                    if constexpr (_AllowComments && AllowComments) { value.key_comments_ = std::move(other.key_comments_); }
+                    storage_ = std::move(value);
+                } else if constexpr (std::same_as<VT, typename basic_jsonc<IsOrdered, AllowComments>::array_type>) {
+                    auto value = array_type();
+                    for (auto&& ele : val.storage_) { value.push_back(basic_jsonc(std::move(ele))); }
+                    storage_ = std::move(value);
+                } else {
+                    storage_ = std::move(val);
+                }
+            },
+            other.storage_
+        );
+        if constexpr (_AllowComments && AllowComments) {
+            before_comments_ = std::move(other.before_comments_);
+            after_comments_  = std::move(other.after_comments_);
+        }
+    }
+    return *this;
+}
+
+template <bool _IsOrdered, bool _AllowComments>
 inline constexpr value_type basic_jsonc<_IsOrdered, _AllowComments>::type() const noexcept {
     return static_cast<value_type>(storage_.index());
 }
@@ -996,13 +1140,13 @@ constexpr T truncate_high_precision_number(std::string_view num_str) {
 template <bool _IsOrdered, bool _AllowComments>
 template <typename T>
     requires std::is_arithmetic_v<T>
-inline basic_jsonc<_IsOrdered, _AllowComments>::operator T() const JSONC_EXCEPTION_TYPE {
+inline constexpr basic_jsonc<_IsOrdered, _AllowComments>::operator T() const JSONC_EXCEPTION_TYPE {
     return std::visit(
         [](const auto& val) -> T {
             using Type = std::decay_t<decltype(val)>;
             if constexpr (std::is_convertible_v<Type, T>) {
                 return static_cast<T>(val);
-            } else if constexpr (std::same_as<Type, basic_big_int>) {
+            } else if constexpr (std::same_as<Type, basic_big_integer>) {
                 if constexpr (std::same_as<T, bool>) {
                     return val.view_ != "0";
                 } else {
@@ -1029,7 +1173,7 @@ inline basic_jsonc<_IsOrdered, _AllowComments>::operator T() const JSONC_EXCEPTI
 template <bool _IsOrdered, bool _AllowComments>
 template <typename T>
     requires std::is_convertible_v<T, std::string>
-inline basic_jsonc<_IsOrdered, _AllowComments>::operator T() const JSONC_EXCEPTION_TYPE {
+inline constexpr basic_jsonc<_IsOrdered, _AllowComments>::operator T() const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<std::string>(&storage_)) { return *storage; }
 #ifdef JSONC_NO_EXCEPTION
     std::abort();
@@ -1040,7 +1184,7 @@ inline basic_jsonc<_IsOrdered, _AllowComments>::operator T() const JSONC_EXCEPTI
 
 template <bool _IsOrdered, bool _AllowComments>
 template <is_array_like T>
-inline basic_jsonc<_IsOrdered, _AllowComments>::operator T() const JSONC_EXCEPTION_TYPE {
+inline constexpr basic_jsonc<_IsOrdered, _AllowComments>::operator T() const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_array>(&storage_)) { return T(storage->begin(), storage->end()); }
 #ifdef JSONC_NO_EXCEPTION
     std::abort();
@@ -1051,13 +1195,19 @@ inline basic_jsonc<_IsOrdered, _AllowComments>::operator T() const JSONC_EXCEPTI
 
 template <bool _IsOrdered, bool _AllowComments>
 template <is_object_like T>
-inline basic_jsonc<_IsOrdered, _AllowComments>::operator T() const JSONC_EXCEPTION_TYPE {
+inline constexpr basic_jsonc<_IsOrdered, _AllowComments>::operator T() const JSONC_EXCEPTION_TYPE {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return T(storage->begin(), storage->end()); }
 #ifdef JSONC_NO_EXCEPTION
     std::abort();
 #else
     _JSONC_TYPE_ERROR("bad type cast");
 #endif
+}
+
+template <bool _IsOrdered, bool _AllowComments>
+template <bool IsOrdered, bool AllowComments>
+[[nodiscard]] inline constexpr basic_jsonc<_IsOrdered, _AllowComments>::operator basic_jsonc<IsOrdered, AllowComments>() noexcept {
+    return basic_jsonc<IsOrdered, AllowComments>(*this);
 }
 
 template <bool _IsOrdered, bool _AllowComments>
@@ -1155,7 +1305,7 @@ inline JSONC_RESULT(T) basic_jsonc<_IsOrdered, _AllowComments>::get() const JSON
             using Type = std::decay_t<decltype(val)>;
             if constexpr (std::is_convertible_v<Type, T>) {
                 return static_cast<T>(val);
-            } else if constexpr (std::same_as<Type, basic_big_int>) {
+            } else if constexpr (std::same_as<Type, basic_big_integer>) {
                 if constexpr (std::same_as<T, bool>) {
                     return val.view_ != "0";
                 } else {
@@ -1199,7 +1349,7 @@ inline JSONC_RESULT(T) basic_jsonc<_IsOrdered, _AllowComments>::get() const JSON
 
 template <bool _IsOrdered, bool _AllowComments>
 inline JSONC_RESULT(std::string) basic_jsonc<_IsOrdered, _AllowComments>::get_big_int_view() const JSONC_EXCEPTION_TYPE {
-    if (auto* storage = std::get_if<basic_big_int>(&storage_)) { return storage->view_; }
+    if (auto* storage = std::get_if<basic_big_integer>(&storage_)) { return storage->view_; }
     _JSONC_TYPE_ERROR(std::format("Type must be a big integer, but is {}", type_name()));
 }
 
@@ -1208,7 +1358,7 @@ inline JSONC_RESULT(std::string) basic_jsonc<_IsOrdered, _AllowComments>::get_an
     return std::visit(
         [&](const auto& val) -> JSONC_RESULT(std::string) {
             using Type = std::decay_t<decltype(val)>;
-            if constexpr (std::same_as<basic_big_int, Type>) {
+            if constexpr (std::same_as<basic_big_integer, Type>) {
                 return val.view_;
             } else if constexpr (std::same_as<std::int64_t, Type> || std::same_as<std::uint64_t, Type>) {
                 return std::to_string(val);
@@ -1248,7 +1398,7 @@ inline JSONC_RESULT(std::string) basic_jsonc<_IsOrdered, _AllowComments>::get_an
     return std::visit(
         [&](const auto& val) -> JSONC_RESULT(std::string) {
             using Type = std::decay_t<decltype(val)>;
-            if constexpr (std::same_as<basic_high_precision_float, Type> || std::same_as<basic_big_int, Type>) {
+            if constexpr (std::same_as<basic_high_precision_float, Type> || std::same_as<basic_big_integer, Type>) {
                 return val.view_;
             } else if constexpr (std::same_as<double, Type> || std::same_as<std::int64_t, Type> || std::same_as<std::uint64_t, Type>) {
                 return std::format("{}", val);
@@ -1521,7 +1671,8 @@ inline void basic_jsonc<_IsOrdered, _AllowComments>::move_comments_to_before() J
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline bool basic_jsonc<_IsOrdered, _AllowComments>::operator==(const basic_jsonc<_IsOrdered, _AllowComments>& other) const JSONC_EXCEPTION_TYPE {
+inline constexpr bool
+basic_jsonc<_IsOrdered, _AllowComments>::operator==(const basic_jsonc<_IsOrdered, _AllowComments>& other) const JSONC_EXCEPTION_TYPE {
     return storage_ == other.storage_;
 }
 
@@ -1870,12 +2021,12 @@ inline std::optional<basic_jsonc<_IsOrdered, _AllowComments>> basic_jsonc<_IsOrd
         if (is_negative) {
             std::int64_t res{};
             auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), res);
-            if (ec != std::errc() || ptr != num_str.data() + num_str.size()) { return basic_big_int(num_str); }
+            if (ec != std::errc() || ptr != num_str.data() + num_str.size()) { return basic_big_integer(num_str); }
             return res;
         } else {
             std::uint64_t res{};
             auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), res);
-            if (ec != std::errc() || ptr != num_str.data() + num_str.size()) { return basic_big_int(num_str); }
+            if (ec != std::errc() || ptr != num_str.data() + num_str.size()) { return basic_big_integer(num_str); }
             return res;
         }
     }
@@ -1911,12 +2062,12 @@ basic_jsonc<_IsOrdered, _AllowComments>::from_any_number(std::string_view view, 
             if (is_negative) {
                 std::int64_t res{};
                 auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), res);
-                if (ec != std::errc() || ptr != num_str.data() + num_str.size()) { return basic_big_int(num_str); }
+                if (ec != std::errc() || ptr != num_str.data() + num_str.size()) { return basic_big_integer(num_str); }
                 return res;
             } else {
                 std::uint64_t res{};
                 auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), res);
-                if (ec != std::errc() || ptr != num_str.data() + num_str.size()) { return basic_big_int(num_str); }
+                if (ec != std::errc() || ptr != num_str.data() + num_str.size()) { return basic_big_integer(num_str); }
                 return res;
             }
         } else {

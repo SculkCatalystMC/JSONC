@@ -43,7 +43,7 @@ double   jsonc_variant_to_float(jsonc_variant_t handle) { return static_cast<jso
 
 const char* jsonc_variant_as_string(jsonc_variant_t handle) { return static_cast<jsonc::ordered_jsonc*>(handle)->as<std::string>().c_str(); }
 const char* jsonc_variant_as_big_int(jsonc_variant_t handle) {
-    return static_cast<jsonc::ordered_jsonc*>(handle)->as<jsonc::detail::basic_big_int>().view_.c_str();
+    return static_cast<jsonc::ordered_jsonc*>(handle)->as<jsonc::detail::basic_big_integer>().view_.c_str();
 }
 const char* jsonc_variant_as_high_precision_float(jsonc_variant_t handle) {
     return static_cast<jsonc::ordered_jsonc*>(handle)->as<jsonc::detail::basic_high_precision_float>().view_.c_str();

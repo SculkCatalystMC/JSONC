@@ -291,7 +291,7 @@ inline JSONC_PARSE_RESULT(basic_jsonc<B, A>) parse_number(
             std::int64_t res{};
             auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), res);
             if (ec != std::errc() || ptr != num_str.data() + num_str.size()) {
-                result = basic_big_int(num_str);
+                result = basic_big_integer(num_str);
             } else {
                 result = res;
             }
@@ -299,7 +299,7 @@ inline JSONC_PARSE_RESULT(basic_jsonc<B, A>) parse_number(
             std::uint64_t res{};
             auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), res);
             if (ec != std::errc() || ptr != num_str.data() + num_str.size()) {
-                result = basic_big_int(num_str);
+                result = basic_big_integer(num_str);
             } else {
                 result = res;
             }

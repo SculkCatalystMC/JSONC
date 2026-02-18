@@ -50,10 +50,10 @@ constexpr bool emplace_variant(Var& v, std::size_t idx) noexcept {
     return emplace_variant_impl(v, idx, std::make_index_sequence<N>{});
 }
 
-struct basic_big_int {
-    basic_big_int() noexcept = default;
-    basic_big_int(std::string_view val) noexcept : view_(val) {}
-    bool        operator==(const basic_big_int& other) const noexcept { return view_ == other.view_; }
+struct basic_big_integer {
+    basic_big_integer() noexcept = default;
+    basic_big_integer(std::string_view val) noexcept : view_(val) {}
+    bool        operator==(const basic_big_integer& other) const noexcept { return view_ == other.view_; }
     std::string view_;
 };
 
@@ -191,6 +191,7 @@ public:
             std::vector<std::string> after_comments_{};
         };
         using key_comments_map_type = std::conditional_t<_AllowComments, string_hash_map<key_comments>, std::monostate>;
+        template <bool O, bool A>
         friend class basic_jsonc;
         map_type                                    storage_{};
         [[no_unique_address]] key_comments_map_type key_comments_{};
@@ -271,6 +272,7 @@ public:
         [[nodiscard]] bool operator==(const basic_jsonc& other) const JSONC_EXCEPTION_TYPE;
 
     private:
+        template <bool O, bool A>
         friend class basic_jsonc;
         std::vector<basic_jsonc> storage_{};
     };
@@ -285,7 +287,7 @@ public:
         std::string,
         basic_object,
         basic_array,
-        basic_big_int,
+        basic_big_integer,
         basic_high_precision_float>;
 
     using object_type = basic_object;
@@ -443,37 +445,49 @@ public:
     using const_reverse_iterator = basic_iterator<true, true>;
 
 public:
-    basic_jsonc() = default;
+    [[nodiscard]] basic_jsonc() = default;
 
-    constexpr basic_jsonc(value_type type) noexcept { emplace_variant(storage_, static_cast<std::size_t>(type)); };
+    [[nodiscard]] constexpr basic_jsonc(value_type type) noexcept { emplace_variant(storage_, static_cast<std::size_t>(type)); };
 
-    constexpr basic_jsonc(std::nullptr_t) noexcept : storage_(std::monostate()) {};
+    [[nodiscard]] constexpr basic_jsonc(std::nullptr_t) noexcept : storage_(std::monostate()) {};
 
-    constexpr basic_jsonc(bool val) noexcept : storage_(val) {};
+    [[nodiscard]] constexpr basic_jsonc(bool val) noexcept : storage_(val) {};
 
     template <std::signed_integral T>
-    constexpr basic_jsonc(T val) noexcept : storage_(static_cast<std::int64_t>(val)){};
+    [[nodiscard]] constexpr basic_jsonc(T val) noexcept : storage_(static_cast<std::int64_t>(val)){};
 
     template <std::unsigned_integral T>
         requires(!std::same_as<T, bool>)
-    constexpr basic_jsonc(T val) noexcept : storage_(static_cast<std::uint64_t>(val)){};
+    [[nodiscard]] constexpr basic_jsonc(T val) noexcept : storage_(static_cast<std::uint64_t>(val)){};
 
-    constexpr basic_jsonc(std::string_view val) noexcept : storage_(std::string(val)) {};
-    constexpr basic_jsonc(const std::string& val) noexcept : storage_(val) {};
+    [[nodiscard]] constexpr basic_jsonc(std::string_view val) noexcept : storage_(std::string(val)) {};
+    [[nodiscard]] constexpr basic_jsonc(const std::string& val) noexcept : storage_(val) {};
 
-    constexpr basic_jsonc(double val) noexcept : storage_(val) {};
-    constexpr basic_jsonc(float val) noexcept : storage_(std::round(val * 1e6) / 1e6) {};
+    [[nodiscard]] constexpr basic_jsonc(double val) noexcept : storage_(val) {};
+    [[nodiscard]] constexpr basic_jsonc(float val) noexcept : storage_(std::round(val * 1e6) / 1e6) {};
 
     template <std::size_t N>
-    [[nodiscard]] basic_jsonc(char const (&val)[N]) noexcept : storage_(std::string{val, N - 1}) {}
+    [[nodiscard]] constexpr basic_jsonc(char const (&val)[N]) noexcept : storage_(std::string{val, N - 1}) {}
 
-    constexpr basic_jsonc(const basic_object& val) noexcept : storage_(val) {};
-    constexpr basic_jsonc(const basic_array& val) noexcept : storage_(val) {};
-    constexpr basic_jsonc(const basic_big_int& val) noexcept : storage_(val) {};
-    constexpr basic_jsonc(const basic_high_precision_float& val) noexcept : storage_(val) {};
+    [[nodiscard]] constexpr basic_jsonc(const basic_object& val) noexcept : storage_(val) {};
+    [[nodiscard]] constexpr basic_jsonc(const basic_array& val) noexcept : storage_(val) {};
+    [[nodiscard]] constexpr basic_jsonc(const basic_big_integer& val) noexcept : storage_(val) {};
+    [[nodiscard]] constexpr basic_jsonc(const basic_high_precision_float& val) noexcept : storage_(val) {};
 
-    constexpr basic_jsonc(std::initializer_list<std::pair<std::string, basic_jsonc>> val) noexcept
+    [[nodiscard]] constexpr basic_jsonc(std::initializer_list<std::pair<std::string, basic_jsonc>> val) noexcept
     : storage_(std::in_place_type<basic_object>, val) {}
+
+    template <bool IsOrdered, bool AllowComments>
+    [[nodiscard]] constexpr basic_jsonc(const basic_jsonc<IsOrdered, AllowComments>& other) noexcept;
+
+    template <bool IsOrdered, bool AllowComments>
+    [[nodiscard]] constexpr basic_jsonc(basic_jsonc<IsOrdered, AllowComments>&& other) noexcept;
+
+    template <bool IsOrdered, bool AllowComments>
+    constexpr basic_jsonc& operator=(const basic_jsonc<IsOrdered, AllowComments>& other) noexcept;
+
+    template <bool IsOrdered, bool AllowComments>
+    constexpr basic_jsonc& operator=(basic_jsonc<IsOrdered, AllowComments>&& other) noexcept;
 
     constexpr void emplace(value_type type) noexcept { emplace_variant(storage_, static_cast<std::size_t>(type)); }
 
@@ -615,21 +629,24 @@ public:
     void move_comments_to_before() JSONC_EXCEPTION_TYPE
         requires(_AllowComments);
 
-    [[nodiscard]] bool operator==(const basic_jsonc& other) const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] constexpr bool operator==(const basic_jsonc& other) const JSONC_EXCEPTION_TYPE;
 
     template <typename T>
         requires std::is_arithmetic_v<T>
-    [[nodiscard]] operator T() const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] constexpr operator T() const JSONC_EXCEPTION_TYPE;
 
     template <typename T>
         requires std::is_convertible_v<T, std::string>
-    [[nodiscard]] operator T() const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] constexpr operator T() const JSONC_EXCEPTION_TYPE;
 
     template <is_array_like T>
-    [[nodiscard]] operator T() const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] constexpr operator T() const JSONC_EXCEPTION_TYPE;
 
     template <is_object_like T>
-    [[nodiscard]] operator T() const JSONC_EXCEPTION_TYPE;
+    [[nodiscard]] constexpr operator T() const JSONC_EXCEPTION_TYPE;
+
+    template <bool IsOrdered, bool AllowComments>
+    [[nodiscard]] constexpr operator basic_jsonc<IsOrdered, AllowComments>() noexcept;
 
     [[nodiscard]] constexpr bool has_before_comments() const noexcept
         requires(_AllowComments);
@@ -737,6 +754,8 @@ public:
 private:
     friend class basic_object;
     friend class basic_array;
+    template <bool O, bool A>
+    friend class basic_jsonc;
     using comments_type = std::conditional_t<_AllowComments, std::vector<std::string>, std::monostate>;
     type_variant                        storage_{};
     [[no_unique_address]] comments_type before_comments_{};
