@@ -11,12 +11,13 @@
 #define _STRINGIZE(S) #S
 #define STRINGIZE(S)  _STRINGIZE(S)
 
-inline const char* make_cstr(const std::string& s) noexcept {
-    const size_t n   = s.size();
-    char*        buf = new char[n + 1]{};
-    if (n) std::memcpy(buf, s.data(), n);
-    buf[n] = '\0';
-    return buf;
+inline size_t copy_string(char* data, size_t length, const std::string& str) {
+    if (length > str.size()) {
+        std::memcpy(data, str.data(), str.size());
+        data[str.size()] = '\0';
+        return str.size();
+    }
+    return 0;
 }
 
 extern "C" {
@@ -30,7 +31,9 @@ uint8_t jsonc_get_library_version_minor() { return JSONC_VERSION_MINOR; }
 uint8_t jsonc_get_library_version_patch() { return JSONC_VERSION_PATCH; }
 
 jsonc_variant_t jsonc_parse_content(const char* content, bool allow_trailing_comma) {
-    if (auto result = jsonc::ordered_jsonc::parse(content, allow_trailing_comma)) { return new jsonc::ordered_jsonc(*result); }
+    if (auto result = jsonc::ordered_jsonc::parse(content, allow_trailing_comma)) {
+        return new (std::nothrow) jsonc::ordered_jsonc(std::move(*result));
+    }
     return nullptr;
 }
 
@@ -56,7 +59,7 @@ jsonc_array_t jsonc_variant_as_array(jsonc_variant_t handle) {
     return &static_cast<jsonc::ordered_jsonc*>(handle)->as<jsonc::ordered_jsonc::array_type>();
 }
 
-const char* jsonc_variant_get_comments_before(jsonc_variant_t handle) {
+size_t jsonc_variant_get_comments_before(jsonc_variant_t handle, char* data, size_t length) {
     if (static_cast<jsonc::ordered_jsonc*>(handle)->has_before_comments()) {
         std::string result{};
         for (auto& comment : static_cast<jsonc::ordered_jsonc*>(handle)->before_comments()) {
@@ -64,11 +67,12 @@ const char* jsonc_variant_get_comments_before(jsonc_variant_t handle) {
             result.push_back('\n');
         }
         result.pop_back();
-        return make_cstr(result);
+        return copy_string(data, length, result);
     }
-    return nullptr;
+    return 0;
 }
-const char* jsonc_variant_get_comments_after(jsonc_variant_t handle) {
+
+size_t jsonc_variant_get_comments_after(jsonc_variant_t handle, char* data, size_t length) {
     if (static_cast<jsonc::ordered_jsonc*>(handle)->has_after_comments()) {
         std::string result{};
         for (auto& comment : static_cast<jsonc::ordered_jsonc*>(handle)->after_comments()) {
@@ -76,9 +80,10 @@ const char* jsonc_variant_get_comments_after(jsonc_variant_t handle) {
             result.push_back('\n');
         }
         result.pop_back();
-        return make_cstr(result);
+        return copy_string(data, length, result);
     }
-    return nullptr;
+
+    return 0;
 }
 
 void jsonc_variant_merge_comments(jsonc_variant_t lhs, jsonc_variant_t rhs) {
@@ -92,8 +97,17 @@ void jsonc_variant_set_comments_after(jsonc_variant_t handle, const char* commen
     static_cast<jsonc::ordered_jsonc*>(handle)->after_comments() = jsonc::detail::split_comments(comments);
 }
 
-const char* jsonc_variant_dump(jsonc_variant_t handle, int indent, bool ensure_ascii, bool ignore_comments, bool multi_line_comments_format) {
-    return make_cstr(static_cast<jsonc::ordered_jsonc*>(handle)->dump(indent, ensure_ascii, ignore_comments, multi_line_comments_format, true));
+size_t jsonc_variant_dump(
+    jsonc_variant_t handle,
+    char*           data,
+    size_t          length,
+    int             indent,
+    bool            ensure_ascii,
+    bool            ignore_comments,
+    bool            multi_line_comments_format
+) {
+    auto result = static_cast<jsonc::ordered_jsonc*>(handle)->dump(indent, ensure_ascii, ignore_comments, multi_line_comments_format);
+    return copy_string(data, length, result);
 }
 
 bool jsonc_object_contains(jsonc_object_t handle, const char* key) { return static_cast<jsonc::ordered_jsonc::object_type*>(handle)->contains(key); }
@@ -135,8 +149,9 @@ void jsonc_object_set_unsigned(jsonc_object_t handle, const char* key, uint64_t 
     static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key) = value;
 }
 
-const char* jsonc_object_get_any_int(jsonc_object_t handle, const char* key) {
-    return make_cstr(static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key).get_any_int_view());
+size_t jsonc_object_get_any_int(jsonc_object_t handle, char* data, size_t length, const char* key) {
+    auto result = static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key).get_any_int_view();
+    return copy_string(data, length, result);
 }
 bool jsonc_object_set_any_int(jsonc_object_t handle, const char* key, const char* value) {
     auto val = jsonc::ordered_jsonc::from_any_int(value);
@@ -151,8 +166,9 @@ void jsonc_object_set_float(jsonc_object_t handle, const char* key, double value
     static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key) = value;
 }
 
-const char* jsonc_object_get_any_float(jsonc_object_t handle, const char* key) {
-    return make_cstr(static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key).get_any_float_view());
+size_t jsonc_object_get_any_float(jsonc_object_t handle, char* data, size_t length, const char* key) {
+    auto result = static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key).get_any_float_view();
+    return copy_string(data, length, result);
 }
 bool jsonc_object_set_any_float(jsonc_object_t handle, const char* key, const char* value) {
     auto val = jsonc::ordered_jsonc::from_any_float(value);
@@ -160,8 +176,9 @@ bool jsonc_object_set_any_float(jsonc_object_t handle, const char* key, const ch
     return val.has_value();
 }
 
-const char* jsonc_object_get_any_number(jsonc_object_t handle, const char* key) {
-    return make_cstr(static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key).get_any_number_view());
+size_t jsonc_object_get_any_number(jsonc_object_t handle, char* data, size_t length, const char* key) {
+    auto result = static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key).get_any_number_view();
+    return copy_string(data, length, result);
 }
 bool jsonc_object_set_any_number(jsonc_object_t handle, const char* key, const char* value) {
     auto val = jsonc::ordered_jsonc::from_any_number(value);
@@ -208,13 +225,20 @@ void jsonc_object_clear(jsonc_object_t handle) { static_cast<jsonc::ordered_json
 
 bool jsonc_object_remove(jsonc_object_t handle, const char* key) { return static_cast<jsonc::ordered_jsonc::object_type*>(handle)->erase(key); }
 
-const char* jsonc_object_dump(jsonc_object_t handle, int indent, bool ensure_ascii, bool ignore_comments, bool multi_line_comments_format) {
-    return make_cstr(
-        static_cast<jsonc::ordered_jsonc::object_type*>(handle)->dump(indent, ensure_ascii, ignore_comments, multi_line_comments_format)
-    );
+size_t jsonc_object_dump(
+    jsonc_object_t handle,
+    char*          data,
+    size_t         length,
+    int            indent,
+    bool           ensure_ascii,
+    bool           ignore_comments,
+    bool           multi_line_comments_format
+) {
+    auto result = static_cast<jsonc::ordered_jsonc::object_type*>(handle)->dump(indent, ensure_ascii, ignore_comments, multi_line_comments_format);
+    return copy_string(data, length, result);
 }
 
-const char* jsonc_object_get_key_comments_before(jsonc_object_t handle, const char* key) {
+size_t jsonc_object_get_key_comments_before(jsonc_object_t handle, char* data, size_t length, const char* key) {
     if (static_cast<jsonc::ordered_jsonc::object_type*>(handle)->has_key_before_comments(key)) {
         std::string result{};
         for (auto& comment : static_cast<jsonc::ordered_jsonc::object_type*>(handle)->key_before_comments(key)) {
@@ -222,11 +246,15 @@ const char* jsonc_object_get_key_comments_before(jsonc_object_t handle, const ch
             result.push_back('\n');
         }
         result.pop_back();
-        return make_cstr(result);
+        if (length > result.size()) {
+            std::memcpy(data, result.data(), result.size());
+            data[result.size()] = '\0';
+            return result.size();
+        }
     }
-    return nullptr;
+    return 0;
 }
-const char* jsonc_object_get_key_comments_after(jsonc_object_t handle, const char* key) {
+size_t jsonc_object_get_key_comments_after(jsonc_object_t handle, char* data, size_t length, const char* key) {
     if (static_cast<jsonc::ordered_jsonc::object_type*>(handle)->has_key_after_comments(key)) {
         std::string result{};
         for (auto& comment : static_cast<jsonc::ordered_jsonc::object_type*>(handle)->key_after_comments(key)) {
@@ -234,11 +262,11 @@ const char* jsonc_object_get_key_comments_after(jsonc_object_t handle, const cha
             result.push_back('\n');
         }
         result.pop_back();
-        return make_cstr(result);
+        return copy_string(data, length, result);
     }
-    return nullptr;
+    return 0;
 }
-const char* jsonc_object_get_value_comments_before(jsonc_object_t handle, const char* key) {
+size_t jsonc_object_get_value_comments_before(jsonc_object_t handle, char* data, size_t length, const char* key) {
     if (static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key).has_before_comments()) {
         std::string result{};
         for (auto& comment : static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key).before_comments()) {
@@ -246,11 +274,11 @@ const char* jsonc_object_get_value_comments_before(jsonc_object_t handle, const 
             result.push_back('\n');
         }
         result.pop_back();
-        return make_cstr(result);
+        return copy_string(data, length, result);
     }
-    return nullptr;
+    return 0;
 }
-const char* jsonc_object_get_value_comments_after(jsonc_object_t handle, const char* key) {
+size_t jsonc_object_get_value_comments_after(jsonc_object_t handle, char* data, size_t length, const char* key) {
     if (static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key).has_after_comments()) {
         std::string result{};
         for (auto& comment : static_cast<jsonc::ordered_jsonc::object_type*>(handle)->operator[](key).after_comments()) {
@@ -258,9 +286,9 @@ const char* jsonc_object_get_value_comments_after(jsonc_object_t handle, const c
             result.push_back('\n');
         }
         result.pop_back();
-        return make_cstr(result);
+        return copy_string(data, length, result);
     }
-    return nullptr;
+    return 0;
 }
 
 void jsonc_object_set_key_comments_before(jsonc_object_t handle, const char* key, const char* comments) {
@@ -320,8 +348,9 @@ void jsonc_array_set_unsigned(jsonc_array_t handle, size_t index, uint64_t value
 }
 void jsonc_array_add_unsigned(jsonc_array_t handle, uint64_t value) { static_cast<jsonc::ordered_jsonc::array_type*>(handle)->push_back(value); }
 
-const char* jsonc_array_get_any_int(jsonc_array_t handle, size_t index) {
-    return make_cstr(static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index).get_any_int_view());
+size_t jsonc_array_get_any_int(jsonc_array_t handle, char* data, size_t length, size_t index) {
+    auto result = static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index).get_any_int_view();
+    return copy_string(data, length, result);
 }
 bool jsonc_array_set_any_int(jsonc_array_t handle, size_t index, const char* value) {
     auto val = jsonc::ordered_jsonc::from_any_int(value);
@@ -342,8 +371,9 @@ void jsonc_array_set_float(jsonc_array_t handle, size_t index, double value) {
 }
 void jsonc_array_add_float(jsonc_array_t handle, double value) { static_cast<jsonc::ordered_jsonc::array_type*>(handle)->push_back(value); }
 
-const char* jsonc_array_get_any_float(jsonc_array_t handle, size_t index) {
-    return make_cstr(static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index).get_any_float_view());
+size_t jsonc_array_get_any_float(jsonc_array_t handle, char* data, size_t length, size_t index) {
+    auto result = static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index).get_any_float_view();
+    return copy_string(data, length, result);
 }
 bool jsonc_array_set_any_float(jsonc_array_t handle, size_t index, const char* value) {
     auto val = jsonc::ordered_jsonc::from_any_float(value);
@@ -356,8 +386,9 @@ bool jsonc_array_add_any_float(jsonc_array_t handle, const char* value) {
     return val.has_value();
 }
 
-const char* jsonc_array_get_any_number(jsonc_array_t handle, size_t index) {
-    return make_cstr(static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index).get_any_number_view());
+size_t jsonc_array_get_any_number(jsonc_array_t handle, char* data, size_t length, size_t index) {
+    auto result = static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index).get_any_number_view();
+    return copy_string(data, length, result);
 }
 bool jsonc_array_set_any_number(jsonc_array_t handle, size_t index, const char* value) {
     auto val = jsonc::ordered_jsonc::from_any_number(value);
@@ -410,11 +441,20 @@ void jsonc_array_clear(jsonc_array_t handle) { return static_cast<jsonc::ordered
 
 bool jsonc_array_remove(jsonc_array_t handle, size_t index) { return static_cast<jsonc::ordered_jsonc::array_type*>(handle)->erase(index); }
 
-const char* jsonc_array_dump(jsonc_array_t handle, int indent, bool ensure_ascii, bool ignore_comments, bool multi_line_comments_format) {
-    return make_cstr(static_cast<jsonc::ordered_jsonc::array_type*>(handle)->dump(indent, ensure_ascii, ignore_comments, multi_line_comments_format));
+size_t jsonc_array_dump(
+    jsonc_array_t handle,
+    char*         data,
+    size_t        length,
+    int           indent,
+    bool          ensure_ascii,
+    bool          ignore_comments,
+    bool          multi_line_comments_format
+) {
+    auto result = static_cast<jsonc::ordered_jsonc::array_type*>(handle)->dump(indent, ensure_ascii, ignore_comments, multi_line_comments_format);
+    return copy_string(data, length, result);
 }
 
-const char* jsonc_array_get_comments_before(jsonc_object_t handle, size_t index) {
+size_t jsonc_array_get_comments_before(jsonc_object_t handle, char* data, size_t length, size_t index) {
     if (static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index).has_before_comments()) {
         std::string result{};
         for (auto& comment : static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index).before_comments()) {
@@ -422,11 +462,11 @@ const char* jsonc_array_get_comments_before(jsonc_object_t handle, size_t index)
             result.push_back('\n');
         }
         result.pop_back();
-        return make_cstr(result);
+        return copy_string(data, length, result);
     }
-    return nullptr;
+    return 0;
 }
-const char* jsonc_array_get_comments_after(jsonc_object_t handle, size_t index) {
+size_t jsonc_array_get_comments_after(jsonc_object_t handle, char* data, size_t length, size_t index) {
     if (static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index).has_after_comments()) {
         std::string result{};
         for (auto& comment : static_cast<jsonc::ordered_jsonc::array_type*>(handle)->operator[](index).after_comments()) {
@@ -434,9 +474,9 @@ const char* jsonc_array_get_comments_after(jsonc_object_t handle, size_t index) 
             result.push_back('\n');
         }
         result.pop_back();
-        return make_cstr(result);
+        return copy_string(data, length, result);
     }
-    return nullptr;
+    return 0;
 }
 
 void jsonc_array_set_comments_before(jsonc_object_t handle, size_t index, const char* comments) {
@@ -450,11 +490,10 @@ bool jsonc_array_equals(jsonc_array_t lhs, jsonc_array_t rhs) {
     return (*static_cast<jsonc::ordered_jsonc::array_type*>(lhs)) == (*static_cast<jsonc::ordered_jsonc::array_type*>(rhs));
 }
 
-jsonc_object_t jsonc_create_object() { return new jsonc::ordered_jsonc::object_type(); }
-jsonc_array_t  jsonc_create_array() { return new jsonc::ordered_jsonc::array_type(); }
+jsonc_object_t jsonc_create_object() { return new (std::nothrow) jsonc::ordered_jsonc::object_type(); }
+jsonc_array_t  jsonc_create_array() { return new (std::nothrow) jsonc::ordered_jsonc::array_type(); }
 
 void jsonc_free_object(jsonc_object_t handle) { delete static_cast<jsonc::ordered_jsonc::object_type*>(handle); }
 void jsonc_free_array(jsonc_array_t handle) { delete static_cast<jsonc::ordered_jsonc::array_type*>(handle); }
 void jsonc_free_type_variant(jsonc_variant_t handle) { delete static_cast<jsonc::ordered_jsonc*>(handle); }
-void jsonc_free_string(const char* str) { delete[] str; }
 }
