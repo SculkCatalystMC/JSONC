@@ -12,14 +12,15 @@ JSONC_PARSE_RESULT(basic_jsonc<B, A>) parse_basic_jsonc_impl(
     bool allow_trailing_comma,
     bool ignore_comments,
     bool float_keep_precision
-) ;
+);
 
 template <bool B, bool A>
-JSONC_PARSE_RESULT(basic_jsonc<B, A>) parse_basic_jsonc(std::string_view& str,
+JSONC_PARSE_RESULT(basic_jsonc<B, A>) parse_basic_jsonc(
+    std::string_view& str,
     bool allow_trailing_comma,
     bool ignore_comments,
     bool float_keep_precision
-) ;
+);
 
 namespace {
 

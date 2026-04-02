@@ -1,7 +1,8 @@
 .xmake
 .vscode
-CmakeLists.txt
 build
 .vs
 bin
 artifacts
+build-cmake-shared
+build-cmake-static
