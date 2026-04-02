@@ -7,7 +7,7 @@
 #include <limits>
 #include <ranges>
 
-namespace jsonc::inline abi_v1_3_1::detail {
+namespace sculk::jsonc::inline abi_v1_4_0::detail {
 
 inline std::vector<std::string> split_comments(std::string_view comment) noexcept {
     std::vector<std::string> result{};
@@ -28,13 +28,12 @@ inline std::vector<std::string> split_comments(std::string_view comment) noexcep
 template <bool _IsOrdered, bool _AllowComments>
 inline basic_jsonc<_IsOrdered, _AllowComments>::basic_object::basic_object(
     std::initializer_list<std::pair<std::string, basic_jsonc<_IsOrdered, _AllowComments>>> val
-) JSONC_EXCEPTION_TYPE {
+) {
     for (const auto& [k, v] : val) { storage_.try_emplace(k, v); }
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline basic_jsonc<_IsOrdered, _AllowComments>&
-basic_jsonc<_IsOrdered, _AllowComments>::basic_object::operator[](std::string_view index) JSONC_EXCEPTION_TYPE {
+inline basic_jsonc<_IsOrdered, _AllowComments>& basic_jsonc<_IsOrdered, _AllowComments>::basic_object::operator[](std::string_view index) {
     auto res = storage_.find(index);
     if (res != storage_.end()) { return res->second; }
     return storage_.try_emplace(std::string(index)).first->second;
@@ -43,16 +42,14 @@ basic_jsonc<_IsOrdered, _AllowComments>::basic_object::operator[](std::string_vi
 template <bool _IsOrdered, bool _AllowComments>
 inline JSONC_RESULT(const basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::basic_object::operator[](
     std::string_view index
-) const JSONC_EXCEPTION_TYPE {
+) const {
     auto res = storage_.find(index);
     if (res != storage_.end()) { return _JSONC_MAKE_RESULT(res->second); }
     _JSONC_KEY_ERROR(std::format("Invalid key: {}", index));
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::basic_object::at(
-    std::string_view index
-) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::basic_object::at(std::string_view index) {
     auto res = storage_.find(index);
     if (res != storage_.end()) { return _JSONC_MAKE_RESULT(res->second); }
     _JSONC_KEY_ERROR(std::format("Invalid key: {}", index));
@@ -61,17 +58,15 @@ inline JSONC_RESULT(basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrd
 template <bool _IsOrdered, bool _AllowComments>
 inline JSONC_RESULT(const basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::basic_object::at(
     std::string_view index
-) const JSONC_EXCEPTION_TYPE {
+) const {
     auto res = storage_.find(index);
     if (res != storage_.end()) { return _JSONC_MAKE_RESULT(res->second); }
     _JSONC_KEY_ERROR(std::format("Invalid key: {}", index));
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline basic_jsonc<_IsOrdered, _AllowComments>& basic_jsonc<_IsOrdered, _AllowComments>::basic_object::at(
-    std::string_view                               index,
-    const basic_jsonc<_IsOrdered, _AllowComments>& default_value
-) JSONC_EXCEPTION_TYPE {
+inline basic_jsonc<_IsOrdered, _AllowComments>&
+basic_jsonc<_IsOrdered, _AllowComments>::basic_object::at(std::string_view index, const basic_jsonc<_IsOrdered, _AllowComments>& default_value) {
     auto res = storage_.find(index);
     if (res != storage_.end()) { return res->second; }
     return storage_.try_emplace(index, default_value).first->second;
@@ -121,7 +116,7 @@ inline std::string basic_jsonc<_IsOrdered, _AllowComments>::basic_object::dump(
     bool ensure_ascii,
     bool ignore_comments,
     bool multi_line_comments_format
-) const JSONC_EXCEPTION_TYPE {
+) const {
     return dump_typed<_IsOrdered, _AllowComments>(*this, ensure_ascii, indent, ignore_comments, multi_line_comments_format);
 }
 
@@ -155,8 +150,7 @@ inline bool basic_jsonc<_IsOrdered, _AllowComments>::basic_object::has_key_after
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline std::vector<std::string>&
-basic_jsonc<_IsOrdered, _AllowComments>::basic_object::key_before_comments(std::string_view index) JSONC_EXCEPTION_TYPE
+inline std::vector<std::string>& basic_jsonc<_IsOrdered, _AllowComments>::basic_object::key_before_comments(std::string_view index)
     requires(_AllowComments)
 {
     auto res = key_comments_.find(index);
@@ -170,7 +164,7 @@ basic_jsonc<_IsOrdered, _AllowComments>::basic_object::key_before_comments(std::
 template <bool _IsOrdered, bool _AllowComments>
 inline JSONC_RESULT(const std::vector<std::string>&) basic_jsonc<_IsOrdered, _AllowComments>::basic_object::key_before_comments(
     std::string_view index
-) const JSONC_EXCEPTION_TYPE
+) const
     requires(_AllowComments)
 {
     auto res = key_comments_.find(index);
@@ -179,8 +173,7 @@ inline JSONC_RESULT(const std::vector<std::string>&) basic_jsonc<_IsOrdered, _Al
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline std::vector<std::string>&
-basic_jsonc<_IsOrdered, _AllowComments>::basic_object::key_after_comments(std::string_view index) JSONC_EXCEPTION_TYPE
+inline std::vector<std::string>& basic_jsonc<_IsOrdered, _AllowComments>::basic_object::key_after_comments(std::string_view index)
     requires(_AllowComments)
 {
     auto res = key_comments_.find(index);
@@ -194,7 +187,7 @@ basic_jsonc<_IsOrdered, _AllowComments>::basic_object::key_after_comments(std::s
 template <bool _IsOrdered, bool _AllowComments>
 inline JSONC_RESULT(const std::vector<std::string>&) basic_jsonc<_IsOrdered, _AllowComments>::basic_object::key_after_comments(
     std::string_view index
-) const JSONC_EXCEPTION_TYPE
+) const
     requires(_AllowComments)
 {
     auto res = key_comments_.find(index);
@@ -205,7 +198,7 @@ inline JSONC_RESULT(const std::vector<std::string>&) basic_jsonc<_IsOrdered, _Al
 template <bool _IsOrdered, bool _AllowComments>
 inline JSONC_RESULT(std::vector<std::string>) basic_jsonc<_IsOrdered, _AllowComments>::basic_object::get_key_before_comments(
     std::string_view index
-) const JSONC_EXCEPTION_TYPE
+) const
     requires(_AllowComments)
 {
     auto res = key_comments_.find(index);
@@ -216,7 +209,7 @@ inline JSONC_RESULT(std::vector<std::string>) basic_jsonc<_IsOrdered, _AllowComm
 template <bool _IsOrdered, bool _AllowComments>
 inline JSONC_RESULT(std::vector<std::string>) basic_jsonc<_IsOrdered, _AllowComments>::basic_object::get_key_after_comments(
     std::string_view index
-) const JSONC_EXCEPTION_TYPE
+) const
     requires(_AllowComments)
 {
     auto res = key_comments_.find(index);
@@ -225,10 +218,9 @@ inline JSONC_RESULT(std::vector<std::string>) basic_jsonc<_IsOrdered, _AllowComm
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(std::string) basic_jsonc<_IsOrdered, _AllowComments>::basic_object::get_key_before_comment(
-    std::string_view index,
-    std::size_t      comment_index
-) const JSONC_EXCEPTION_TYPE
+inline JSONC_RESULT(
+    std::string
+) basic_jsonc<_IsOrdered, _AllowComments>::basic_object::get_key_before_comment(std::string_view index, std::size_t comment_index) const
     requires(_AllowComments)
 {
     auto res = key_comments_.find(index);
@@ -240,10 +232,9 @@ inline JSONC_RESULT(std::string) basic_jsonc<_IsOrdered, _AllowComments>::basic_
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(std::string) basic_jsonc<_IsOrdered, _AllowComments>::basic_object::get_key_after_comment(
-    std::string_view index,
-    std::size_t      comment_index
-) const JSONC_EXCEPTION_TYPE
+inline JSONC_RESULT(
+    std::string
+) basic_jsonc<_IsOrdered, _AllowComments>::basic_object::get_key_after_comment(std::string_view index, std::size_t comment_index) const
     requires(_AllowComments)
 {
     auto res = key_comments_.find(index);
@@ -256,10 +247,8 @@ inline JSONC_RESULT(std::string) basic_jsonc<_IsOrdered, _AllowComments>::basic_
 
 
 template <bool _IsOrdered, bool _AllowComments>
-inline bool basic_jsonc<_IsOrdered, _AllowComments>::basic_object::set_key_before_comments(
-    std::string_view                index,
-    const std::vector<std::string>& comments
-) JSONC_EXCEPTION_TYPE
+inline bool
+basic_jsonc<_IsOrdered, _AllowComments>::basic_object::set_key_before_comments(std::string_view index, const std::vector<std::string>& comments)
     requires(_AllowComments)
 {
     if (contains(index)) {
@@ -275,10 +264,8 @@ inline bool basic_jsonc<_IsOrdered, _AllowComments>::basic_object::set_key_befor
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline bool basic_jsonc<_IsOrdered, _AllowComments>::basic_object::set_key_after_comments(
-    std::string_view                index,
-    const std::vector<std::string>& comments
-) JSONC_EXCEPTION_TYPE
+inline bool
+basic_jsonc<_IsOrdered, _AllowComments>::basic_object::set_key_after_comments(std::string_view index, const std::vector<std::string>& comments)
     requires(_AllowComments)
 {
     if (contains(index)) {
@@ -294,8 +281,7 @@ inline bool basic_jsonc<_IsOrdered, _AllowComments>::basic_object::set_key_after
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline bool
-basic_jsonc<_IsOrdered, _AllowComments>::basic_object::add_key_before_comment(std::string_view index, std::string_view comment) JSONC_EXCEPTION_TYPE
+inline bool basic_jsonc<_IsOrdered, _AllowComments>::basic_object::add_key_before_comment(std::string_view index, std::string_view comment)
     requires(_AllowComments)
 {
     if (contains(index)) {
@@ -311,8 +297,7 @@ basic_jsonc<_IsOrdered, _AllowComments>::basic_object::add_key_before_comment(st
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline bool
-basic_jsonc<_IsOrdered, _AllowComments>::basic_object::add_key_after_comment(std::string_view index, std::string_view comment) JSONC_EXCEPTION_TYPE
+inline bool basic_jsonc<_IsOrdered, _AllowComments>::basic_object::add_key_after_comment(std::string_view index, std::string_view comment)
     requires(_AllowComments)
 {
     if (contains(index)) {
@@ -328,7 +313,7 @@ basic_jsonc<_IsOrdered, _AllowComments>::basic_object::add_key_after_comment(std
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline void basic_jsonc<_IsOrdered, _AllowComments>::basic_object::clear_key_before_comments(std::string_view index) JSONC_EXCEPTION_TYPE
+inline void basic_jsonc<_IsOrdered, _AllowComments>::basic_object::clear_key_before_comments(std::string_view index)
     requires(_AllowComments)
 {
     auto res = key_comments_.find(index);
@@ -336,7 +321,7 @@ inline void basic_jsonc<_IsOrdered, _AllowComments>::basic_object::clear_key_bef
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline void basic_jsonc<_IsOrdered, _AllowComments>::basic_object::clear_key_after_comments(std::string_view index) JSONC_EXCEPTION_TYPE
+inline void basic_jsonc<_IsOrdered, _AllowComments>::basic_object::clear_key_after_comments(std::string_view index)
     requires(_AllowComments)
 {
     auto res = key_comments_.find(index);
@@ -344,10 +329,7 @@ inline void basic_jsonc<_IsOrdered, _AllowComments>::basic_object::clear_key_aft
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline bool basic_jsonc<_IsOrdered, _AllowComments>::basic_object::remove_key_before_comment(
-    std::string_view index,
-    std::size_t      comment_index
-) JSONC_EXCEPTION_TYPE
+inline bool basic_jsonc<_IsOrdered, _AllowComments>::basic_object::remove_key_before_comment(std::string_view index, std::size_t comment_index)
     requires(_AllowComments)
 {
     auto res = key_comments_.find(index);
@@ -363,10 +345,7 @@ inline bool basic_jsonc<_IsOrdered, _AllowComments>::basic_object::remove_key_be
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline bool basic_jsonc<_IsOrdered, _AllowComments>::basic_object::remove_key_after_comment(
-    std::string_view index,
-    std::size_t      comment_index
-) JSONC_EXCEPTION_TYPE
+inline bool basic_jsonc<_IsOrdered, _AllowComments>::basic_object::remove_key_after_comment(std::string_view index, std::size_t comment_index)
     requires(_AllowComments)
 {
     auto res = key_comments_.find(index);
@@ -470,15 +449,14 @@ basic_jsonc<_IsOrdered, _AllowComments>::basic_object::crend() const noexcept {
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline void basic_jsonc<_IsOrdered, _AllowComments>::basic_object::merge_patch(const basic_object& other, bool merge_list) JSONC_EXCEPTION_TYPE {
+inline void basic_jsonc<_IsOrdered, _AllowComments>::basic_object::merge_patch(const basic_object& other, bool merge_list) {
     for (const auto& [key, val] : other) { operator[](key).merge_patch(val, merge_list); }
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(void) basic_jsonc<_IsOrdered, _AllowComments>::basic_object::merge_patch(
-    const basic_jsonc<_IsOrdered, _AllowComments>& other,
-    bool                                           merge_list
-) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(
+    void
+) basic_jsonc<_IsOrdered, _AllowComments>::basic_object::merge_patch(const basic_jsonc<_IsOrdered, _AllowComments>& other, bool merge_list) {
     if (auto* rhs = std::get_if<basic_object>(&other.storage_)) {
         merge_patch(*rhs, merge_list);
         return _JSONC_MAKE_VOID_RESULT();
@@ -487,7 +465,7 @@ inline JSONC_RESULT(void) basic_jsonc<_IsOrdered, _AllowComments>::basic_object:
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline void basic_jsonc<_IsOrdered, _AllowComments>::basic_object::merge_comments(const basic_object& other) JSONC_EXCEPTION_TYPE
+inline void basic_jsonc<_IsOrdered, _AllowComments>::basic_object::merge_comments(const basic_object& other)
     requires(_AllowComments)
 {
     for (const auto& [key, val] : other) {
@@ -507,7 +485,7 @@ inline void basic_jsonc<_IsOrdered, _AllowComments>::basic_object::merge_comment
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline void basic_jsonc<_IsOrdered, _AllowComments>::basic_object::move_comments_to_before() JSONC_EXCEPTION_TYPE
+inline void basic_jsonc<_IsOrdered, _AllowComments>::basic_object::move_comments_to_before()
     requires(_AllowComments)
 {
     for (const auto& [key, val] : *this) {
@@ -528,21 +506,19 @@ inline void basic_jsonc<_IsOrdered, _AllowComments>::basic_object::move_comments
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline bool basic_jsonc<_IsOrdered, _AllowComments>::basic_object::operator==(const basic_object& other) const JSONC_EXCEPTION_TYPE {
+inline bool basic_jsonc<_IsOrdered, _AllowComments>::basic_object::operator==(const basic_object& other) const {
     return storage_ == other.storage_;
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline bool
-basic_jsonc<_IsOrdered, _AllowComments>::basic_object::operator==(const basic_jsonc<_IsOrdered, _AllowComments>& other) const JSONC_EXCEPTION_TYPE {
+inline bool basic_jsonc<_IsOrdered, _AllowComments>::basic_object::operator==(const basic_jsonc<_IsOrdered, _AllowComments>& other) const {
     if (auto* rhs = std::get_if<basic_object>(&other.storage_)) { return storage_ == rhs->storage_; }
     return false;
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline basic_jsonc<_IsOrdered, _AllowComments>::basic_array::basic_array(
-    std::initializer_list<basic_jsonc<_IsOrdered, _AllowComments>> val
-) JSONC_EXCEPTION_TYPE : storage_(val) {}
+inline basic_jsonc<_IsOrdered, _AllowComments>::basic_array::basic_array(std::initializer_list<basic_jsonc<_IsOrdered, _AllowComments>> val)
+: storage_(val) {}
 
 
 template <bool _IsOrdered, bool _AllowComments>
@@ -559,9 +535,7 @@ inline constexpr JSONC_RESULT(const basic_jsonc<_IsOrdered, _AllowComments>&) ba
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline constexpr JSONC_RESULT(basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::basic_array::at(
-    std::size_t index
-) JSONC_EXCEPTION_TYPE {
+inline constexpr JSONC_RESULT(basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::basic_array::at(std::size_t index) {
     if (index < storage_.size()) { return _JSONC_MAKE_RESULT(storage_[index]); }
     _JSONC_OUT_OF_RANGE("Index out of range");
 }
@@ -569,7 +543,7 @@ inline constexpr JSONC_RESULT(basic_jsonc<_IsOrdered, _AllowComments>&) basic_js
 template <bool _IsOrdered, bool _AllowComments>
 inline constexpr JSONC_RESULT(const basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::basic_array::at(
     std::size_t index
-) const JSONC_EXCEPTION_TYPE {
+) const {
     if (index < storage_.size()) { return _JSONC_MAKE_RESULT(storage_[index]); }
     _JSONC_OUT_OF_RANGE("Index out of range");
 }
@@ -612,23 +586,23 @@ inline bool basic_jsonc<_IsOrdered, _AllowComments>::basic_array::erase(std::siz
 
 template <bool _IsOrdered, bool _AllowComments>
 inline basic_jsonc<_IsOrdered, _AllowComments>::basic_array::iterator
-basic_jsonc<_IsOrdered, _AllowComments>::basic_array::erase(const_iterator where) JSONC_EXCEPTION_TYPE {
+basic_jsonc<_IsOrdered, _AllowComments>::basic_array::erase(const_iterator where) {
     return storage_.erase(where);
 }
 
 template <bool _IsOrdered, bool _AllowComments>
 inline basic_jsonc<_IsOrdered, _AllowComments>::basic_array::iterator
-basic_jsonc<_IsOrdered, _AllowComments>::basic_array::erase(const_iterator first, const_iterator last) JSONC_EXCEPTION_TYPE {
+basic_jsonc<_IsOrdered, _AllowComments>::basic_array::erase(const_iterator first, const_iterator last) {
     return storage_.erase(first, last);
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline void basic_jsonc<_IsOrdered, _AllowComments>::basic_array::push_back(const basic_jsonc<_IsOrdered, _AllowComments>& val) JSONC_EXCEPTION_TYPE {
+inline void basic_jsonc<_IsOrdered, _AllowComments>::basic_array::push_back(const basic_jsonc<_IsOrdered, _AllowComments>& val) {
     storage_.push_back(val);
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline void basic_jsonc<_IsOrdered, _AllowComments>::basic_array::push_back(basic_jsonc<_IsOrdered, _AllowComments>&& val) JSONC_EXCEPTION_TYPE {
+inline void basic_jsonc<_IsOrdered, _AllowComments>::basic_array::push_back(basic_jsonc<_IsOrdered, _AllowComments>&& val) {
     storage_.push_back(std::move(val));
 }
 
@@ -658,7 +632,7 @@ inline std::string basic_jsonc<_IsOrdered, _AllowComments>::basic_array::dump(
     bool ensure_ascii,
     bool ignore_comments,
     bool multi_line_comments_format
-) const JSONC_EXCEPTION_TYPE {
+) const {
     return dump_typed<_IsOrdered, _AllowComments>(*this, ensure_ascii, indent, ignore_comments, multi_line_comments_format);
 }
 
@@ -732,7 +706,7 @@ basic_jsonc<_IsOrdered, _AllowComments>::basic_array::crend() const noexcept {
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline void basic_jsonc<_IsOrdered, _AllowComments>::basic_array::merge_patch(const basic_array& other) JSONC_EXCEPTION_TYPE {
+inline void basic_jsonc<_IsOrdered, _AllowComments>::basic_array::merge_patch(const basic_array& other) {
     if (other.empty()) { return; }
     for (const auto& val : other.storage_) {
         bool exist = false;
@@ -747,9 +721,7 @@ inline void basic_jsonc<_IsOrdered, _AllowComments>::basic_array::merge_patch(co
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(void) basic_jsonc<_IsOrdered, _AllowComments>::basic_array::merge_patch(
-    const basic_jsonc<_IsOrdered, _AllowComments>& other
-) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(void) basic_jsonc<_IsOrdered, _AllowComments>::basic_array::merge_patch(const basic_jsonc<_IsOrdered, _AllowComments>& other) {
     if (auto* rhs = std::get_if<basic_array>(&other.storage_)) {
         merge_patch(*rhs);
         return _JSONC_MAKE_VOID_RESULT();
@@ -758,7 +730,7 @@ inline JSONC_RESULT(void) basic_jsonc<_IsOrdered, _AllowComments>::basic_array::
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline void basic_jsonc<_IsOrdered, _AllowComments>::basic_array::merge_comments(const basic_array& other) JSONC_EXCEPTION_TYPE
+inline void basic_jsonc<_IsOrdered, _AllowComments>::basic_array::merge_comments(const basic_array& other)
     requires(_AllowComments)
 {
     if (other.empty()) { return; }
@@ -774,7 +746,7 @@ inline void basic_jsonc<_IsOrdered, _AllowComments>::basic_array::merge_comments
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline void basic_jsonc<_IsOrdered, _AllowComments>::basic_array::move_comments_to_before() JSONC_EXCEPTION_TYPE
+inline void basic_jsonc<_IsOrdered, _AllowComments>::basic_array::move_comments_to_before()
     requires(_AllowComments)
 {
     for (auto& val : *this) {
@@ -784,13 +756,12 @@ inline void basic_jsonc<_IsOrdered, _AllowComments>::basic_array::move_comments_
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline bool basic_jsonc<_IsOrdered, _AllowComments>::basic_array::operator==(const basic_array& other) const JSONC_EXCEPTION_TYPE {
+inline bool basic_jsonc<_IsOrdered, _AllowComments>::basic_array::operator==(const basic_array& other) const {
     return storage_ == other.storage_;
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline bool
-basic_jsonc<_IsOrdered, _AllowComments>::basic_array::operator==(const basic_jsonc<_IsOrdered, _AllowComments>& other) const JSONC_EXCEPTION_TYPE {
+inline bool basic_jsonc<_IsOrdered, _AllowComments>::basic_array::operator==(const basic_jsonc<_IsOrdered, _AllowComments>& other) const {
     if (auto* rhs = std::get_if<basic_array>(&other.storage_)) { return storage_ == rhs->storage_; }
     return false;
 }
@@ -1084,19 +1055,19 @@ inline constexpr std::size_t basic_jsonc<_IsOrdered, _AllowComments>::size() con
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(bool) basic_jsonc<_IsOrdered, _AllowComments>::contains(std::string_view index) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(bool) basic_jsonc<_IsOrdered, _AllowComments>::contains(std::string_view index) const {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->contains(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(bool) basic_jsonc<_IsOrdered, _AllowComments>::contains(std::string_view index, value_type type) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(bool) basic_jsonc<_IsOrdered, _AllowComments>::contains(std::string_view index, value_type type) const {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->contains(index, type); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(bool) basic_jsonc<_IsOrdered, _AllowComments>::empty() const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(bool) basic_jsonc<_IsOrdered, _AllowComments>::empty() const {
     return std::visit(
         [&](const auto& val) -> JSONC_RESULT(bool) {
             using T = std::decay_t<decltype(val)>;
@@ -1111,19 +1082,19 @@ inline JSONC_RESULT(bool) basic_jsonc<_IsOrdered, _AllowComments>::empty() const
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(bool) basic_jsonc<_IsOrdered, _AllowComments>::erase(std::string_view index) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(bool) basic_jsonc<_IsOrdered, _AllowComments>::erase(std::string_view index) {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->erase(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(bool) basic_jsonc<_IsOrdered, _AllowComments>::erase(std::size_t where) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(bool) basic_jsonc<_IsOrdered, _AllowComments>::erase(std::size_t where) {
     if (auto* storage = std::get_if<basic_array>(&storage_)) { return storage->erase(where); }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(bool) basic_jsonc<_IsOrdered, _AllowComments>::erase(std::size_t first, std::size_t last) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(bool) basic_jsonc<_IsOrdered, _AllowComments>::erase(std::size_t first, std::size_t last) {
     if (auto* storage = std::get_if<basic_array>(&storage_)) { return storage->erase(first, last); }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
@@ -1140,7 +1111,7 @@ constexpr T truncate_high_precision_number(std::string_view num_str) {
 template <bool _IsOrdered, bool _AllowComments>
 template <typename T>
     requires std::is_arithmetic_v<T>
-inline constexpr basic_jsonc<_IsOrdered, _AllowComments>::operator T() const JSONC_EXCEPTION_TYPE {
+inline constexpr basic_jsonc<_IsOrdered, _AllowComments>::operator T() const {
     return std::visit(
         [](const auto& val) -> T {
             using Type = std::decay_t<decltype(val)>;
@@ -1173,7 +1144,7 @@ inline constexpr basic_jsonc<_IsOrdered, _AllowComments>::operator T() const JSO
 template <bool _IsOrdered, bool _AllowComments>
 template <typename T>
     requires std::is_convertible_v<T, std::string>
-inline constexpr basic_jsonc<_IsOrdered, _AllowComments>::operator T() const JSONC_EXCEPTION_TYPE {
+inline constexpr basic_jsonc<_IsOrdered, _AllowComments>::operator T() const {
     if (auto* storage = std::get_if<std::string>(&storage_)) { return *storage; }
 #ifdef JSONC_NO_EXCEPTION
     std::abort();
@@ -1184,7 +1155,7 @@ inline constexpr basic_jsonc<_IsOrdered, _AllowComments>::operator T() const JSO
 
 template <bool _IsOrdered, bool _AllowComments>
 template <is_array_like T>
-inline constexpr basic_jsonc<_IsOrdered, _AllowComments>::operator T() const JSONC_EXCEPTION_TYPE {
+inline constexpr basic_jsonc<_IsOrdered, _AllowComments>::operator T() const {
     if (auto* storage = std::get_if<basic_array>(&storage_)) { return T(storage->begin(), storage->end()); }
 #ifdef JSONC_NO_EXCEPTION
     std::abort();
@@ -1195,7 +1166,7 @@ inline constexpr basic_jsonc<_IsOrdered, _AllowComments>::operator T() const JSO
 
 template <bool _IsOrdered, bool _AllowComments>
 template <is_object_like T>
-inline constexpr basic_jsonc<_IsOrdered, _AllowComments>::operator T() const JSONC_EXCEPTION_TYPE {
+inline constexpr basic_jsonc<_IsOrdered, _AllowComments>::operator T() const {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return T(storage->begin(), storage->end()); }
 #ifdef JSONC_NO_EXCEPTION
     std::abort();
@@ -1217,7 +1188,7 @@ inline std::string basic_jsonc<_IsOrdered, _AllowComments>::dump(
     bool ignore_comments,
     bool multi_line_comments_format,
     bool global_comments
-) const JSONC_EXCEPTION_TYPE {
+) const {
     if constexpr (_AllowComments) {
         auto result = std::visit(
             [&](const auto& val) {
@@ -1258,7 +1229,7 @@ constexpr bool is_jsonc_type_convertible_v = [] {
 
 template <bool _IsOrdered, bool _AllowComments>
 template <typename T>
-inline JSONC_RESULT(T&) basic_jsonc<_IsOrdered, _AllowComments>::as() JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(T&) basic_jsonc<_IsOrdered, _AllowComments>::as() {
     if constexpr (is_jsonc_type_convertible_v<T, _IsOrdered, _AllowComments>) {
         return std::visit(
             [](auto& val) -> JSONC_RESULT(T&) {
@@ -1278,7 +1249,7 @@ inline JSONC_RESULT(T&) basic_jsonc<_IsOrdered, _AllowComments>::as() JSONC_EXCE
 
 template <bool _IsOrdered, bool _AllowComments>
 template <typename T>
-inline JSONC_RESULT(const T&) basic_jsonc<_IsOrdered, _AllowComments>::as() const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(const T&) basic_jsonc<_IsOrdered, _AllowComments>::as() const {
     if constexpr (is_jsonc_type_convertible_v<T, _IsOrdered, _AllowComments>) {
         return std::visit(
             [](const auto& val) -> JSONC_RESULT(const T&) {
@@ -1299,7 +1270,7 @@ inline JSONC_RESULT(const T&) basic_jsonc<_IsOrdered, _AllowComments>::as() cons
 template <bool _IsOrdered, bool _AllowComments>
 template <typename T>
     requires std::is_arithmetic_v<T>
-inline JSONC_RESULT(T) basic_jsonc<_IsOrdered, _AllowComments>::get() const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(T) basic_jsonc<_IsOrdered, _AllowComments>::get() const {
     return std::visit(
         [](const auto& val) -> JSONC_RESULT(T) {
             using Type = std::decay_t<decltype(val)>;
@@ -1328,33 +1299,33 @@ inline JSONC_RESULT(T) basic_jsonc<_IsOrdered, _AllowComments>::get() const JSON
 template <bool _IsOrdered, bool _AllowComments>
 template <typename T>
     requires std::is_convertible_v<T, std::string>
-inline JSONC_RESULT(T) basic_jsonc<_IsOrdered, _AllowComments>::get() const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(T) basic_jsonc<_IsOrdered, _AllowComments>::get() const {
     if (auto* storage = std::get_if<std::string>(&storage_)) { return *storage; }
     _JSONC_TYPE_ERROR("bad type cast");
 }
 
 template <bool _IsOrdered, bool _AllowComments>
 template <is_array_like T>
-inline JSONC_RESULT(T) basic_jsonc<_IsOrdered, _AllowComments>::get() const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(T) basic_jsonc<_IsOrdered, _AllowComments>::get() const {
     if (auto* storage = std::get_if<basic_array>(&storage_)) { return T(storage->begin(), storage->end()); }
     _JSONC_TYPE_ERROR("bad type cast");
 }
 
 template <bool _IsOrdered, bool _AllowComments>
 template <is_object_like T>
-inline JSONC_RESULT(T) basic_jsonc<_IsOrdered, _AllowComments>::get() const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(T) basic_jsonc<_IsOrdered, _AllowComments>::get() const {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return T(storage->begin(), storage->end()); }
     _JSONC_TYPE_ERROR("bad type cast");
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(std::string) basic_jsonc<_IsOrdered, _AllowComments>::get_big_int_view() const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(std::string) basic_jsonc<_IsOrdered, _AllowComments>::get_big_int_view() const {
     if (auto* storage = std::get_if<basic_big_integer>(&storage_)) { return storage->view_; }
     _JSONC_TYPE_ERROR(std::format("Type must be a big integer, but is {}", type_name()));
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(std::string) basic_jsonc<_IsOrdered, _AllowComments>::get_any_int_view() const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(std::string) basic_jsonc<_IsOrdered, _AllowComments>::get_any_int_view() const {
     return std::visit(
         [&](const auto& val) -> JSONC_RESULT(std::string) {
             using Type = std::decay_t<decltype(val)>;
@@ -1371,13 +1342,13 @@ inline JSONC_RESULT(std::string) basic_jsonc<_IsOrdered, _AllowComments>::get_an
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(std::string) basic_jsonc<_IsOrdered, _AllowComments>::get_high_precision_float_view() const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(std::string) basic_jsonc<_IsOrdered, _AllowComments>::get_high_precision_float_view() const {
     if (auto* storage = std::get_if<basic_high_precision_float>(&storage_)) { return storage->view_; }
     _JSONC_TYPE_ERROR(std::format("Type must be a high-precision float, but is {}", type_name()));
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(std::string) basic_jsonc<_IsOrdered, _AllowComments>::get_any_float_view() const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(std::string) basic_jsonc<_IsOrdered, _AllowComments>::get_any_float_view() const {
     return std::visit(
         [&](const auto& val) -> JSONC_RESULT(std::string) {
             using Type = std::decay_t<decltype(val)>;
@@ -1394,7 +1365,7 @@ inline JSONC_RESULT(std::string) basic_jsonc<_IsOrdered, _AllowComments>::get_an
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(std::string) basic_jsonc<_IsOrdered, _AllowComments>::get_any_number_view() const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(std::string) basic_jsonc<_IsOrdered, _AllowComments>::get_any_number_view() const {
     return std::visit(
         [&](const auto& val) -> JSONC_RESULT(std::string) {
             using Type = std::decay_t<decltype(val)>;
@@ -1411,9 +1382,7 @@ inline JSONC_RESULT(std::string) basic_jsonc<_IsOrdered, _AllowComments>::get_an
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::operator[](
-    std::string_view index
-) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::operator[](std::string_view index) {
     if (hold(value_type::null)) { storage_.template emplace<6>(); }
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return (*storage)[index]; }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
@@ -1422,7 +1391,7 @@ inline JSONC_RESULT(basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrd
 template <bool _IsOrdered, bool _AllowComments>
 inline JSONC_RESULT(const basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::operator[](
     std::string_view index
-) const JSONC_EXCEPTION_TYPE {
+) const {
     if (auto* storage = std::get_if<basic_object>(&storage_)) {
         auto res = storage->storage_.find(index);
         if (res != storage->storage_.end()) { return _JSONC_MAKE_RESULT(res->second); }
@@ -1432,64 +1401,51 @@ inline JSONC_RESULT(const basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::operator[](
-    std::size_t index
-) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::operator[](std::size_t index) {
     if (auto* storage = std::get_if<basic_array>(&storage_)) { return (*storage)[index]; }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(const basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::operator[](
-    std::size_t index
-) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(const basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::operator[](std::size_t index) const {
     if (auto* storage = std::get_if<basic_array>(&storage_)) { return (*storage)[index]; }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::at(
-    std::string_view index
-) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::at(std::string_view index) {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->at(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::at(
-    std::string_view                               index,
-    const basic_jsonc<_IsOrdered, _AllowComments>& default_value
-) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(
+    basic_jsonc<_IsOrdered, _AllowComments>&
+) basic_jsonc<_IsOrdered, _AllowComments>::at(std::string_view index, const basic_jsonc<_IsOrdered, _AllowComments>& default_value) {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->at(index, default_value); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(const basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::at(
-    std::string_view index
-) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(const basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::at(std::string_view index) const {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->at(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an object, but is {}", type_name()));
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::at(std::size_t index) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::at(std::size_t index) {
     if (auto* storage = std::get_if<basic_array>(&storage_)) { return storage->at(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(const basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::at(
-    std::size_t index
-) const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(const basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::at(std::size_t index) const {
     if (auto* storage = std::get_if<basic_array>(&storage_)) { return storage->at(index); }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(void) basic_jsonc<_IsOrdered, _AllowComments>::push_back(
-    const basic_jsonc<_IsOrdered, _AllowComments>& val
-) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(void) basic_jsonc<_IsOrdered, _AllowComments>::push_back(const basic_jsonc<_IsOrdered, _AllowComments>& val) {
     if (hold(value_type::null)) { storage_.template emplace<7>(); }
     if (auto* storage = std::get_if<basic_array>(&storage_)) {
         storage->push_back(std::move(val));
@@ -1499,7 +1455,7 @@ inline JSONC_RESULT(void) basic_jsonc<_IsOrdered, _AllowComments>::push_back(
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(void) basic_jsonc<_IsOrdered, _AllowComments>::push_back(basic_jsonc<_IsOrdered, _AllowComments>&& val) JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(void) basic_jsonc<_IsOrdered, _AllowComments>::push_back(basic_jsonc<_IsOrdered, _AllowComments>&& val) {
     if (hold(value_type::null)) { storage_.template emplace<7>(); }
     if (auto* storage = std::get_if<basic_array>(&storage_)) {
         storage->push_back(std::move(val));
@@ -1509,31 +1465,31 @@ inline JSONC_RESULT(void) basic_jsonc<_IsOrdered, _AllowComments>::push_back(bas
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(const basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::front() const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(const basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::front() const {
     if (auto* storage = std::get_if<basic_array>(&storage_)) { return storage->front(); }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::front() JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::front() {
     if (auto* storage = std::get_if<basic_array>(&storage_)) { return storage->front(); }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(const basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::back() const JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(const basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::back() const {
     if (auto* storage = std::get_if<basic_array>(&storage_)) { return storage->back(); }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::back() JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(basic_jsonc<_IsOrdered, _AllowComments>&) basic_jsonc<_IsOrdered, _AllowComments>::back() {
     if (auto* storage = std::get_if<basic_array>(&storage_)) { return storage->back(); }
     _JSONC_TYPE_ERROR(std::format("Type must be an array, but is {}", type_name()));
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(void) basic_jsonc<_IsOrdered, _AllowComments>::clear() JSONC_EXCEPTION_TYPE {
+inline JSONC_RESULT(void) basic_jsonc<_IsOrdered, _AllowComments>::clear() {
     return std::visit(
         [&](auto& val) -> JSONC_RESULT(void) {
             using T = std::decay_t<decltype(val)>;
@@ -1609,8 +1565,7 @@ inline basic_jsonc<_IsOrdered, _AllowComments>::const_reverse_iterator basic_jso
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline void
-basic_jsonc<_IsOrdered, _AllowComments>::merge_patch(const basic_jsonc<_IsOrdered, _AllowComments>& other, bool merge_list) JSONC_EXCEPTION_TYPE {
+inline void basic_jsonc<_IsOrdered, _AllowComments>::merge_patch(const basic_jsonc<_IsOrdered, _AllowComments>& other, bool merge_list) {
     if (is_object() && other.is_object()) {
 #ifdef JSONC_USE_EXPECTED
         as<basic_object>()->get().merge_patch(other.as<basic_object>()->get(), merge_list);
@@ -1629,7 +1584,7 @@ basic_jsonc<_IsOrdered, _AllowComments>::merge_patch(const basic_jsonc<_IsOrdere
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline void basic_jsonc<_IsOrdered, _AllowComments>::merge_comments(const basic_jsonc<_IsOrdered, _AllowComments>& other) JSONC_EXCEPTION_TYPE
+inline void basic_jsonc<_IsOrdered, _AllowComments>::merge_comments(const basic_jsonc<_IsOrdered, _AllowComments>& other)
     requires(_AllowComments)
 {
     if (is_object() && other.is_object()) {
@@ -1650,7 +1605,7 @@ inline void basic_jsonc<_IsOrdered, _AllowComments>::merge_comments(const basic_
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline void basic_jsonc<_IsOrdered, _AllowComments>::move_comments_to_before() JSONC_EXCEPTION_TYPE
+inline void basic_jsonc<_IsOrdered, _AllowComments>::move_comments_to_before()
     requires(_AllowComments)
 {
     if (is_object()) {
@@ -1671,8 +1626,7 @@ inline void basic_jsonc<_IsOrdered, _AllowComments>::move_comments_to_before() J
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline constexpr bool
-basic_jsonc<_IsOrdered, _AllowComments>::operator==(const basic_jsonc<_IsOrdered, _AllowComments>& other) const JSONC_EXCEPTION_TYPE {
+inline constexpr bool basic_jsonc<_IsOrdered, _AllowComments>::operator==(const basic_jsonc<_IsOrdered, _AllowComments>& other) const {
     return storage_ == other.storage_;
 }
 
@@ -1719,63 +1673,63 @@ inline const std::vector<std::string>& basic_jsonc<_IsOrdered, _AllowComments>::
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline std::vector<std::string> basic_jsonc<_IsOrdered, _AllowComments>::get_before_comments() const JSONC_EXCEPTION_TYPE
+inline std::vector<std::string> basic_jsonc<_IsOrdered, _AllowComments>::get_before_comments() const
     requires(_AllowComments)
 {
     return before_comments_;
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline std::vector<std::string> basic_jsonc<_IsOrdered, _AllowComments>::get_after_comments() const JSONC_EXCEPTION_TYPE
+inline std::vector<std::string> basic_jsonc<_IsOrdered, _AllowComments>::get_after_comments() const
     requires(_AllowComments)
 {
     return after_comments_;
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline void basic_jsonc<_IsOrdered, _AllowComments>::set_before_comments(const std::vector<std::string>& comments) JSONC_EXCEPTION_TYPE
+inline void basic_jsonc<_IsOrdered, _AllowComments>::set_before_comments(const std::vector<std::string>& comments)
     requires(_AllowComments)
 {
     before_comments_ = comments;
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline void basic_jsonc<_IsOrdered, _AllowComments>::set_after_comments(const std::vector<std::string>& comments) JSONC_EXCEPTION_TYPE
+inline void basic_jsonc<_IsOrdered, _AllowComments>::set_after_comments(const std::vector<std::string>& comments)
     requires(_AllowComments)
 {
     after_comments_ = comments;
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline void basic_jsonc<_IsOrdered, _AllowComments>::add_before_comment(std::string_view comment) JSONC_EXCEPTION_TYPE
+inline void basic_jsonc<_IsOrdered, _AllowComments>::add_before_comment(std::string_view comment)
     requires(_AllowComments)
 {
     before_comments_.append_range(split_comments(comment));
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline void basic_jsonc<_IsOrdered, _AllowComments>::add_after_comment(std::string_view comment) JSONC_EXCEPTION_TYPE
+inline void basic_jsonc<_IsOrdered, _AllowComments>::add_after_comment(std::string_view comment)
     requires(_AllowComments)
 {
     after_comments_.append_range(split_comments(comment));
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline void basic_jsonc<_IsOrdered, _AllowComments>::clear_before_comments() JSONC_EXCEPTION_TYPE
+inline void basic_jsonc<_IsOrdered, _AllowComments>::clear_before_comments()
     requires(_AllowComments)
 {
     before_comments_.clear();
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline void basic_jsonc<_IsOrdered, _AllowComments>::clear_after_comments() JSONC_EXCEPTION_TYPE
+inline void basic_jsonc<_IsOrdered, _AllowComments>::clear_after_comments()
     requires(_AllowComments)
 {
     after_comments_.clear();
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline bool basic_jsonc<_IsOrdered, _AllowComments>::remove_before_comment(std::size_t comment_index) JSONC_EXCEPTION_TYPE
+inline bool basic_jsonc<_IsOrdered, _AllowComments>::remove_before_comment(std::size_t comment_index)
     requires(_AllowComments)
 {
     if (comment_index < before_comments_.size()) {
@@ -1786,7 +1740,7 @@ inline bool basic_jsonc<_IsOrdered, _AllowComments>::remove_before_comment(std::
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline bool basic_jsonc<_IsOrdered, _AllowComments>::remove_after_comment(std::size_t comment_index) JSONC_EXCEPTION_TYPE
+inline bool basic_jsonc<_IsOrdered, _AllowComments>::remove_after_comment(std::size_t comment_index)
     requires(_AllowComments)
 {
     if (comment_index < after_comments_.size()) {
@@ -1811,7 +1765,7 @@ inline constexpr std::size_t basic_jsonc<_IsOrdered, _AllowComments>::after_comm
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(bool) basic_jsonc<_IsOrdered, _AllowComments>::has_key_before_comments(std::string_view index) const JSONC_EXCEPTION_TYPE
+inline JSONC_RESULT(bool) basic_jsonc<_IsOrdered, _AllowComments>::has_key_before_comments(std::string_view index) const
     requires(_AllowComments)
 {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->has_key_before_comments(index); }
@@ -1819,7 +1773,7 @@ inline JSONC_RESULT(bool) basic_jsonc<_IsOrdered, _AllowComments>::has_key_befor
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(bool) basic_jsonc<_IsOrdered, _AllowComments>::has_key_after_comments(std::string_view index) const JSONC_EXCEPTION_TYPE
+inline JSONC_RESULT(bool) basic_jsonc<_IsOrdered, _AllowComments>::has_key_after_comments(std::string_view index) const
     requires(_AllowComments)
 {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->has_key_after_comments(index); }
@@ -1827,9 +1781,7 @@ inline JSONC_RESULT(bool) basic_jsonc<_IsOrdered, _AllowComments>::has_key_after
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(std::vector<std::string>&) basic_jsonc<_IsOrdered, _AllowComments>::key_before_comments(
-    std::string_view index
-) JSONC_EXCEPTION_TYPE
+inline JSONC_RESULT(std::vector<std::string>&) basic_jsonc<_IsOrdered, _AllowComments>::key_before_comments(std::string_view index)
     requires(_AllowComments)
 {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->key_before_comments(index); }
@@ -1837,9 +1789,7 @@ inline JSONC_RESULT(std::vector<std::string>&) basic_jsonc<_IsOrdered, _AllowCom
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(const std::vector<std::string>&) basic_jsonc<_IsOrdered, _AllowComments>::key_before_comments(
-    std::string_view index
-) const JSONC_EXCEPTION_TYPE
+inline JSONC_RESULT(const std::vector<std::string>&) basic_jsonc<_IsOrdered, _AllowComments>::key_before_comments(std::string_view index) const
     requires(_AllowComments)
 {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->key_before_comments(index); }
@@ -1847,9 +1797,7 @@ inline JSONC_RESULT(const std::vector<std::string>&) basic_jsonc<_IsOrdered, _Al
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(std::vector<std::string>&) basic_jsonc<_IsOrdered, _AllowComments>::key_after_comments(
-    std::string_view index
-) JSONC_EXCEPTION_TYPE
+inline JSONC_RESULT(std::vector<std::string>&) basic_jsonc<_IsOrdered, _AllowComments>::key_after_comments(std::string_view index)
     requires(_AllowComments)
 {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->key_after_comments(index); }
@@ -1857,9 +1805,7 @@ inline JSONC_RESULT(std::vector<std::string>&) basic_jsonc<_IsOrdered, _AllowCom
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(const std::vector<std::string>&) basic_jsonc<_IsOrdered, _AllowComments>::key_after_comments(
-    std::string_view index
-) const JSONC_EXCEPTION_TYPE
+inline JSONC_RESULT(const std::vector<std::string>&) basic_jsonc<_IsOrdered, _AllowComments>::key_after_comments(std::string_view index) const
     requires(_AllowComments)
 {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->key_after_comments(index); }
@@ -1867,9 +1813,7 @@ inline JSONC_RESULT(const std::vector<std::string>&) basic_jsonc<_IsOrdered, _Al
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(std::vector<std::string>) basic_jsonc<_IsOrdered, _AllowComments>::get_key_before_comments(
-    std::string_view index
-) const JSONC_EXCEPTION_TYPE
+inline JSONC_RESULT(std::vector<std::string>) basic_jsonc<_IsOrdered, _AllowComments>::get_key_before_comments(std::string_view index) const
     requires(_AllowComments)
 {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->get_key_before_comments(index); }
@@ -1877,9 +1821,7 @@ inline JSONC_RESULT(std::vector<std::string>) basic_jsonc<_IsOrdered, _AllowComm
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(std::vector<std::string>) basic_jsonc<_IsOrdered, _AllowComments>::get_key_after_comments(
-    std::string_view index
-) const JSONC_EXCEPTION_TYPE
+inline JSONC_RESULT(std::vector<std::string>) basic_jsonc<_IsOrdered, _AllowComments>::get_key_after_comments(std::string_view index) const
     requires(_AllowComments)
 {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->get_key_after_comments(index); }
@@ -1889,7 +1831,7 @@ inline JSONC_RESULT(std::vector<std::string>) basic_jsonc<_IsOrdered, _AllowComm
 template <bool _IsOrdered, bool _AllowComments>
 inline JSONC_RESULT(
     std::string
-) basic_jsonc<_IsOrdered, _AllowComments>::get_key_before_comment(std::string_view index, std::size_t comment_index) const JSONC_EXCEPTION_TYPE
+) basic_jsonc<_IsOrdered, _AllowComments>::get_key_before_comment(std::string_view index, std::size_t comment_index) const
     requires(_AllowComments)
 {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->get_key_before_comment(index, comment_index); }
@@ -1899,7 +1841,7 @@ inline JSONC_RESULT(
 template <bool _IsOrdered, bool _AllowComments>
 inline JSONC_RESULT(
     std::string
-) basic_jsonc<_IsOrdered, _AllowComments>::get_key_after_comment(std::string_view index, std::size_t comment_index) const JSONC_EXCEPTION_TYPE
+) basic_jsonc<_IsOrdered, _AllowComments>::get_key_after_comment(std::string_view index, std::size_t comment_index) const
     requires(_AllowComments)
 {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->get_key_after_comment(index, comment_index); }
@@ -1907,10 +1849,9 @@ inline JSONC_RESULT(
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(bool) basic_jsonc<_IsOrdered, _AllowComments>::set_key_before_comments(
-    std::string_view                index,
-    const std::vector<std::string>& comments
-) JSONC_EXCEPTION_TYPE
+inline JSONC_RESULT(
+    bool
+) basic_jsonc<_IsOrdered, _AllowComments>::set_key_before_comments(std::string_view index, const std::vector<std::string>& comments)
     requires(_AllowComments)
 {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->set_key_before_comments(index, comments); }
@@ -1918,10 +1859,9 @@ inline JSONC_RESULT(bool) basic_jsonc<_IsOrdered, _AllowComments>::set_key_befor
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(bool) basic_jsonc<_IsOrdered, _AllowComments>::set_key_after_comments(
-    std::string_view                index,
-    const std::vector<std::string>& comments
-) JSONC_EXCEPTION_TYPE
+inline JSONC_RESULT(
+    bool
+) basic_jsonc<_IsOrdered, _AllowComments>::set_key_after_comments(std::string_view index, const std::vector<std::string>& comments)
     requires(_AllowComments)
 {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->set_key_after_comments(index, comments); }
@@ -1929,9 +1869,7 @@ inline JSONC_RESULT(bool) basic_jsonc<_IsOrdered, _AllowComments>::set_key_after
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(
-    bool
-) basic_jsonc<_IsOrdered, _AllowComments>::add_key_before_comment(std::string_view index, std::string_view comment) JSONC_EXCEPTION_TYPE
+inline JSONC_RESULT(bool) basic_jsonc<_IsOrdered, _AllowComments>::add_key_before_comment(std::string_view index, std::string_view comment)
     requires(_AllowComments)
 {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->add_key_before_comment(index, comment); }
@@ -1939,9 +1877,7 @@ inline JSONC_RESULT(
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(
-    bool
-) basic_jsonc<_IsOrdered, _AllowComments>::add_key_after_comment(std::string_view index, std::string_view comment) JSONC_EXCEPTION_TYPE
+inline JSONC_RESULT(bool) basic_jsonc<_IsOrdered, _AllowComments>::add_key_after_comment(std::string_view index, std::string_view comment)
     requires(_AllowComments)
 {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->add_key_after_comment(index, comment); }
@@ -1949,7 +1885,7 @@ inline JSONC_RESULT(
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(void) basic_jsonc<_IsOrdered, _AllowComments>::clear_key_before_comments(std::string_view index) JSONC_EXCEPTION_TYPE
+inline JSONC_RESULT(void) basic_jsonc<_IsOrdered, _AllowComments>::clear_key_before_comments(std::string_view index)
     requires(_AllowComments)
 {
     if (auto* storage = std::get_if<basic_object>(&storage_)) {
@@ -1960,7 +1896,7 @@ inline JSONC_RESULT(void) basic_jsonc<_IsOrdered, _AllowComments>::clear_key_bef
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(void) basic_jsonc<_IsOrdered, _AllowComments>::clear_key_after_comments(std::string_view index) JSONC_EXCEPTION_TYPE
+inline JSONC_RESULT(void) basic_jsonc<_IsOrdered, _AllowComments>::clear_key_after_comments(std::string_view index)
     requires(_AllowComments)
 {
     if (auto* storage = std::get_if<basic_object>(&storage_)) {
@@ -1971,9 +1907,7 @@ inline JSONC_RESULT(void) basic_jsonc<_IsOrdered, _AllowComments>::clear_key_aft
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(
-    bool
-) basic_jsonc<_IsOrdered, _AllowComments>::remove_key_before_comment(std::string_view index, std::size_t comment_index) JSONC_EXCEPTION_TYPE
+inline JSONC_RESULT(bool) basic_jsonc<_IsOrdered, _AllowComments>::remove_key_before_comment(std::string_view index, std::size_t comment_index)
     requires(_AllowComments)
 {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->remove_key_before_comment(index, comment_index); }
@@ -1981,9 +1915,7 @@ inline JSONC_RESULT(
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(
-    bool
-) basic_jsonc<_IsOrdered, _AllowComments>::remove_key_after_comment(std::string_view index, std::size_t comment_index) JSONC_EXCEPTION_TYPE
+inline JSONC_RESULT(bool) basic_jsonc<_IsOrdered, _AllowComments>::remove_key_after_comment(std::string_view index, std::size_t comment_index)
     requires(_AllowComments)
 {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->remove_key_after_comment(index, comment_index); }
@@ -1991,7 +1923,7 @@ inline JSONC_RESULT(
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(std::size_t) basic_jsonc<_IsOrdered, _AllowComments>::key_before_comments_size(std::string_view index) const JSONC_EXCEPTION_TYPE
+inline JSONC_RESULT(std::size_t) basic_jsonc<_IsOrdered, _AllowComments>::key_before_comments_size(std::string_view index) const
     requires(_AllowComments)
 {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->key_before_comments_size(index); }
@@ -1999,7 +1931,7 @@ inline JSONC_RESULT(std::size_t) basic_jsonc<_IsOrdered, _AllowComments>::key_be
 }
 
 template <bool _IsOrdered, bool _AllowComments>
-inline JSONC_RESULT(std::size_t) basic_jsonc<_IsOrdered, _AllowComments>::key_after_comments_size(std::string_view index) const JSONC_EXCEPTION_TYPE
+inline JSONC_RESULT(std::size_t) basic_jsonc<_IsOrdered, _AllowComments>::key_after_comments_size(std::string_view index) const
     requires(_AllowComments)
 {
     if (auto* storage = std::get_if<basic_object>(&storage_)) { return storage->key_after_comments_size(index); }
@@ -2087,8 +2019,8 @@ inline JSONC_PARSE_RESULT(basic_jsonc<_IsOrdered, _AllowComments>) basic_jsonc<_
     bool             allow_trailing_comma,
     bool             ignore_comments,
     bool             float_keep_precision
-) JSONC_EXCEPTION_TYPE {
+) {
     return detail::parse_basic_jsonc<_IsOrdered, _AllowComments>(content, allow_trailing_comma, ignore_comments, float_keep_precision);
 }
 
-} // namespace jsonc::inline abi_v1_3_1::detail
+} // namespace sculk::jsonc::inline abi_v1_4_0::detail

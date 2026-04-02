@@ -1,14 +1,10 @@
 #pragma once
 #include "type.hpp"
 
-namespace jsonc::inline abi_v1_3_1::detail {
+namespace sculk::jsonc::inline abi_v1_4_0::detail {
 
-inline std::string format_comments(
-    const std::vector<std::string>& comments,
-    std::string_view                indent_space,
-    bool                            nolinefeed,
-    bool                            multi_line_comments_format
-) JSONC_EXCEPTION_TYPE {
+inline std::string
+format_comments(const std::vector<std::string>& comments, std::string_view indent_space, bool nolinefeed, bool multi_line_comments_format) {
     std::string result{};
     if (comments.size() > 0) {
         if (comments.size() == 1) {
@@ -60,7 +56,7 @@ inline std::string format_comments(
     return result;
 }
 
-inline std::string& fix_indent(std::string& str, std::string_view indent_space) JSONC_EXCEPTION_TYPE {
+inline std::string& fix_indent(std::string& str, std::string_view indent_space) {
     if (!indent_space.empty()) {
         for (std::string::size_type pos(0); pos != std::string::npos; pos += indent_space.length()) {
             if ((pos = str.find('\n', pos)) != std::string::npos) {
@@ -74,12 +70,12 @@ inline std::string& fix_indent(std::string& str, std::string_view indent_space) 
 }
 
 template <bool B, bool A>
-inline std::string dump_typed(const std::monostate&, bool, int, bool, bool) JSONC_EXCEPTION_TYPE {
+inline std::string dump_typed(const std::monostate&, bool, int, bool, bool) {
     return "null";
 }
 
 template <bool B, bool A>
-inline std::string dump_typed(const std::string& str, bool ensure_ascii, int, bool, bool) JSONC_EXCEPTION_TYPE {
+inline std::string dump_typed(const std::string& str, bool ensure_ascii, int, bool, bool) {
     if (str.empty()) { return "\"\""; }
 
     std::string result{};
@@ -174,13 +170,8 @@ inline std::string dump_typed(const std::string& str, bool ensure_ascii, int, bo
 }
 
 template <bool B, bool A>
-inline std::string dump_typed(
-    const typename basic_jsonc<B, A>::array_type& val,
-    bool                                          ensure_ascii,
-    int                                           indent,
-    bool                                          ignore_comments,
-    bool                                          multi_line_comments_format
-) JSONC_EXCEPTION_TYPE {
+inline std::string
+dump_typed(const typename basic_jsonc<B, A>::array_type& val, bool ensure_ascii, int indent, bool ignore_comments, bool multi_line_comments_format) {
     std::string result{"["};
 
     std::size_t i = val.size();
@@ -222,13 +213,8 @@ inline std::string dump_typed(
 }
 
 template <bool B, bool A>
-inline std::string dump_typed(
-    const typename basic_jsonc<B, A>::object_type& val,
-    bool                                           ensure_ascii,
-    int                                            indent,
-    bool                                           ignore_comments,
-    bool                                           multi_line_comments_format
-) JSONC_EXCEPTION_TYPE {
+inline std::string
+dump_typed(const typename basic_jsonc<B, A>::object_type& val, bool ensure_ascii, int indent, bool ignore_comments, bool multi_line_comments_format) {
     std::string result{"{"};
 
     std::size_t i = val.size();
@@ -302,18 +288,18 @@ inline std::string dump_typed(
 
 template <bool B, bool A, typename T>
     requires std::is_arithmetic_v<T>
-inline std::string dump_typed(T val, bool, int, bool, bool) JSONC_EXCEPTION_TYPE {
+inline std::string dump_typed(T val, bool, int, bool, bool) {
     return std::format("{}", val);
 }
 
 template <bool B, bool A>
-inline std::string dump_typed(basic_big_integer val, bool, int, bool, bool) JSONC_EXCEPTION_TYPE {
+inline std::string dump_typed(basic_big_integer val, bool, int, bool, bool) {
     return val.view_;
 }
 
 template <bool B, bool A>
-inline std::string dump_typed(basic_high_precision_float val, bool, int, bool, bool) JSONC_EXCEPTION_TYPE {
+inline std::string dump_typed(basic_high_precision_float val, bool, int, bool, bool) {
     return val.view_;
 }
 
-} // namespace jsonc::inline abi_v1_3_1::detail
+} // namespace sculk::jsonc::inline abi_v1_4_0::detail

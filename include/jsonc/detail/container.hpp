@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <utility>
 
-namespace jsonc::inline abi_v1_3_1::detail {
+namespace sculk::jsonc::inline abi_v1_4_0::detail {
 
 struct string_hash {
     using is_transparent = void;
@@ -82,19 +82,19 @@ public:
     [[nodiscard]] const_reverse_iterator crbegin() const noexcept { return storage_.crbegin(); }
     [[nodiscard]] const_reverse_iterator crend() const noexcept { return storage_.crend(); }
 
-    [[nodiscard]] const_iterator find(std::string_view _Keyval) const JSONC_EXCEPTION_TYPE {
+    [[nodiscard]] const_iterator find(std::string_view _Keyval) const {
         auto it = entry_.find(_Keyval);
         if (it != entry_.end()) { return it->second; }
         return storage_.end();
     }
-    [[nodiscard]] iterator find(std::string_view _Keyval) JSONC_EXCEPTION_TYPE {
+    [[nodiscard]] iterator find(std::string_view _Keyval) {
         auto it = entry_.find(_Keyval);
         if (it != entry_.end()) { return it->second; }
         return storage_.end();
     }
 
     template <typename... _Mappedty>
-    std::pair<iterator, bool> try_emplace(std::string_view _Keyval, _Mappedty&&... _Mapval) JSONC_EXCEPTION_TYPE {
+    std::pair<iterator, bool> try_emplace(std::string_view _Keyval, _Mappedty&&... _Mapval) {
         auto it = entry_.find(_Keyval);
         if (it != entry_.end()) { return {it->second, false}; }
         if constexpr (sizeof...(_Mappedty) > 0) {
@@ -119,11 +119,11 @@ public:
         std::abort();
     }
 
-    [[nodiscard]] bool operator==(const ordered_string_map& other) const JSONC_EXCEPTION_TYPE { return storage_ == other.storage_; }
+    [[nodiscard]] bool operator==(const ordered_string_map& other) const { return storage_ == other.storage_; }
 
 private:
     storage_type storage_;
     entry_type   entry_;
 };
 
-} // namespace jsonc::inline abi_v1_3_1::detail
+} // namespace sculk::jsonc::inline abi_v1_4_0::detail

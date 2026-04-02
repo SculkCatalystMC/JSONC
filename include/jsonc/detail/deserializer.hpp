@@ -3,7 +3,7 @@
 #include "type.hpp"
 #include <charconv>
 
-namespace jsonc::inline abi_v1_3_1::detail {
+namespace sculk::jsonc::inline abi_v1_4_0::detail {
 
 template <bool B, bool A>
 JSONC_PARSE_RESULT(basic_jsonc<B, A>) parse_basic_jsonc_impl(
@@ -12,18 +12,18 @@ JSONC_PARSE_RESULT(basic_jsonc<B, A>) parse_basic_jsonc_impl(
     bool allow_trailing_comma,
     bool ignore_comments,
     bool float_keep_precision
-) JSONC_EXCEPTION_TYPE;
+) ;
 
 template <bool B, bool A>
 JSONC_PARSE_RESULT(basic_jsonc<B, A>) parse_basic_jsonc(std::string_view& str,
     bool allow_trailing_comma,
     bool ignore_comments,
     bool float_keep_precision
-) JSONC_EXCEPTION_TYPE;
+) ;
 
 namespace {
 
-inline JSONC_PARSE_RESULT(std::string_view) extract_comment(std::string_view& s) JSONC_EXCEPTION_TYPE {
+inline JSONC_PARSE_RESULT(std::string_view) extract_comment(std::string_view& s) {
     std::size_t      i = 0;
     std::string_view result;
     switch (s[i++]) {
@@ -102,7 +102,7 @@ inline void skip_spaces_nolinefeed(std::string_view& s) noexcept {
     s.remove_prefix(std::min(i - 1, s.size()));
 }
 
-inline std::vector<std::string> parse_comments(std::string_view comment) JSONC_EXCEPTION_TYPE {
+inline std::vector<std::string> parse_comments(std::string_view comment) {
     std::vector<std::string> result{};
     std::size_t              pos = 0;
     while ((pos = comment.find('\n')) != std::string::npos) {
@@ -121,7 +121,7 @@ inline std::vector<std::string> parse_comments(std::string_view comment) JSONC_E
 }
 
 template <bool A>
-inline bool extract_comments(std::string_view& s, std::vector<std::string>& comments, bool ignore_comments) JSONC_EXCEPTION_TYPE {
+inline bool extract_comments(std::string_view& s, std::vector<std::string>& comments, bool ignore_comments) {
     skip_spaces(s);
     while (s.starts_with('/')) {
         s.remove_prefix(1);
@@ -145,7 +145,7 @@ inline bool extract_comments(std::string_view& s, std::vector<std::string>& comm
 }
 
 template <bool A>
-inline bool extarct_comma_back_comments(std::string_view& s, std::vector<std::string>& comments, bool ignore_comments) JSONC_EXCEPTION_TYPE {
+inline bool extarct_comma_back_comments(std::string_view& s, std::vector<std::string>& comments, bool ignore_comments) {
     skip_spaces_nolinefeed(s);
     if (s.starts_with('/')) {
         s.remove_prefix(1);
@@ -167,7 +167,7 @@ inline bool extarct_comma_back_comments(std::string_view& s, std::vector<std::st
     return true;
 }
 
-inline constexpr char get_current_char(std::string_view& s) JSONC_EXCEPTION_TYPE {
+inline constexpr char get_current_char(std::string_view& s) {
     if (s.empty()) { return '\0'; }
     char c = s.front();
     s.remove_prefix(1);
@@ -177,7 +177,7 @@ inline constexpr char get_current_char(std::string_view& s) JSONC_EXCEPTION_TYPE
 template <bool B, bool A>
 inline JSONC_PARSE_RESULT(
     basic_jsonc<B, A>
-) parse_null(std::string_view& str, std::vector<std::string>&& comments_before, bool ignore_comments, bool) JSONC_EXCEPTION_TYPE {
+) parse_null(std::string_view& str, std::vector<std::string>&& comments_before, bool ignore_comments, bool) {
     if (str.starts_with("null")) {
         str.remove_prefix(4);
         basic_jsonc<B, A>        result{nullptr};
@@ -195,7 +195,7 @@ inline JSONC_PARSE_RESULT(
 template <bool Value, bool B, bool A>
 inline JSONC_PARSE_RESULT(
     basic_jsonc<B, A>
-) parse_boolean(std::string_view& str, std::vector<std::string>&& comments_before, bool ignore_comments, bool) JSONC_EXCEPTION_TYPE {
+) parse_boolean(std::string_view& str, std::vector<std::string>&& comments_before, bool ignore_comments, bool) {
     if constexpr (Value == true) {
         if (str.starts_with("true")) {
             str.remove_prefix(4);
@@ -273,12 +273,9 @@ constexpr std::string_view extract_jsonc_number(std::string_view& s, bool& is_in
 }
 
 template <bool B, bool A>
-inline JSONC_PARSE_RESULT(basic_jsonc<B, A>) parse_number(
-    std::string_view&          str,
-    std::vector<std::string>&& comments_before,
-    bool                       ignore_comments,
-    bool                       float_keep_precision
-) JSONC_EXCEPTION_TYPE {
+inline JSONC_PARSE_RESULT(
+    basic_jsonc<B, A>
+) parse_number(std::string_view& str, std::vector<std::string>&& comments_before, bool ignore_comments, bool float_keep_precision) {
     bool is_int{true};
     bool is_negative{false};
     bool is_scientific{false};
@@ -329,7 +326,7 @@ inline JSONC_PARSE_RESULT(basic_jsonc<B, A>) parse_number(
     return result;
 }
 
-inline JSONC_PARSE_RESULT(int) get_codepoint(std::string_view& s) JSONC_EXCEPTION_TYPE {
+inline JSONC_PARSE_RESULT(int) get_codepoint(std::string_view& s) {
     int codepoint = 0;
     for (const auto factor : {12u, 8u, 4u, 0u}) {
         auto current = get_current_char(s);
@@ -349,7 +346,7 @@ inline JSONC_PARSE_RESULT(int) get_codepoint(std::string_view& s) JSONC_EXCEPTIO
 template <bool B, bool A>
 inline JSONC_PARSE_RESULT(
     basic_jsonc<B, A>
-) parse_string(std::string_view& str, std::vector<std::string>&& comments_before, bool ignore_comments, bool) JSONC_EXCEPTION_TYPE {
+) parse_string(std::string_view& str, std::vector<std::string>&& comments_before, bool ignore_comments, bool) {
     str.remove_prefix(1);
     std::string              res{};
     std::vector<std::string> comments_after{};
@@ -486,7 +483,7 @@ inline JSONC_PARSE_RESULT(basic_jsonc<B, A>) parse_list(
     bool                       allow_trailing_comma,
     bool                       ignore_comments,
     bool                       float_keep_precision
-) JSONC_EXCEPTION_TYPE {
+) {
     str.remove_prefix(1);
     typename basic_jsonc<B, A>::array_type res{};
     bool                                   requre_value = false;
@@ -559,7 +556,7 @@ inline JSONC_PARSE_RESULT(basic_jsonc<B, A>) parse_object(
     bool                       allow_trailing_comma,
     bool                       ignore_comments,
     bool                       float_keep_precision
-) JSONC_EXCEPTION_TYPE {
+) {
     str.remove_prefix(1);
     typename basic_jsonc<B, A>::object_type res{};
     bool                                    requre_value = false;
@@ -667,7 +664,7 @@ inline JSONC_PARSE_RESULT(basic_jsonc<B, A>) parse_basic_jsonc_impl(
     bool                       allow_trailing_comma,
     bool                       ignore_comments,
     bool                       float_keep_precision
-) JSONC_EXCEPTION_TYPE {
+) {
     if (str.empty()) { _JSONC_PARSE_ERROR("empty string"); }
     switch (str.front()) {
     case 't':
@@ -708,10 +705,10 @@ inline JSONC_PARSE_RESULT(basic_jsonc<B, A>) parse_basic_jsonc_impl(
 template <bool B, bool A>
 inline JSONC_PARSE_RESULT(
     basic_jsonc<B, A>
-) parse_basic_jsonc(std::string_view& str, bool allow_trailing_comma, bool ignore_comments, bool float_keep_precision) JSONC_EXCEPTION_TYPE {
+) parse_basic_jsonc(std::string_view& str, bool allow_trailing_comma, bool ignore_comments, bool float_keep_precision) {
     std::vector<std::string> comments_before{};
     if (!extract_comments<A>(str, comments_before, ignore_comments)) { _JSONC_PARSE_ERROR("invalid comments"); }
     return parse_basic_jsonc_impl<B, A>(str, std::move(comments_before), allow_trailing_comma, ignore_comments, float_keep_precision);
 }
 
-} // namespace jsonc::inline abi_v1_3_1::detail
+} // namespace sculk::jsonc::inline abi_v1_4_0::detail
