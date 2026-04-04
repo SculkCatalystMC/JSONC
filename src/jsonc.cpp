@@ -8,8 +8,8 @@
 #ifndef JSONC_NO_EXCEPTION
 #define JSONC_NO_EXCEPTION
 #endif
-#include "jsonc/jsonc.hpp"
-#include "jsonc-c/jsonc.h"
+#include "sculk/jsonc/jsonc.hpp"
+#include "sculk/jsonc-c/jsonc.h"
 
 #define JSONC_VERSION_MAJOR 1
 #define JSONC_VERSION_MINOR 4

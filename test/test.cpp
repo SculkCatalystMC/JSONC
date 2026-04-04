@@ -5,6 +5,6 @@
 //
 // SPDX-License-Identifier: MPL-2.0
 
-#include <jsonc/jsonc.hpp>
+#include <sculk/jsonc/jsonc.hpp>
 // Check include
 // Do NOT remove!
