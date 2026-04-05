@@ -25,9 +25,19 @@ endif()
 add_library(jsonc INTERFACE)
 add_library(JSONC::jsonc ALIAS jsonc)
 
-target_include_directories(jsonc
+set(JSONC_PUBLIC_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
+if(NOT JSONC_BUILD_C_API)
+	# Keep C++ header layout while stripping C API headers from consumers.
+	set(JSONC_PUBLIC_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/jsonc-public-include")
+	file(REMOVE_RECURSE "${JSONC_PUBLIC_INCLUDE_DIR}")
+	file(MAKE_DIRECTORY "${JSONC_PUBLIC_INCLUDE_DIR}/sculk")
+	file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/include/sculk/jsonc" DESTINATION "${JSONC_PUBLIC_INCLUDE_DIR}/sculk")
+endif()
+
+target_include_directories(
+	jsonc
 	INTERFACE
-		"${CMAKE_CURRENT_SOURCE_DIR}/include"
+	"${JSONC_PUBLIC_INCLUDE_DIR}"
 )
 
 target_compile_features(jsonc INTERFACE cxx_std_23)
