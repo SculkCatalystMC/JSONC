@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.24)
 
-project(JSONC VERSION 1.4.0 LANGUAGES CXX)
+project(jsonc VERSION 1.4.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -23,7 +23,7 @@ else()
 endif()
 
 add_library(jsonc INTERFACE)
-add_library(JSONC::jsonc ALIAS jsonc)
+add_library(jsonc::jsonc ALIAS jsonc)
 
 set(JSONC_PUBLIC_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 if(NOT JSONC_BUILD_C_API)
@@ -76,9 +76,9 @@ set(JSONC_ARTIFACTS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/artifacts")
 
 if(JSONC_BUILD_C_API)
 	add_library(jsonc_capi ${jsonc_target_type} ${JSONC_SOURCES})
-	add_library(JSONC::capi ALIAS jsonc_capi)
+	add_library(jsonc::capi ALIAS jsonc_capi)
 
-	target_link_libraries(jsonc_capi PUBLIC JSONC::jsonc)
+	target_link_libraries(jsonc_capi PUBLIC jsonc::jsonc)
 	target_include_directories(jsonc_capi PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 	target_compile_features(jsonc_capi PUBLIC cxx_std_23)
 
@@ -160,7 +160,7 @@ if(JSONC_ENABLE_TEST)
 	target_include_directories(test PRIVATE
 		"${CMAKE_CURRENT_SOURCE_DIR}/test"
 	)
-	target_link_libraries(test PRIVATE JSONC::jsonc)
+	target_link_libraries(test PRIVATE jsonc::jsonc)
 	target_compile_definitions(test PRIVATE JSONC_USE_EXPECTED)
 
 	if(MSVC)
