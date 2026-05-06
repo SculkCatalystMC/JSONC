@@ -10,7 +10,7 @@ set(JSONC_LIBRARY_KIND "static" CACHE STRING "Build jsonc as static or shared li
 set_property(CACHE JSONC_LIBRARY_KIND PROPERTY STRINGS static shared)
 
 option(JSONC_BUILD_C_API "Build the compiled C API library" ON)
-option(JSONC_ENABLE_TEST "Build the test executable" ON)
+option(JSONC_ENABLE_TEST "Build the test executable" OFF)
 
 if(NOT JSONC_LIBRARY_KIND STREQUAL "static" AND NOT JSONC_LIBRARY_KIND STREQUAL "shared")
 	message(FATAL_ERROR "JSONC_LIBRARY_KIND must be either 'static' or 'shared'.")
