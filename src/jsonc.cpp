@@ -10,6 +10,7 @@
 #endif
 #include "sculk/jsonc/jsonc.hpp"
 #include "sculk/jsonc-c/jsonc.h"
+#include <cstring>
 
 #define JSONC_VERSION_MAJOR 1
 #define JSONC_VERSION_MINOR 4

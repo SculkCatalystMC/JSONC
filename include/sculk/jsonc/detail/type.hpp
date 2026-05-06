@@ -7,6 +7,7 @@
 
 #pragma once
 #include "container.hpp"
+#include <cmath>
 #include <cstdint>
 #include <format>
 #include <optional>

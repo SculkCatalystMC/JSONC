@@ -10,7 +10,7 @@ set(JSONC_LIBRARY_KIND "static" CACHE STRING "Build jsonc as static or shared li
 set_property(CACHE JSONC_LIBRARY_KIND PROPERTY STRINGS static shared)
 
 option(JSONC_BUILD_C_API "Build the compiled C API library" ON)
-option(JSONC_ENABLE_TEST "Build the test executable" OFF)
+option(JSONC_ENABLE_TEST "Build the test executable" ON)
 
 if(NOT JSONC_LIBRARY_KIND STREQUAL "static" AND NOT JSONC_LIBRARY_KIND STREQUAL "shared")
 	message(FATAL_ERROR "JSONC_LIBRARY_KIND must be either 'static' or 'shared'.")
@@ -26,6 +26,7 @@ add_library(jsonc INTERFACE)
 add_library(jsonc::jsonc ALIAS jsonc)
 
 set(JSONC_PUBLIC_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
+
 if(NOT JSONC_BUILD_C_API)
 	# Keep C++ header layout while stripping C API headers from consumers.
 	set(JSONC_PUBLIC_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/jsonc-public-include")
@@ -50,6 +51,7 @@ include(CheckIPOSupported)
 
 function(jsonc_normalized_arch out_var)
 	string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" jsonc_arch)
+
 	if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 		if(CMAKE_VS_PLATFORM_NAME)
 			string(TOLOWER "${CMAKE_VS_PLATFORM_NAME}" jsonc_arch)
@@ -90,9 +92,9 @@ if(JSONC_BUILD_C_API)
 		set_target_properties(jsonc_capi PROPERTIES PREFIX "lib")
 		target_compile_definitions(jsonc_capi
 			PRIVATE
-				_JSONC_EXPORT
+			_JSONC_EXPORT
 			INTERFACE
-				JSONC_DLL
+			JSONC_DLL
 		)
 	endif()
 
@@ -114,7 +116,6 @@ if(JSONC_BUILD_C_API)
 			-pedantic
 			-fno-exceptions
 			-fPIC
-			-stdlib=libc++
 			-fno-rtti
 			$<$<CONFIG:Release>:-O3>
 		)
@@ -122,6 +123,7 @@ if(JSONC_BUILD_C_API)
 
 	if(JSONC_LIBRARY_KIND STREQUAL "shared")
 		check_ipo_supported(RESULT jsonc_ipo_supported OUTPUT jsonc_ipo_output)
+
 		if(jsonc_ipo_supported)
 			set_property(TARGET jsonc_capi PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 		endif()
@@ -167,8 +169,7 @@ if(JSONC_ENABLE_TEST)
 		target_compile_definitions(test PRIVATE NOMINMAX UNICODE)
 		target_compile_options(test PRIVATE /utf-8 /W4)
 	else()
-		target_compile_options(test PRIVATE -Wall -Wextra -stdlib=libc++)
-		target_link_libraries(test PRIVATE c++)
+		target_compile_options(test PRIVATE -Wall -Wextra)
 	endif()
 
 	add_custom_command(TARGET test POST_BUILD
