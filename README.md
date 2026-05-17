@@ -7,7 +7,7 @@
 
 JSONC is a C++23 JSON with Comments library.
 The C++ API is header-only, while the repository also provides optional compiled static or shared libraries for the C API.
-Both CMake and xmake build systems are kept in the repository.
+The repository uses CMake build system.
 
 ## ✨ Features
 
@@ -17,7 +17,7 @@ Both CMake and xmake build systems are kept in the repository.
 - Optional comment preservation for JSONC documents.
 - Optional compiled C API for embedding in C or mixed-language projects.
 - Configurable error model: exceptions, std::expected, or no-exception parsing.
-- CMake and xmake build support.
+- CMake build support.
 - Optional static and shared library outputs for the C API.
 
 ## 🧩 Project Model
@@ -58,9 +58,9 @@ If `JSONC_USE_EXPECTED` is enabled, `JSONC_NO_EXCEPTION` is enabled automaticall
 - Windows: MSVC or LLVM/Clang with a compatible generator.
 - Linux/macOS: Clang is the intended toolchain in the original project settings.
 
-## 🏗️ Build Systems
+## 🏗️ Build System
 
-This repository keeps both CMake and xmake build files.
+This repository uses CMake as the build system.
 
 ### 📘 C++ Header-Only Usage
 
@@ -113,29 +113,6 @@ The CMake targets are:
 - `JSONC::capi`: compiled C API target, available when `JSONC_BUILD_C_API=ON`.
 
 When building the shared C API library, the build copies the produced binary to `bin/jsonc-<platform>-<arch>` and creates a zip package in `artifacts`.
-
-## ⚙️ Build the C API with xmake
-
-### 📦 Static Library
-
-```bash
-xmake f -m release --kind=static --enable_test=false
-xmake
-```
-
-### 🔌 Shared Library
-
-```bash
-xmake f -m release --kind=shared --enable_test=false
-xmake
-```
-
-### 🧪 Test Executable
-
-```bash
-xmake f -m release --kind=static --enable_test=true
-xmake
-```
 
 ## 🔗 Use from Another CMake Project
 
@@ -206,7 +183,6 @@ Typical C API flow:
 
 ## 📝 Notes
 
-- Both CMake and xmake are intentionally retained.
 - The C++ API is header-only; building is only required for the C API library and test executable.
 - Building the C API library is optional and disabled by default.
 

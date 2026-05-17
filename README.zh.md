@@ -7,7 +7,7 @@
 
 JSONC 是一个面向 C++23 的 JSON with Comments 库。
 它的 C++ API 是纯头文件实现，同时仓库也提供了可选的 C API 静态库和动态库构建方案。
-仓库中同时保留了 CMake 和 xmake 两套构建系统。
+仓库使用 CMake 构建系统。
 
 ## ✨ 特性
 
@@ -17,7 +17,7 @@ JSONC 是一个面向 C++23 的 JSON with Comments 库。
 - 可选的 JSONC 注释保留能力。
 - 提供适合 C 或混合语言工程使用的可选编译型 C API。
 - 可配置的错误处理模型：异常、std::expected 或无异常解析。
-- 同时支持 CMake 和 xmake 构建。
+- CMake 构建支持。
 - 支持将 C API 构建为静态库或动态库。
 
 ## 🧩 项目结构定位
@@ -60,7 +60,7 @@ JSONC 是一个面向 C++23 的 JSON with Comments 库。
 
 ## 🏗️ 构建系统
 
-当前仓库同时保留 CMake 和 xmake 两套构建文件。
+当前仓库使用 CMake 作为构建系统。
 
 ### 📘 纯头文件 C++ 用法
 
@@ -113,29 +113,6 @@ CMake 中可用的目标为：
 - `JSONC::capi`：编译型 C API 目标，仅在 `JSONC_BUILD_C_API=ON` 时可用。
 
 当构建动态 C API 库时，构建脚本会将生成的二进制复制到 `bin/jsonc-<platform>-<arch>`，并在 `artifacts` 中生成 zip 包。
-
-## ⚙️ 使用 xmake 构建 C API
-
-### 📦 静态库
-
-```bash
-xmake f -m release --kind=static --enable_test=false
-xmake
-```
-
-### 🔌 动态库
-
-```bash
-xmake f -m release --kind=shared --enable_test=false
-xmake
-```
-
-### 🧪 测试可执行文件
-
-```bash
-xmake f -m release --kind=static --enable_test=true
-xmake
-```
 
 ## 🔗 在其他 CMake 工程中使用
 
@@ -206,7 +183,6 @@ C API 位于 `include/jsonc-c/jsonc.h`。
 
 ## 📝 说明
 
-- CMake 和 xmake 会继续同时保留。
 - C++ API 是纯头文件实现；只有 C API 库和测试程序需要编译。
 - C API 库的构建是可选的，默认不构建。
 

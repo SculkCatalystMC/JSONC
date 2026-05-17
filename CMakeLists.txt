@@ -100,6 +100,8 @@ if(JSONC_BUILD_C_API)
 
 	if(MSVC)
 		target_compile_definitions(jsonc_capi PRIVATE NOMINMAX UNICODE)
+		string(REPLACE "/EHsc" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+		string(REPLACE "/Ob2" "" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
 		target_compile_options(jsonc_capi PRIVATE
 			/utf-8
 			/W4

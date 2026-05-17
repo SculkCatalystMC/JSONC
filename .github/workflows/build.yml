@@ -1,0 +1,33 @@
+name: Build JSONC
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+      - name: Configure CMake
+        run: cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DJSONC_ENABLE_TEST=ON -DCMAKE_CXX_COMPILER=cl
+      - name: Build
+        run: cmake --build build --config Release
+
+  build-linux:
+    runs-on: ubuntu-latest
+    container:
+      image: gcc:15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install CMake
+        run: |
+          apt-get update && apt-get install -y cmake ninja-build
+      - name: Configure CMake
+        run: cmake -B build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DJSONC_ENABLE_TEST=ON
+      - name: Build
+        run: cmake --build build --config Release
