@@ -10,7 +10,7 @@
 #include "type.hpp"
 #include <charconv>
 
-namespace sculk::jsonc::inline abi_v1_4_0::detail {
+namespace sculk::jsonc::inline abi_v1_4_1::detail {
 
 template <bool B, bool A>
 JSONC_PARSE_RESULT(basic_jsonc<B, A>) parse_basic_jsonc_impl(
@@ -719,4 +719,4 @@ inline JSONC_PARSE_RESULT(
     return parse_basic_jsonc_impl<B, A>(str, std::move(comments_before), allow_trailing_comma, ignore_comments, float_keep_precision);
 }
 
-} // namespace sculk::jsonc::inline abi_v1_4_0::detail
+} // namespace sculk::jsonc::inline abi_v1_4_1::detail

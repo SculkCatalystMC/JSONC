@@ -12,7 +12,7 @@
 #include <unordered_map>
 #include <utility>
 
-namespace sculk::jsonc::inline abi_v1_4_0::detail {
+namespace sculk::jsonc::inline abi_v1_4_1::detail {
 
 struct string_hash {
     using is_transparent = void;
@@ -133,4 +133,4 @@ private:
     entry_type   entry_;
 };
 
-} // namespace sculk::jsonc::inline abi_v1_4_0::detail
+} // namespace sculk::jsonc::inline abi_v1_4_1::detail

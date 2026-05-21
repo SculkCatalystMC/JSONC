@@ -15,7 +15,7 @@
 #include <vector>
 
 namespace sculk::jsonc {
-inline namespace abi_v1_4_0 {
+inline namespace abi_v1_4_1 {
 
 enum class value_type : std::uint8_t {
     null                        = 0,
@@ -763,6 +763,6 @@ private:
 
 } // namespace detail
 
-} // namespace abi_v1_4_0
+} // namespace abi_v1_4_1
 
 } // namespace sculk::jsonc

@@ -8,7 +8,7 @@
 #pragma once
 #include "type.hpp"
 
-namespace sculk::jsonc::inline abi_v1_4_0::detail {
+namespace sculk::jsonc::inline abi_v1_4_1::detail {
 
 inline std::string
 format_comments(const std::vector<std::string>& comments, std::string_view indent_space, bool nolinefeed, bool multi_line_comments_format) {
@@ -309,4 +309,4 @@ inline std::string dump_typed(basic_high_precision_float val, bool, int, bool, b
     return val.view_;
 }
 
-} // namespace sculk::jsonc::inline abi_v1_4_0::detail
+} // namespace sculk::jsonc::inline abi_v1_4_1::detail
