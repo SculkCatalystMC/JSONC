@@ -31,9 +31,9 @@ inline size_t copy_string(char* data, size_t length, const std::string& str) {
 extern "C" {
 
 const char* jsonc_get_library_version_string() {
-    static constexpr std::string version{"v" STRINGIZE(JSONC_VERSION_MAJOR.JSONC_VERSION_MINOR.JSONC_VERSION_PATCH)};
-    return version.c_str();
+    return "v" STRINGIZE(JSONC_VERSION_MAJOR) "." STRINGIZE(JSONC_VERSION_MINOR) "." STRINGIZE(JSONC_VERSION_PATCH);
 }
+
 uint8_t jsonc_get_library_version_major() { return JSONC_VERSION_MAJOR; }
 uint8_t jsonc_get_library_version_minor() { return JSONC_VERSION_MINOR; }
 uint8_t jsonc_get_library_version_patch() { return JSONC_VERSION_PATCH; }

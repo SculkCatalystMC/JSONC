@@ -32,6 +32,7 @@ JSONC_PARSE_RESULT(basic_jsonc<B, A>) parse_basic_jsonc(
 namespace {
 
 inline JSONC_PARSE_RESULT(std::string_view) extract_comment(std::string_view& s) {
+    if (s.empty()) { _JSONC_PARSE_ERROR("unexpected eof encountered"); }
     std::size_t      i = 0;
     std::string_view result;
     switch (s[i++]) {
@@ -99,15 +100,15 @@ inline JSONC_PARSE_RESULT(std::string_view) extract_comment(std::string_view& s)
 
 inline void skip_spaces(std::string_view& s) noexcept {
     std::size_t i = 0;
-    while (i <= s.size() && std::isspace(s[i++])) {}
-    s.remove_prefix(std::min(i - 1, s.size()));
+    while (i < s.size() && std::isspace(static_cast<unsigned char>(s[i]))) { ++i; }
+    s.remove_prefix(i);
 }
 
 inline void skip_spaces_nolinefeed(std::string_view& s) noexcept {
     std::size_t i                  = 0;
     static auto isspace_nolinefeed = [](char c) { return c == ' ' || c == '\t' || c == '\v' || c == '\f'; };
-    while (i <= s.size() && (isspace_nolinefeed(s[i++]))) {}
-    s.remove_prefix(std::min(i - 1, s.size()));
+    while (i < s.size() && isspace_nolinefeed(s[i])) { ++i; }
+    s.remove_prefix(i);
 }
 
 inline std::vector<std::string> parse_comments(std::string_view comment) {
@@ -515,6 +516,8 @@ inline JSONC_PARSE_RESULT(basic_jsonc<B, A>) parse_list(
         auto value =
             parse_basic_jsonc_impl<B, A>(str, std::move(element_comment_before), allow_trailing_comma, ignore_comments, float_keep_precision);
 
+        if (str.empty()) { _JSONC_PARSE_ERROR("invalid array"); }
+
         switch (str.front()) {
         case ']': {
 #ifdef JSONC_NO_EXCEPTION
@@ -596,6 +599,8 @@ inline JSONC_PARSE_RESULT(basic_jsonc<B, A>) parse_object(
 
         if (get_current_char(str) != ':') { _JSONC_PARSE_ERROR("illegal key and value separator"); }
         auto value = parse_basic_jsonc<B, A>(str, allow_trailing_comma, ignore_comments, float_keep_precision);
+
+        if (str.empty()) { _JSONC_PARSE_ERROR("invalid object"); }
 
 #ifdef JSONC_NO_EXCEPTION
         if (!value) { _JSONC_PARSE_ERROR("invalid object value"); }
