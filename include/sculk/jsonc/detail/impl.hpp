@@ -1210,7 +1210,6 @@ inline std::string basic_jsonc<_IsOrdered, _AllowComments>::dump(
             if (!after.empty()) {
                 if (indent >= 0) { result.push_back(' '); }
                 result.append(after);
-                if (result.back() == '\n') { result.pop_back(); }
             }
         }
         return result;
