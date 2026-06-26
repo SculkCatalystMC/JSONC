@@ -48,6 +48,8 @@ JSONC_API uint8_t jsonc_get_library_version_major();
 JSONC_API uint8_t jsonc_get_library_version_minor();
 JSONC_API uint8_t jsonc_get_library_version_patch();
 
+JSONC_API const char* jsonc_get_last_error();
+
 JSONC_API jsonc_variant_t jsonc_parse_content(const char* content, bool allow_trailing_comma);
 
 JSONC_API int jsonc_get_variant_type(jsonc_variant_t handle);

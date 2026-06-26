@@ -14,6 +14,7 @@
 #include "sculk/jsonc/jsonc.hpp"
 #include "sculk/jsonc-c/jsonc.h"
 #include <cstring>
+#include <mutex>
 
 #define JSONC_VERSION_MAJOR 1
 #define JSONC_VERSION_MINOR 4
@@ -31,6 +32,26 @@ inline size_t copy_string(char* data, size_t length, const std::string& str) {
     return 0;
 }
 
+struct ErrorManager {
+    std::string        mLastError{};
+    mutable std::mutex mMutex{};
+
+    const char* getLastError() const {
+        std::lock_guard lock{mMutex};
+        return mLastError.c_str();
+    }
+
+    void setLastError(std::string_view error) {
+        std::lock_guard lock{mMutex};
+        mLastError = error;
+    }
+
+    static ErrorManager& getInstance() {
+        static ErrorManager instance{};
+        return instance;
+    }
+};
+
 extern "C" {
 
 const char* jsonc_get_library_version_string() {
@@ -41,10 +62,12 @@ uint8_t jsonc_get_library_version_major() { return JSONC_VERSION_MAJOR; }
 uint8_t jsonc_get_library_version_minor() { return JSONC_VERSION_MINOR; }
 uint8_t jsonc_get_library_version_patch() { return JSONC_VERSION_PATCH; }
 
+const char* jsonc_get_last_error() { return ErrorManager::getInstance().getLastError(); }
+
 jsonc_variant_t jsonc_parse_content(const char* content, bool allow_trailing_comma) {
-    if (auto result = sculk::jsonc::ordered_jsonc::parse(content, allow_trailing_comma)) {
-        return new (std::nothrow) sculk::jsonc::ordered_jsonc(std::move(*result));
-    }
+    auto result = sculk::jsonc::ordered_jsonc::parse(content, allow_trailing_comma);
+    if (result) { return new (std::nothrow) sculk::jsonc::ordered_jsonc(std::move(*result)); }
+    ErrorManager::getInstance().setLastError(result.error());
     return nullptr;
 }
 
