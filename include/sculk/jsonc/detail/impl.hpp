@@ -1110,8 +1110,13 @@ template <typename T>
     requires(std::is_arithmetic_v<T> && !std::same_as<T, bool>)
 constexpr T truncate_high_precision_number(std::string_view num_str) {
     T value{};
-    auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), value);
-    if (ec == std::errc{}) { return value; }
+    if constexpr (std::is_floating_point_v<T>) {
+        double parsed{};
+        if (parse_float_compat(num_str, parsed)) { return static_cast<T>(parsed); }
+    } else {
+        auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), value);
+        if (ec == std::errc{} && ptr == num_str.data() + num_str.size()) { return value; }
+    }
     return num_str.starts_with('-') ? std::numeric_limits<T>::lowest() : std::numeric_limits<T>::max();
 }
 
@@ -1980,8 +1985,7 @@ basic_jsonc<_IsOrdered, _AllowComments>::from_any_float(std::string_view view, b
     auto num_str = extract_jsonc_number(view, is_int, is_negative, is_scientific);
     if (!is_int && view.empty()) {
         double res{};
-        auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), res);
-        if (ec != std::errc() || ptr != num_str.data() + num_str.size() || std::isinf(res)) { return basic_high_precision_float(num_str); }
+        if (!parse_float_compat(num_str, res)) { return basic_high_precision_float(num_str); }
         if (float_keep_precision && !is_scientific && std::format("{}", res) != num_str) { return basic_high_precision_float(num_str); }
         return res;
     }
@@ -2010,8 +2014,7 @@ basic_jsonc<_IsOrdered, _AllowComments>::from_any_number(std::string_view view, 
             }
         } else {
             double res{};
-            auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), res);
-            if (ec != std::errc() || ptr != num_str.data() + num_str.size() || std::isinf(res)) { return basic_high_precision_float(num_str); }
+            if (!parse_float_compat(num_str, res)) { return basic_high_precision_float(num_str); }
             if (float_keep_precision && !is_scientific && std::format("{}", res) != num_str) { return basic_high_precision_float(num_str); }
             return res;
         }
