@@ -8,6 +8,9 @@
 #ifndef JSONC_NO_EXCEPTION
 #define JSONC_NO_EXCEPTION
 #endif
+#ifdef JSONC_USE_EXPECTED
+#undef JSONC_USE_EXPECTED
+#endif
 #include "sculk/jsonc/jsonc.hpp"
 #include "sculk/jsonc-c/jsonc.h"
 #include <cstring>

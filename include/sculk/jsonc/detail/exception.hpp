@@ -7,13 +7,13 @@
 
 #pragma once
 #include <cstdint>
+#include <expected>
 #include <format>
 
 #ifdef JSONC_USE_EXPECTED
 #ifndef JSONC_NO_EXCEPTION
 #define JSONC_NO_EXCEPTION
 #endif
-#include <expected>
 #include <functional>
 #endif
 
@@ -117,7 +117,6 @@ template <typename T = void>
 #define _JSONC_PARSE_ERROR(ERROR) _JSONC_THROW_EXCEPTION(key_error, std::format("jsonc parse error: {}", ERROR))
 #define JSONC_PARSE_RESULT(...)   JSONC_RESULT(__VA_ARGS__)
 #else
-#include <optional>
-#define _JSONC_PARSE_ERROR(ERROR) return std::nullopt
-#define JSONC_PARSE_RESULT(...)   std::optional<__VA_ARGS__>
+#define _JSONC_PARSE_ERROR(ERROR) return std::unexpected("jsonc parse error: " ERROR)
+#define JSONC_PARSE_RESULT(...)   std::expected<__VA_ARGS__, std::string_view>
 #endif

@@ -540,7 +540,11 @@ inline JSONC_PARSE_RESULT(basic_jsonc<B, A>) parse_list(
         switch (str.front()) {
         case ']': {
 #ifdef JSONC_NO_EXCEPTION
+#ifdef JSONC_USE_EXPECTED
             if (!value) { _JSONC_PARSE_ERROR(value.error().mErrorInfo); }
+#else
+            if (!value) { _JSONC_PARSE_ERROR("fail to parse list value"); }
+#endif
             res.push_back(std::move(*value));
 #else
             res.push_back(std::move(value));
@@ -570,7 +574,11 @@ inline JSONC_PARSE_RESULT(basic_jsonc<B, A>) parse_list(
             break;
         }
 #ifdef JSONC_NO_EXCEPTION
+#ifdef JSONC_USE_EXPECTED
         if (!value) { _JSONC_PARSE_ERROR(value.error().mErrorInfo); }
+#else
+        if (!value) { _JSONC_PARSE_ERROR("fail to parse list value"); }
+#endif
         res.push_back(std::move(*value));
 #else
         res.push_back(std::move(value));

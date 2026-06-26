@@ -11,6 +11,8 @@ set_property(CACHE JSONC_LIBRARY_KIND PROPERTY STRINGS static shared)
 
 option(JSONC_BUILD_C_API "Build the compiled C API library" ON)
 option(JSONC_ENABLE_TEST "Build the test executable" OFF)
+option(JSONC_NO_EXCEPTION "Enable JSONC_NO_EXCEPTION macro" OFF)
+option(JSONC_USE_EXPECTED "Enable JSONC_USE_EXPECTED macro" OFF)
 
 if(NOT JSONC_LIBRARY_KIND STREQUAL "static" AND NOT JSONC_LIBRARY_KIND STREQUAL "shared")
 	message(FATAL_ERROR "JSONC_LIBRARY_KIND must be either 'static' or 'shared'.")
@@ -39,6 +41,13 @@ target_include_directories(
 	jsonc
 	INTERFACE
 	"${JSONC_PUBLIC_INCLUDE_DIR}"
+)
+
+target_compile_definitions(
+	jsonc
+	INTERFACE
+	$<$<BOOL:${JSONC_NO_EXCEPTION}>:JSONC_NO_EXCEPTION>
+	$<$<BOOL:${JSONC_USE_EXPECTED}>:JSONC_USE_EXPECTED>
 )
 
 target_compile_features(jsonc INTERFACE cxx_std_23)
