@@ -187,18 +187,16 @@ inline constexpr char get_current_char(std::string_view& s) {
     return c;
 }
 
-inline bool parse_float_compat(std::string_view num_str, double& out) {
+inline bool parse_float_compat(std::string_view num_str, long double& out) {
 #if !defined(__APPLE__) || (defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__) && __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 260000)
     auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), out);
     return ec == std::errc() && ptr == num_str.data() + num_str.size() && std::isfinite(out);
 #else
     std::string buf{num_str};
-    char*       end  = nullptr;
-    errno            = 0;
-    long double lres = std::strtold(buf.c_str(), &end);
-    if (end != buf.c_str() + buf.size() || errno == ERANGE || !std::isfinite(lres)) { return false; }
-
-    out = static_cast<double>(lres);
+    char*       end = nullptr;
+    errno           = 0;
+    long double out = std::strtold(buf.c_str(), &end);
+    if (end != buf.c_str() + buf.size() || errno == ERANGE || !std::isfinite(out)) { return false; }
     return std::isfinite(out);
 #endif
 }
@@ -333,7 +331,7 @@ inline JSONC_PARSE_RESULT(
     } else {
         while (num_str.ends_with('0')) { num_str.remove_suffix(1); }
         if (num_str.ends_with('.')) { num_str.remove_suffix(1); }
-        double res{};
+        long double res{};
         if (!parse_float_compat(num_str, res)) {
             result = basic_high_precision_float(num_str);
         } else {

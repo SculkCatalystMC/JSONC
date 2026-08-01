@@ -73,10 +73,10 @@ jsonc_variant_t jsonc_parse_content(const char* content, bool allow_trailing_com
 
 int jsonc_get_variant_type(jsonc_variant_t handle) { return static_cast<int>(static_cast<sculk::jsonc::ordered_jsonc*>(handle)->type()); }
 
-bool     jsonc_variant_to_bool(jsonc_variant_t handle) { return static_cast<sculk::jsonc::ordered_jsonc*>(handle)->get<bool>(); }
-int64_t  jsonc_variant_to_signed(jsonc_variant_t handle) { return static_cast<sculk::jsonc::ordered_jsonc*>(handle)->get<int64_t>(); }
-uint64_t jsonc_variant_to_unsigned(jsonc_variant_t handle) { return static_cast<sculk::jsonc::ordered_jsonc*>(handle)->get<uint64_t>(); }
-double   jsonc_variant_to_float(jsonc_variant_t handle) { return static_cast<sculk::jsonc::ordered_jsonc*>(handle)->get<double>(); }
+bool        jsonc_variant_to_bool(jsonc_variant_t handle) { return static_cast<sculk::jsonc::ordered_jsonc*>(handle)->get<bool>(); }
+int64_t     jsonc_variant_to_signed(jsonc_variant_t handle) { return static_cast<sculk::jsonc::ordered_jsonc*>(handle)->get<int64_t>(); }
+uint64_t    jsonc_variant_to_unsigned(jsonc_variant_t handle) { return static_cast<sculk::jsonc::ordered_jsonc*>(handle)->get<uint64_t>(); }
+long double jsonc_variant_to_float(jsonc_variant_t handle) { return static_cast<sculk::jsonc::ordered_jsonc*>(handle)->get<long double>(); }
 
 const char* jsonc_variant_as_string(jsonc_variant_t handle) { return static_cast<sculk::jsonc::ordered_jsonc*>(handle)->as<std::string>().c_str(); }
 const char* jsonc_variant_as_big_int(jsonc_variant_t handle) {
@@ -195,10 +195,10 @@ bool jsonc_object_set_any_int(jsonc_object_t handle, const char* key, const char
     return val.has_value();
 }
 
-double jsonc_object_get_float(jsonc_object_t handle, const char* key) {
-    return static_cast<sculk::jsonc::ordered_jsonc::object_type*>(handle)->operator[](key).get<double>();
+long double jsonc_object_get_float(jsonc_object_t handle, const char* key) {
+    return static_cast<sculk::jsonc::ordered_jsonc::object_type*>(handle)->operator[](key).get<long double>();
 }
-void jsonc_object_set_float(jsonc_object_t handle, const char* key, double value) {
+void jsonc_object_set_float(jsonc_object_t handle, const char* key, long double value) {
     static_cast<sculk::jsonc::ordered_jsonc::object_type*>(handle)->operator[](key) = value;
 }
 
@@ -406,12 +406,14 @@ bool jsonc_array_add_any_int(jsonc_array_t handle, const char* value) {
 }
 
 double jsonc_array_get_float(jsonc_array_t handle, size_t index) {
-    return static_cast<sculk::jsonc::ordered_jsonc::array_type*>(handle)->operator[](index).get<double>();
+    return static_cast<sculk::jsonc::ordered_jsonc::array_type*>(handle)->operator[](index).get<long double>();
 }
-void jsonc_array_set_float(jsonc_array_t handle, size_t index, double value) {
+void jsonc_array_set_float(jsonc_array_t handle, size_t index, long double value) {
     static_cast<sculk::jsonc::ordered_jsonc::array_type*>(handle)->operator[](index) = value;
 }
-void jsonc_array_add_float(jsonc_array_t handle, double value) { static_cast<sculk::jsonc::ordered_jsonc::array_type*>(handle)->push_back(value); }
+void jsonc_array_add_float(jsonc_array_t handle, long double value) {
+    static_cast<sculk::jsonc::ordered_jsonc::array_type*>(handle)->push_back(value);
+}
 
 size_t jsonc_array_get_any_float(jsonc_array_t handle, char* data, size_t length, size_t index) {
     auto result = static_cast<sculk::jsonc::ordered_jsonc::array_type*>(handle)->operator[](index).get_any_float_view();

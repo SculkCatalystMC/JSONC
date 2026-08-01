@@ -1111,7 +1111,7 @@ template <typename T>
 constexpr T truncate_high_precision_number(std::string_view num_str) {
     T value{};
     if constexpr (std::is_floating_point_v<T>) {
-        double parsed{};
+        long double parsed{};
         if (parse_float_compat(num_str, parsed)) { return static_cast<T>(parsed); }
     } else {
         auto [ptr, ec] = std::from_chars(num_str.data(), num_str.data() + num_str.size(), value);
@@ -1139,7 +1139,7 @@ inline constexpr basic_jsonc<_IsOrdered, _AllowComments>::operator T() const {
                 if constexpr (std::same_as<T, bool>) {
                     return val.view_ != "0";
                 } else {
-                    return static_cast<T>(truncate_high_precision_number<double>(val.view_));
+                    return static_cast<T>(truncate_high_precision_number<long double>(val.view_));
                 }
             } else {
 #ifdef JSONC_NO_EXCEPTION
@@ -1297,7 +1297,7 @@ inline JSONC_RESULT(T) basic_jsonc<_IsOrdered, _AllowComments>::get() const {
                 if constexpr (std::same_as<T, bool>) {
                     return val.view_ != "0";
                 } else {
-                    return static_cast<T>(truncate_high_precision_number<double>(val.view_));
+                    return static_cast<T>(truncate_high_precision_number<long double>(val.view_));
                 }
             } else {
                 _JSONC_TYPE_ERROR("bad type cast");
@@ -1365,7 +1365,7 @@ inline JSONC_RESULT(std::string) basic_jsonc<_IsOrdered, _AllowComments>::get_an
             using Type = std::decay_t<decltype(val)>;
             if constexpr (std::same_as<basic_high_precision_float, Type>) {
                 return val.view_;
-            } else if constexpr (std::same_as<double, Type>) {
+            } else if constexpr (std::same_as<long double, Type>) {
                 return std::format("{}", val);
             } else {
                 _JSONC_TYPE_ERROR(std::format("Type must be any floating-point type, but is {}", type_name()));
@@ -1382,7 +1382,7 @@ inline JSONC_RESULT(std::string) basic_jsonc<_IsOrdered, _AllowComments>::get_an
             using Type = std::decay_t<decltype(val)>;
             if constexpr (std::same_as<basic_high_precision_float, Type> || std::same_as<basic_big_integer, Type>) {
                 return val.view_;
-            } else if constexpr (std::same_as<double, Type> || std::same_as<std::int64_t, Type> || std::same_as<std::uint64_t, Type>) {
+            } else if constexpr (std::same_as<long double, Type> || std::same_as<std::int64_t, Type> || std::same_as<std::uint64_t, Type>) {
                 return std::format("{}", val);
             } else {
                 _JSONC_TYPE_ERROR(std::format("Type must be any number type, but is {}", type_name()));
@@ -1984,7 +1984,7 @@ basic_jsonc<_IsOrdered, _AllowComments>::from_any_float(std::string_view view, b
     bool is_scientific{false};
     auto num_str = extract_jsonc_number(view, is_int, is_negative, is_scientific);
     if (!is_int && view.empty()) {
-        double res{};
+        long double res{};
         if (!parse_float_compat(num_str, res)) { return basic_high_precision_float(num_str); }
         if (float_keep_precision && !is_scientific && std::format("{}", res) != num_str) { return basic_high_precision_float(num_str); }
         return res;
@@ -2013,7 +2013,7 @@ basic_jsonc<_IsOrdered, _AllowComments>::from_any_number(std::string_view view, 
                 return res;
             }
         } else {
-            double res{};
+            long double res{};
             if (!parse_float_compat(num_str, res)) { return basic_high_precision_float(num_str); }
             if (float_keep_precision && !is_scientific && std::format("{}", res) != num_str) { return basic_high_precision_float(num_str); }
             return res;

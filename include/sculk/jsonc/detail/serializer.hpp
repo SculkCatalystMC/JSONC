@@ -86,7 +86,7 @@ inline std::string dump_typed(const std::string& str, bool ensure_ascii, int, bo
     if (str.empty()) { return "\"\""; }
 
     std::string result{};
-    result.reserve(static_cast<std::size_t>(static_cast<double>(str.size()) * 1.2));
+    result.reserve(static_cast<std::size_t>(static_cast<long double>(str.size()) * 1.2));
 
     if (ensure_ascii) {
         auto it = str.begin();

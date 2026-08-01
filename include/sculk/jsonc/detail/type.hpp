@@ -285,7 +285,7 @@ public:
         bool,
         std::int64_t,
         std::uint64_t,
-        double,
+        long double,
         std::string,
         basic_object,
         basic_array,
@@ -465,8 +465,9 @@ public:
     [[nodiscard]] constexpr basic_jsonc(std::string_view val) noexcept : storage_(std::string(val)) {};
     [[nodiscard]] constexpr basic_jsonc(const std::string& val) noexcept : storage_(val) {};
 
-    [[nodiscard]] constexpr basic_jsonc(double val) noexcept : storage_(val) {};
-    [[nodiscard]] constexpr basic_jsonc(float val) noexcept : storage_(std::round(val * 1e6) / 1e6) {};
+    [[nodiscard]] constexpr basic_jsonc(double val) noexcept : storage_(static_cast<long double>(val)) {};
+    [[nodiscard]] constexpr basic_jsonc(float val) noexcept : storage_(static_cast<long double>(std::round(val * 1e6) / 1e6)) {};
+    [[nodiscard]] constexpr basic_jsonc(long double val) noexcept : storage_(val) {};
 
     template <std::size_t N>
     [[nodiscard]] constexpr basic_jsonc(char const (&val)[N]) noexcept : storage_(std::string{val, N - 1}) {}
